@@ -11,20 +11,21 @@ Payload = Dict[str, Dict[str, Dict[str, Union[int, dict]]]]
 
 
 class OmigamiClient:
-    _endpoint_url = "https://mlops.datarevenue.com/seldon/seldon/spec2vec/api/v0.1/predictions"
+    _endpoint_url = (
+        "https://mlops.datarevenue.com/seldon/seldon/spec2vec/api/v0.1/predictions"
+    )
 
     def __init__(self, token: str):
         self._token = token
 
-    def match_spectra_from_path(self, mgf_path: str) -> List[pd.DataFrame]:
+    def match_spectra_from_path(self, mgf_path: str, n_best: int) -> List[pd.DataFrame]:
         """TODO"""
         spectra_generator = load_from_mgf(mgf_path)
-        payload = self._build_payload(spectra_generator, 10)
+        payload = self._build_payload(spectra_generator, n_best)
         api_request = self._send_request(payload)
         prediction = self._format_results(api_request)
 
         return prediction
-
 
     def _build_payload(
         self, spectra_generator: Generator[Spectrum, None, None], n_best_spectra: int
@@ -38,8 +39,8 @@ class OmigamiClient:
                         [
                             [mz, intensity]
                             for mz, intensity in zip(
-                            spectrum.peaks.mz, spectrum.peaks.intensities
-                        )
+                                spectrum.peaks.mz, spectrum.peaks.intensities
+                            )
                         ]
                     ),
                     "Precursor_MZ": str(spectrum.metadata["pepmass"][0]),
@@ -66,9 +67,7 @@ class OmigamiClient:
     def _validate_input(model_input: List[Dict]):
         for i, spectrum in enumerate(model_input):
             if not isinstance(spectrum, Dict):
-                raise TypeError(
-                    f"Spectrum data must be a dictionary"
-                )
+                raise TypeError(f"Spectrum data must be a dictionary")
 
             mandatory_keys = ["peaks_json", "Precursor_MZ"]
             if any(key not in spectrum.keys() for key in mandatory_keys):
@@ -100,7 +99,7 @@ class OmigamiClient:
                             400,
                         )
 
-    def _send_request(self, payload):
+    def _send_request(self, payload: Payload) -> requests.Response:
         api_request = requests.post(
             self._endpoint_url,
             json=payload,
@@ -110,8 +109,7 @@ class OmigamiClient:
         return api_request
 
     @staticmethod
-    def _format_results(api_request) -> List[pd.DataFrame]:
-        """Formatting of the results"""
+    def _format_results(api_request: requests.Response) -> List[pd.DataFrame]:
         response = json.loads(api_request.text)
         library_spectra_raw = response["data"]["ndarray"]
 
