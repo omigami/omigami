@@ -1,11 +1,9 @@
-from pathlib import Path
 from unittest.mock import Mock
 
 import pytest
+import requests
 
 from omigami_client.omigami_client import OmigamiClient
-
-ASSETS_DIR = Path(__file__).parent / "assets"
 
 
 def test_match_spectra_from_path(mgf_path):
@@ -54,8 +52,13 @@ def test_send_request():
     assert response.status_code == 401
 
 
-def test_format_results():
+def test_format_results(sample_response):
     client = OmigamiClient("token")
+    requests.Response()
+
+    results = client._format_results(sample_response)
+
+    assert results
 
 
 def test_validate_input():

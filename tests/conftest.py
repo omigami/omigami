@@ -1,7 +1,10 @@
+from pathlib import Path
+
 import pytest
+import pickle
 from matchms.importing import load_from_mgf
 
-from tests.test_omigami_client import ASSETS_DIR
+ASSETS_DIR = Path(__file__).parent / "assets"
 
 
 @pytest.fixture(scope="session")
@@ -12,3 +15,11 @@ def mgf_path():
 @pytest.fixture(scope="session")
 def mgmf_generator(mgf_path):
     return list(load_from_mgf(mgf_path))[:20]
+
+
+@pytest.fixture(scope="session")
+def sample_response():
+    with open(ASSETS_DIR / "sample_response.pickle", "rb") as f:
+        response = pickle.load(f)
+
+    return response
