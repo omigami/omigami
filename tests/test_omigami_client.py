@@ -1,38 +1,100 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+from unittest.mock import Mock
 
-"""Tests for `omigami_client` package."""
-
+import pandas as pd
 import pytest
+import requests
 
-from click.testing import CliRunner
-
-from omigami_client import omigami_client
-from omigami_client import cli
+from omigami_client import OmigamiClient
 
 
-@pytest.fixture
-def response():
-    """Sample pytest fixture.
+def test_match_spectra_from_path_calls(mgf_path):
+    client = OmigamiClient("token")
+    client._build_payload = Mock(return_value="payload")
+    client._send_request = Mock(return_value="request")
+    client._format_results = Mock(return_value="result")
 
-    See more at: http://doc.pytest.org/en/latest/fixture.html
-    """
-    # import requests
-    # return requests.get('https://github.com/audreyr/cookiecutter-pypackage')
+    result = client.match_spectra_from_path(mgf_path, 10)
 
-
-def test_content(response):
-    """Sample pytest test function with the pytest fixture as an argument."""
-    # from bs4 import BeautifulSoup
-    # assert 'GitHub' in BeautifulSoup(response.content).title.string
+    assert result == "result"
+    client._build_payload.assert_called_once()
+    client._send_request.assert_called_once_with("payload")
+    client._format_results.assert_called_once_with("request")
 
 
-def test_command_line_interface():
-    """Test the CLI."""
-    runner = CliRunner()
-    result = runner.invoke(cli.main)
-    assert result.exit_code == 0
-    assert 'omigami_client.cli.main' in result.output
-    help_result = runner.invoke(cli.main, ['--help'])
-    assert help_result.exit_code == 0
-    assert '--help  Show this message and exit.' in help_result.output
+def test_build_payload(mgf_generator):
+    client = OmigamiClient("token")
+
+    payload = client._build_payload((mgf_generator), 10)
+
+    assert "data" in payload.keys()
+    assert payload["data"]["ndarray"]["parameters"]["n_best_spectra"] == 10
+    assert payload["data"]["ndarray"]["data"][0]["Precursor_MZ"] == "240.115"
+
+
+@pytest.mark.internet_connection
+def test_send_request():
+    client = OmigamiClient("bad_token")
+    small_payload = {
+        "data": {
+            "ndarray": {
+                "parameters": {"n_best_spectra": 10},
+                "data": [
+                    {
+                        "peaks_json": "[[80.060677, 157.0], [337.508301, 230.0]]",
+                        "Precursor_MZ": "153.233",
+                    }
+                ],
+            }
+        }
+    }
+
+    response = client._send_request(small_payload)
+
+    assert response.status_code == 401
+
+
+def test_format_results(sample_response):
+    client = OmigamiClient("token")
+    requests.Response()
+
+    results = client._format_results(sample_response)
+
+    assert isinstance(results[0], pd.DataFrame)
+    assert results[0].index.name == "matches of spectrum #1"
+    assert all(results[0].values > 0)
+
+
+def test_validate_input():
+    model_input = {
+        "peaks_json": "[[80.060677, 157.0], [337.508301, 230.0]]",
+        "Precursor_MZ": "153.233",
+    }
+    # first validates if the input is correct then we test for errors
+    OmigamiClient._validate_input([model_input])
+
+    with pytest.raises(TypeError, match="Spectrum data must be a dictionary."):
+        OmigamiClient._validate_input(["not_a_dict"])
+
+    with pytest.raises(KeyError, match="mandatory keys"):
+        OmigamiClient._validate_input(
+            [{"Precursor_MZ": "1", "peaks_JASON": "[not a list]"}]
+        )
+
+    with pytest.raises(
+        ValueError, match="peaks_json needs to be a valid python string representation"
+    ):
+        OmigamiClient._validate_input(
+            [{"Precursor_MZ": "1", "peaks_json": "[not a list]"}]
+        )
+
+    with pytest.raises(
+        ValueError,
+        match="peaks_json needs to be a valid python string representation",
+    ):
+        OmigamiClient._validate_input([{"Precursor_MZ": "1", "peaks_json": 10}])
+
+    with pytest.raises(
+        ValueError,
+        match="Precursor_MZ needs to be a string representation of a float",
+    ):
+        OmigamiClient._validate_input([{"Precursor_MZ": "float", "peaks_json": [10]}])
