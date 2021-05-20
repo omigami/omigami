@@ -2,50 +2,57 @@
 # -*- coding: utf-8 -*-
 
 """The setup script."""
-import versioneer
 from setuptools import setup, find_packages
 
-with open('README.rst') as readme_file:
+import versioneer
+
+with open("README.rst") as readme_file:
     readme = readme_file.read()
 
-with open('HISTORY.rst') as history_file:
+with open("HISTORY.rst") as history_file:
     history = history_file.read()
 
-requirements = ['Click>=6.0', ]
+requirements = [
+    "Click>=6.0",
+]
 
-setup_requirements = ['pytest-runner', ]
+setup_requirements = [
+    "pytest-runner",
+]
 
-test_requirements = ['pytest', ]
+test_requirements = [
+    "pytest",
+]
 
 setup(
     author="Data Revenue GmbH",
-    author_email='carlos@datarevenue.com',
+    author_email="carlos@datarevenue.com",
     classifiers=[
-        'Development Status :: 2 - Pre-Alpha',
-        'Intended Audience :: Developers',
-        'License :: OSI Approved :: MIT License',
-        'Natural Language :: English',
-        'Programming Language :: Python :: 3.6',
-        'Programming Language :: Python :: 3.7',
+        "Development Status :: 2 - Pre-Alpha",
+        "Intended Audience :: Developers",
+        "License :: OSI Approved :: MIT License",
+        "Natural Language :: English",
+        "Programming Language :: Python :: 3.6",
+        "Programming Language :: Python :: 3.7",
     ],
     description="A client to access Omigami",
     entry_points={
-        'console_scripts': [
-            'omigami_client=omigami_client.cli:main',
+        "console_scripts": [
+            "omigami_client=omigami_client.cli:main",
         ],
     },
     install_requires=requirements,
     license="MIT license",
-    long_description=readme + '\n\n' + history,
+    long_description=readme + "\n\n" + history,
     include_package_data=True,
-    keywords='omigami_client',
-    name='omigami_client',
-    packages=find_packages(include=['omigami_client']),
+    keywords="omigami_client",
+    name="omigami_client",
+    packages=find_packages(include=["omigami_client"]),
     setup_requires=setup_requirements,
-    test_suite='tests',
+    test_suite="tests",
     tests_require=test_requirements,
-    url='https://github.com/datarevenue-berlin/omigami_client',
-    version = versioneer.get_version(),
-    cmdclass = versioneer.get_cmdclass(),
+    url="https://github.com/datarevenue-berlin/omigami_client",
+    version=versioneer.get_version(),
+    cmdclass=versioneer.get_cmdclass(),
     zip_safe=False,
 )
