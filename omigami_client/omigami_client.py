@@ -94,14 +94,14 @@ class OmigamiClient:
             if isinstance(spectrum["peaks_json"], str):
                 try:
                     ast.literal_eval(spectrum["peaks_json"])
-                except ValueError:
+                except SyntaxError:
                     raise ValueError(
                         "peaks_json needs to be a valid python string representation of "
                         "a list or a list. Passed value: {spectrum['peaks_json']}",
                         400,
                     )
             elif not isinstance(spectrum["peaks_json"], list):
-                raise TypeError(
+                raise ValueError(
                     "peaks_json needs to be a valid python string representation of a "
                     f"list or a list. Passed value: {spectrum['peaks_json']}",
                     400,

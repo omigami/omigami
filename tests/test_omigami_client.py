@@ -4,7 +4,7 @@ import pandas as pd
 import pytest
 import requests
 
-from omigami_client.omigami_client import OmigamiClient
+from omigami_client import OmigamiClient
 
 
 def test_match_spectra_from_path_calls(mgf_path):
@@ -65,4 +65,36 @@ def test_format_results(sample_response):
 
 
 def test_validate_input():
-    pass
+    model_input = {
+        "peaks_json": "[[80.060677, 157.0], [337.508301, 230.0]]",
+        "Precursor_MZ": "153.233",
+    }
+    # first validates if the input is correct then we test for errors
+    OmigamiClient._validate_input([model_input])
+
+    with pytest.raises(TypeError, match="Spectrum data must be a dictionary."):
+        OmigamiClient._validate_input(["not_a_dict"])
+
+    with pytest.raises(KeyError, match="mandatory keys"):
+        OmigamiClient._validate_input(
+            [{"Precursor_MZ": "1", "peaks_JASON": "[not a list]"}]
+        )
+
+    with pytest.raises(
+        ValueError, match="peaks_json needs to be a valid python string representation"
+    ):
+        OmigamiClient._validate_input(
+            [{"Precursor_MZ": "1", "peaks_json": "[not a list]"}]
+        )
+
+    with pytest.raises(
+        ValueError,
+        match="peaks_json needs to be a valid python string representation",
+    ):
+        OmigamiClient._validate_input([{"Precursor_MZ": "1", "peaks_json": 10}])
+
+    with pytest.raises(
+        ValueError,
+        match="Precursor_MZ needs to be a string representation of a float",
+    ):
+        OmigamiClient._validate_input([{"Precursor_MZ": "float", "peaks_json": [10]}])

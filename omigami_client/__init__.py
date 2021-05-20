@@ -1,0 +1,1 @@
+from omigami_client.omigami_client import OmigamiClient
