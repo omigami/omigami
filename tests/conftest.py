@@ -1,7 +1,7 @@
+import pickle
 from pathlib import Path
 
 import pytest
-import pickle
 from matchms.importing import load_from_mgf
 
 ASSETS_DIR = Path(__file__).parent / "assets"
@@ -13,7 +13,7 @@ def mgf_path():
 
 
 @pytest.fixture(scope="session")
-def mgmf_generator(mgf_path):
+def mgf_generator(mgf_path):
     return list(load_from_mgf(mgf_path))[:20]
 
 

@@ -1,12 +1,13 @@
 from unittest.mock import Mock
 
+import pandas as pd
 import pytest
 import requests
 
 from omigami_client.omigami_client import OmigamiClient
 
 
-def test_match_spectra_from_path(mgf_path):
+def test_match_spectra_from_path_calls(mgf_path):
     client = OmigamiClient("token")
     client._build_payload = Mock(return_value="payload")
     client._send_request = Mock(return_value="request")
@@ -20,10 +21,10 @@ def test_match_spectra_from_path(mgf_path):
     client._format_results.assert_called_once_with("request")
 
 
-def test_build_payload(mgmf_generator):
+def test_build_payload(mgf_generator):
     client = OmigamiClient("token")
 
-    payload = client._build_payload((mgmf_generator), 10)
+    payload = client._build_payload((mgf_generator), 10)
 
     assert "data" in payload.keys()
     assert payload["data"]["ndarray"]["parameters"]["n_best_spectra"] == 10
@@ -58,7 +59,9 @@ def test_format_results(sample_response):
 
     results = client._format_results(sample_response)
 
-    assert results
+    assert isinstance(results[0], pd.DataFrame)
+    assert results[0].index.name == "matches of spectrum #1"
+    assert all(results[0].values > 0)
 
 
 def test_validate_input():

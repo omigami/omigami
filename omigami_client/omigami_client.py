@@ -19,7 +19,21 @@ class OmigamiClient:
         self._token = token
 
     def match_spectra_from_path(self, mgf_path: str, n_best: int) -> List[pd.DataFrame]:
-        """TODO"""
+        """
+        Finds the N best matches for spectra in a local mgf file using spec2vec algorithm.
+
+        Parameters
+        ----------
+        mgf_path: str
+            Local path to mgf file
+        n_best:
+            Number of best matches to select
+
+        Returns
+        -------
+        A list of pandas dataframes containing the best matches.
+
+        """
         spectra_generator = load_from_mgf(mgf_path)
         payload = self._build_payload(spectra_generator, n_best)
         api_request = self._send_request(payload)
@@ -49,7 +63,6 @@ class OmigamiClient:
 
         self._validate_input(spectra)
 
-        # build the payload
         payload = {
             "data": {
                 "ndarray": {
@@ -67,7 +80,9 @@ class OmigamiClient:
     def _validate_input(model_input: List[Dict]):
         for i, spectrum in enumerate(model_input):
             if not isinstance(spectrum, Dict):
-                raise TypeError(f"Spectrum data must be a dictionary")
+                raise TypeError(
+                    f"Spectrum data must be a dictionary. Passed type: {type(spectrum)}"
+                )
 
             mandatory_keys = ["peaks_json", "Precursor_MZ"]
             if any(key not in spectrum.keys() for key in mandatory_keys):
@@ -81,11 +96,15 @@ class OmigamiClient:
                     ast.literal_eval(spectrum["peaks_json"])
                 except ValueError:
                     raise ValueError(
-                        "peaks_json needs to be a string representation of a list or a list",
+                        "peaks_json needs to be a valid python string representation of "
+                        "a list or a list. Passed value: {spectrum['peaks_json']}",
+                        400,
                     )
             elif not isinstance(spectrum["peaks_json"], list):
                 raise TypeError(
-                    "peaks_json needs to be a string representation of a list or a list",
+                    "peaks_json needs to be a valid python string representation of a "
+                    f"list or a list. Passed value: {spectrum['peaks_json']}",
+                    400,
                 )
 
             float_keys = ["Precursor_MZ", "Charge"]
@@ -94,8 +113,9 @@ class OmigamiClient:
                     try:
                         float(spectrum[key])
                     except ValueError:
-                        raise TypeError(
-                            f"{key} needs to be a string representation of a float",
+                        raise ValueError(
+                            f"{key} needs to be a string representation of a float. "
+                            f"Passed value: {spectrum[key]}",
                             400,
                         )
 
@@ -116,10 +136,9 @@ class OmigamiClient:
         predicted_spectra = []
         for i in range(len(library_spectra_raw)):
             library_spectra_dataframe = pd.DataFrame(
-                data=[spectrum_id["score"] for spectrum_id in library_spectra_raw[i]],
+                data=[spectrum["score"] for spectrum in library_spectra_raw[i]],
                 index=[
-                    spectrum_id["match_spectrum_id"]
-                    for spectrum_id in library_spectra_raw[i]
+                    spectrum["match_spectrum_id"] for spectrum in library_spectra_raw[i]
                 ],
                 columns=["score"],
             )
