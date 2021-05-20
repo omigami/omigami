@@ -13,7 +13,7 @@ def test_match_spectra_from_path_calls(mgf_path):
     client._send_request = Mock(return_value="request")
     client._format_results = Mock(return_value="result")
 
-    result = client.match_spectra_from_path(mgf_path)
+    result = client.match_spectra_from_path(mgf_path, 10)
 
     assert result == "result"
     client._build_payload.assert_called_once()
