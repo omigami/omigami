@@ -19,15 +19,15 @@ pip install omigami_client
 
 ## Acknowledgement
 
-**Citation**: Data Revenue, based on *Variable selection and validation in multivariate modelling (2019) [DOI:10.1093/bioinformatics/bty710](https://doi.org/10.1093/bioinformatics/bty710)*
+TODO
 
 ## Motivation
 
-- TODO
+TODO
 
 ## Features
 
-- [x] Spec2vec spectra matching
+- [x] Spec2Vec spectra matching
 - [ ] MS2Deep score
 
 ## Usage
@@ -35,9 +35,9 @@ pip install omigami_client
 ### Spec2Vec
 
 ```python
-from omigami_client import OmigamiClient
+from omigami_client import Spec2VecClient
 
-client = OmigamiClient(token="your_token")
+client = Spec2VecClient(token="your_token")
 mgf_file_path = "path_to_mgf"
 n_best_matches = 10
 
@@ -49,8 +49,10 @@ result = client.match_spectra_from_path(mgf_file_path, n_best_matches)
 ### Spec2Vec
 1. Save your spectra data in a MGF file locally
 2. Create an OmigamiClient with your user token
-3. Call `match_spectra_from_path` with the location of your mgf file. You will get one
-dataframe per spectrum containing the best matches.
+3. Call `match_spectra_from_path` with the location of your mgf file.
+4. The MGF spectra data will be processed and sent to the spec2vec model that will convert it into embeddings. 
+5. These embeddings will be compared against the reference embeddings around the Precursor MZ.
+6. The N best matches per spectrum are returned on the response as pandas dataframes.  
 
 ## Contribute to Omigami
 

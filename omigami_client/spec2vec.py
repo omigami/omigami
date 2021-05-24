@@ -13,7 +13,7 @@ Payload = Dict[str, Dict[str, Dict[str, Union[int, dict]]]]
 log = getLogger(__file__)
 
 
-class OmigamiClient:
+class Spec2VecClient:
     _endpoint_url = (
         "https://mlops.datarevenue.com/seldon/seldon/spec2vec/api/v0.1/predictions"
     )
