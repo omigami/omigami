@@ -19,9 +19,6 @@ pip install omigami_client
 
 ## Acknowledgement
 
-TODO
-This package is based on an algorithm first introduced by Carl Brunius in [Variable selection and validation in multivariate modelling (2019)](https://academic.oup.com/bioinformatics/article/35/6/972/5085367).
-
 **Citation**: Data Revenue, based on *Variable selection and validation in multivariate modelling (2019) [DOI:10.1093/bioinformatics/bty710](https://doi.org/10.1093/bioinformatics/bty710)*
 
 ## Motivation
@@ -35,9 +32,7 @@ This package is based on an algorithm first introduced by Carl Brunius in [Varia
 
 ## Usage
 
-### A minimal example
-
-TODO
+### Spec2Vec
 
 ```python
 from omigami_client import OmigamiClient
@@ -51,8 +46,11 @@ result = client.match_spectra_from_path(mgf_file_path, n_best_matches)
 
 ## How it works
 
-1. TODO
-2. TODO
+### Spec2Vec
+1. Save your spectra data in a MGF file locally
+2. Create an OmigamiClient with your user token
+3. Call `match_spectra_from_path` with the location of your mgf file. You will get one
+dataframe per spectrum containing the best matches.
 
 ## Contribute to Omigami
 
