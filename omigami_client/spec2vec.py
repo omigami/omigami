@@ -8,9 +8,11 @@ import requests
 from matchms import Spectrum
 from matchms.importing import load_from_mgf
 
-SPECTRA_LIMIT = 50
+SPECTRA_LIMIT_PER_REQUEST = 50
 Payload = Dict[str, Dict[str, Dict[str, Union[int, dict]]]]
 log = getLogger(__file__)
+
+JSON = Union[List[dict], dict]
 
 
 class Spec2VecClient:
@@ -37,18 +39,35 @@ class Spec2VecClient:
         A list of pandas dataframes containing the best matches.
 
         """
-        spectra_generator = load_from_mgf(mgf_path)
-        payload = self._build_payload(spectra_generator, n_best)
-        api_request = self._send_request(payload)
-        prediction = self._format_results(api_request)
 
-        return prediction
+        # gets generator
+        spectra_generator = load_from_mgf(mgf_path)
+
+        # issue requests respecting the spectra limit per request
+        predictions = []
+        while True:
+            payload, done = self._build_payload(spectra_generator, n_best)
+            if not done:
+                api_request = self._send_request(payload)
+                predictions.extend(self._format_results(api_request))
+            else:
+                break
+        return predictions
 
     def _build_payload(
         self, spectra_generator: Generator[Spectrum, None, None], n_best_spectra: int
-    ) -> Payload:
-        """Extract abundance pairs and Precursor_MZ data, then build the json payload"""
+    ) -> (JSON, bool):
+        """Extract abundance pairs and Precursor_MZ data, then build the json payload
+
+        Returns:
+        --------
+        - payload: JSON
+            the full request payload with input data
+        - finished: bool
+            if we are done issuing requests (all spectra from generator was processed)
+        """
         spectra = []
+        spectra_count = 0
         for spectrum in spectra_generator:
             spectra.append(
                 {
@@ -63,16 +82,14 @@ class Spec2VecClient:
                     "Precursor_MZ": str(spectrum.metadata["pepmass"][0]),
                 }
             )
+            spectra_count += 1
+            if spectra_count == SPECTRA_LIMIT_PER_REQUEST:
+                break
+
+        if spectra_count == 0:
+            return ({}, True)
 
         log.info(f"{len(spectra)} spectra found on input file.")
-        if len(spectra) > SPECTRA_LIMIT:
-            log.warning(
-                f"The maximum number of spectra supported for this release is "
-                f"{SPECTRA_LIMIT}. Selecting the first {SPECTRA_LIMIT} spectra from the "
-                f"input data."
-            )
-            spectra = spectra[:SPECTRA_LIMIT]
-
         self._validate_input(spectra)
 
         payload = {
@@ -85,8 +102,7 @@ class Spec2VecClient:
                 }
             }
         }
-
-        return payload
+        return (payload, False)
 
     @staticmethod
     def _validate_input(model_input: List[Dict]):

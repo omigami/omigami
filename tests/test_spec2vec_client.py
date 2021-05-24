@@ -8,6 +8,8 @@ from omigami_client import Spec2VecClient
 
 
 def test_batch_request(token):
+    client = Spec2VecClient(token)
+
     a = 0
     assert token
 

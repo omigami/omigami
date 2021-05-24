@@ -1,4 +1,3 @@
-import os
 import pickle
 import yaml
 from pathlib import Path
@@ -19,9 +18,16 @@ def token():
         return vars["token"]
 
 
+# please download files below from https://gnps-external.ucsd.edu/gnpslibrary
+# and place them inside the assets directory
 @pytest.fixture(scope="session")
 def mgf_path():
     return str(ASSETS_DIR / "GNPS-COLLECTIONS-MISC.mgf")
+
+
+@pytest.fixture(scope="session")
+def mgf_huge_path():
+    return str(ASSETS_DIR / "GNPS-NIST14-MATCHES.mgf")
 
 
 @pytest.fixture(scope="session")
