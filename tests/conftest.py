@@ -1,10 +1,22 @@
+import os
 import pickle
+import yaml
 from pathlib import Path
 
 import pytest
 from matchms.importing import load_from_mgf
 
+from omigami_client import ROOT_DIR
+
 ASSETS_DIR = Path(__file__).parent / "assets"
+DEV_ENV_VARS_PATH = ROOT_DIR / "dev.env"
+
+
+@pytest.fixture(scope="package")
+def token():
+    with open(DEV_ENV_VARS_PATH) as yaml_dev_vars_file:
+        vars = yaml.safe_load(yaml_dev_vars_file)
+        return vars["token"]
 
 
 @pytest.fixture(scope="session")

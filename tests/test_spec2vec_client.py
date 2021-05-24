@@ -7,6 +7,11 @@ import requests
 from omigami_client import Spec2VecClient
 
 
+def test_batch_request(token):
+    a = 0
+    assert token
+
+
 def test_match_spectra_from_path_calls(mgf_path):
     client = Spec2VecClient("token")
     client._build_payload = Mock(return_value="payload")
