@@ -47,7 +47,7 @@ result = client.match_spectra_from_path(mgf_file_path, n_best_matches)
 ```
 
 #### Notebooks
-You can find a *tutorial* notebook and a *minimal example* notebook in the `/notebooks/` folder.
+You can find a [tutorial](https://github.com/omigami/omigami_client/blob/master/notebooks/tutorial.ipynb) notebook and a [minimal example](https://github.com/omigami/omigami_client/blob/master/notebooks/minimal_example.ipynb) notebook in the `/notebooks/` folder.
 
 ## How it works
 
