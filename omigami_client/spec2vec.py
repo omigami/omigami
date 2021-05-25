@@ -1,5 +1,6 @@
 import ast
 import json
+from logging import getLogger
 from typing import Dict, Union, List, Generator
 
 import pandas as pd
@@ -7,10 +8,12 @@ import requests
 from matchms import Spectrum
 from matchms.importing import load_from_mgf
 
+SPECTRA_LIMIT = 50
 Payload = Dict[str, Dict[str, Dict[str, Union[int, dict]]]]
+log = getLogger(__file__)
 
 
-class OmigamiClient:
+class Spec2VecClient:
     _endpoint_url = (
         "https://mlops.datarevenue.com/seldon/seldon/spec2vec/api/v0.1/predictions"
     )
@@ -60,6 +63,15 @@ class OmigamiClient:
                     "Precursor_MZ": str(spectrum.metadata["pepmass"][0]),
                 }
             )
+
+        log.info(f"{len(spectra)} spectra found on input file.")
+        if len(spectra) > SPECTRA_LIMIT:
+            log.warning(
+                f"The maximum number of spectra supported for this release is "
+                f"{SPECTRA_LIMIT}. Selecting the first {SPECTRA_LIMIT} spectra from the "
+                f"input data."
+            )
+            spectra = spectra[:SPECTRA_LIMIT]
 
         self._validate_input(spectra)
 
