@@ -9,7 +9,7 @@
 <!-- image:: https://readthedocs.org/projects/omigami/badge/?version=latest :target: https://omigami.readthedocs.io/en/latest/?badge=latest :alt: Documentation Status -->
 
 
-TODO
+A client package to access Omigami services.
 
 ## Installation
 
@@ -19,7 +19,8 @@ pip install omigami_client
 
 ## Acknowledgement
 
-TODO
+### Spec2Vec 
+Huber F, Ridder L, Verhoeven S, Spaaks JH, Diblen F, Rogers S, et al. (2021) Spec2Vec: Improved mass spectral similarity scoring through learning of structural relationships. PLoS Comput Biol 17(2): e1008724. https://doi.org/10.1371/journal.pcbi.1008724
 
 ## Motivation
 
