@@ -1,21 +1,17 @@
 import pickle
-import yaml
 from pathlib import Path
 
 import pytest
+import confuse
 from matchms.importing import load_from_mgf
 
-from omigami_client import ROOT_DIR
-
 ASSETS_DIR = Path(__file__).parent / "assets"
-DEV_ENV_VARS_PATH = ROOT_DIR / "dev.env"
 
 
 @pytest.fixture(scope="package")
 def token():
-    with open(DEV_ENV_VARS_PATH) as yaml_dev_vars_file:
-        vars = yaml.safe_load(yaml_dev_vars_file)
-        return vars["token"]
+    vars = confuse.Configuration("spec2vec_mlops")
+    return vars["token"].get()
 
 
 # please download files below from https://gnps-external.ucsd.edu/gnpslibrary
