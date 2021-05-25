@@ -7,13 +7,6 @@ import requests
 from omigami_client import Spec2VecClient
 
 
-def test_batch_request(token):
-    client = Spec2VecClient(token)
-
-    a = 0
-    assert token
-
-
 def test_match_spectra_from_path_calls(mgf_path):
     client = Spec2VecClient("token")
     client._build_payload = Mock(return_value="payload")
@@ -56,7 +49,6 @@ def test_send_request():
     }
 
     response = client._send_request(small_payload)
-
     assert response.status_code == 401
 
 
