@@ -15,7 +15,7 @@ log = getLogger(__file__)
 
 class Spec2VecClient:
     _endpoint_url = (
-        "https://mlops.datarevenue.com/seldon/seldon/spec2vec/api/v0.1/predictions"
+        "https://omigami.datarevenue.com/seldon/seldon/spec2vec/api/v0.1/predictions"
     )
 
     def __init__(self, token: str):
