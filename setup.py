@@ -14,15 +14,16 @@ with open("HISTORY.rst") as history_file:
 
 requirements = [
     "Click>=6.0",
+    "matchms==0.8.2",
+    "pandas==1.1.3",
+    "requests==2.24.0",
 ]
 
 setup_requirements = [
     "pytest-runner",
 ]
 
-test_requirements = [
-    "pytest",
-]
+test_requirements = ["pytest"]
 
 setup(
     author="Data Revenue GmbH",
