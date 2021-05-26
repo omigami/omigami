@@ -17,7 +17,7 @@ JSON = Union[List[dict], dict]
 
 class Spec2VecClient:
     _endpoint_url = (
-        "https://mlops.datarevenue.com/seldon/seldon/spec2vec/api/v0.1/predictions"
+        "https://omigami.datarevenue.com/seldon/seldon/spec2vec/api/v0.1/predictions"
     )
 
     def __init__(self, token: str):
@@ -40,18 +40,17 @@ class Spec2VecClient:
 
         """
 
-        # gets generator
         spectra_generator = load_from_mgf(mgf_path)
 
         # issue requests respecting the spectra limit per request
         predictions = []
         while True:
             payload, done = self._build_payload(spectra_generator, n_best)
-            if not done:
-                api_request = self._send_request(payload)
-                predictions.extend(self._format_results(api_request))
-            else:
+            if done:
                 break
+
+            api_request = self._send_request(payload)
+            predictions.extend(self._format_results(api_request))
         return predictions
 
     def _build_payload(
