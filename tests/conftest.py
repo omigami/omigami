@@ -2,16 +2,16 @@ import pickle
 from pathlib import Path
 
 import pytest
-import confuse
 from matchms.importing import load_from_mgf
+
+from config import ENV
 
 ASSETS_DIR = Path(__file__).parent / "assets"
 
 
 @pytest.fixture(scope="package")
 def token():
-    vars = confuse.Configuration("spec2vec_mlops")
-    return vars["token"].get()
+    return ENV["token"].get()
 
 
 # please download files below from https://gnps-external.ucsd.edu/gnpslibrary

@@ -10,6 +10,7 @@ def test_match_spectra_from_path(mgf_path, token):
     result = client.match_spectra_from_path(mgf_path, 10)
 
     assert result
+    assert len(result) == 377
 
 
 @pytest.mark.internet_connection
@@ -22,3 +23,4 @@ def test_match_spectra_from_path_with_huge_payload(mgf_huge_path, token):
     result = client.match_spectra_from_path(mgf_huge_path, 10)
 
     assert result
+    assert len(result) == 5760
