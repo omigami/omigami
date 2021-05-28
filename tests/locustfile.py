@@ -18,7 +18,7 @@ BATCH_SIZE = 1000
 TOKEN = ENV["token"].get()
 MGF_PATH = str(ASSETS_DIR / "GNPS-NIST14-MATCHES.mgf")
 PREDICT_ENDPOINT = (
-    "https://omigami.datarevenue.com/seldon/seldon/spec2vec/api/v0.1/predictions"
+    "https://mlops.datarevenue.com/seldon/seldon/spec2vec/api/v0.1/predictions"
 )
 
 # spec2vec client

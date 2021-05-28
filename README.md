@@ -67,5 +67,25 @@ You can find a [tutorial](https://github.com/omigami/omigami_client/blob/master/
 4. Push to the branch (git push origin feature/fooBar)
 5. Create a new Pull Request
 
+## Development
+
+### Testing
+There are pytest based unit and integration tests located inside the `tests` folder.
+There is also a `locustfile` located there, which can be used for load testing.
+
+
+To perform load tests:
+
+NOTE - Please, inform the team and ask for rate limiting allowance before performing any load testing in the dev cluster.
+
+`pip install locust` with your conda environment active.
+Then, from the root, do `locust -f tests/locustfile.py`.
+This will start a local server serving in port 8089, where you can find a dashboard by using your browser.
+There you can set the # of concurrent users, alongside other settings.
+
+In the locust file, you can also tweak the size of each payload, and the number of different batches to be generated.
+Each batch is generated using random spectra from a big MGF file containing 5760 spectra (so the hard limit is MAX_DIFFERENT_BATCHES * BATCH_SIZE = 5760 for this file, for now, as we could just load the file back again and keep generating new batches, but anyway)
+We generate different batches/payloads to avoid caching in the Seldon pod, and assuring we will stress test the pod's memory usage.
+
 ## License
 MIT license - free software.
