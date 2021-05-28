@@ -13,9 +13,13 @@ Payload = Dict[str, Dict[str, Dict[str, Union[int, dict]]]]
 log = getLogger(__file__)
 
 
+class InvalidTokenError(Exception):
+    pass
+
+
 class Spec2VecClient:
     _endpoint_url = (
-        "https://omigami.datarevenue.com/seldon/seldon/spec2vec/api/v0.1/predictions"
+        "https://mlops.datarevenue.com/seldon/seldon/spec2vec/api/v0.1/predictions"
     )
 
     def __init__(self, token: str):
@@ -143,18 +147,24 @@ class Spec2VecClient:
     @staticmethod
     def _format_results(api_request: requests.Response) -> List[pd.DataFrame]:
         response = json.loads(api_request.text)
-        library_spectra_raw = response["data"]["ndarray"]
+        try:
+            library_spectra_raw = response["data"]["ndarray"]
 
-        predicted_spectra = []
-        for i in range(len(library_spectra_raw)):
-            library_spectra_dataframe = pd.DataFrame(
-                data=[spectrum["score"] for spectrum in library_spectra_raw[i]],
-                index=[
-                    spectrum["match_spectrum_id"] for spectrum in library_spectra_raw[i]
-                ],
-                columns=["score"],
-            )
-            library_spectra_dataframe.index.name = f"matches of spectrum #{i + 1}"
-            predicted_spectra.append(library_spectra_dataframe)
+            predicted_spectra = []
+            for i in range(len(library_spectra_raw)):
+                library_spectra_dataframe = pd.DataFrame(
+                    data=[spectrum["score"] for spectrum in library_spectra_raw[i]],
+                    index=[
+                        spectrum["match_spectrum_id"]
+                        for spectrum in library_spectra_raw[i]
+                    ],
+                    columns=["score"],
+                )
+                library_spectra_dataframe.index.name = f"matches of spectrum #{i + 1}"
+                predicted_spectra.append(library_spectra_dataframe)
 
-        return predicted_spectra
+            return predicted_spectra
+
+        except KeyError:
+            if "error" in response:
+                raise InvalidTokenError("The provided token is invalid.")
