@@ -5,7 +5,6 @@ import pytest
 import requests
 
 from omigami_client import Spec2VecClient
-from omigami_client.spec2vec import InvalidCredentials
 
 
 def test_build_payload(mgf_generator):
@@ -35,8 +34,8 @@ def test_send_request():
         }
     }
 
-    with pytest.raises(InvalidCredentials):
-        client._send_request(small_payload)
+    response = client._send_request(small_payload)
+    assert response.status_code == 401
 
 
 def test_format_results(sample_response):
