@@ -43,33 +43,22 @@ class Spec2VecClient:
         spectra_generator = load_from_mgf(mgf_path)
 
         # issue requests respecting the spectra limit per request
-        predictions = []
-        finished = False
-        while not finished:
-            batch, finished = self._build_batch_from_generator(spectra_generator)
-            if len(batch) > 0:
-                payload = self._build_payload(batch, n_best)
-                api_request = self._send_request(payload)
-                predictions.extend(self._format_results(api_request))
-
-        return predictions
-
-    def _build_batch_from_generator(
-        self, spectra_generator: Generator[Spectrum, None, None]
-    ) -> (List[Spectrum], bool):
-        """
-        Takes the generator of spectra and returns a list of spectra respecting the
-        per-request limits. When there is no more spectra in the generator, returns True
-        in the second response value.
-        """
-        # build batch for request
         batch = []
+        requests = []
         for spectrum in spectra_generator:
             batch.append(spectrum)
             if len(batch) == SPECTRA_LIMIT_PER_REQUEST:
-                return batch, False
+                payload = self._build_payload(batch, n_best)
+                requests.append(self._send_request(payload))
+                batch = []
+        if batch:
+            payload = self._build_payload(batch, n_best)
+            requests.append(self._send_request(payload))
 
-        return batch, True
+        predictions = []
+        for r in requests:
+            predictions.extend(self._format_results(r))
+        return predictions
 
     def _build_payload(self, batch: List[Spectrum], n_best_spectra: int) -> JSON:
         """Extract abundance pairs and Precursor_MZ data, then build the json payload
