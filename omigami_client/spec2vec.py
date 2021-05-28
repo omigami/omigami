@@ -8,9 +8,11 @@ import requests
 from matchms import Spectrum
 from matchms.importing import load_from_mgf
 
-SPECTRA_LIMIT = 50
+SPECTRA_LIMIT_PER_REQUEST = 100
 Payload = Dict[str, Dict[str, Dict[str, Union[int, dict]]]]
 log = getLogger(__file__)
+
+JSON = Union[List[dict], dict]
 
 
 class Spec2VecClient:
@@ -37,19 +39,37 @@ class Spec2VecClient:
         A list of pandas dataframes containing the best matches.
 
         """
+
         spectra_generator = load_from_mgf(mgf_path)
-        payload = self._build_payload(spectra_generator, n_best)
-        api_request = self._send_request(payload)
-        prediction = self._format_results(api_request)
 
-        return prediction
-
-    def _build_payload(
-        self, spectra_generator: Generator[Spectrum, None, None], n_best_spectra: int
-    ) -> Payload:
-        """Extract abundance pairs and Precursor_MZ data, then build the json payload"""
-        spectra = []
+        # issue requests respecting the spectra limit per request
+        batch = []
+        requests = []
         for spectrum in spectra_generator:
+            batch.append(spectrum)
+            if len(batch) == SPECTRA_LIMIT_PER_REQUEST:
+                payload = self._build_payload(batch, n_best)
+                requests.append(self._send_request(payload))
+                batch = []
+        if batch:
+            payload = self._build_payload(batch, n_best)
+            requests.append(self._send_request(payload))
+
+        predictions = []
+        for r in requests:
+            predictions.extend(self._format_results(r))
+        return predictions
+
+    def _build_payload(self, batch: List[Spectrum], n_best_spectra: int) -> JSON:
+        """Extract abundance pairs and Precursor_MZ data, then build the json payload
+
+        Returns:
+        --------
+        - payload: JSON
+            the full request payload with input data
+        """
+        spectra = []
+        for spectrum in batch:
             spectra.append(
                 {
                     "peaks_json": str(
@@ -65,14 +85,6 @@ class Spec2VecClient:
             )
 
         log.info(f"{len(spectra)} spectra found on input file.")
-        if len(spectra) > SPECTRA_LIMIT:
-            log.warning(
-                f"The maximum number of spectra supported for this release is "
-                f"{SPECTRA_LIMIT}. Selecting the first {SPECTRA_LIMIT} spectra from the "
-                f"input data."
-            )
-            spectra = spectra[:SPECTRA_LIMIT]
-
         self._validate_input(spectra)
 
         payload = {
@@ -85,7 +97,6 @@ class Spec2VecClient:
                 }
             }
         }
-
         return payload
 
     @staticmethod
