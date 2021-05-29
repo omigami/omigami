@@ -37,9 +37,9 @@ TODO
 #### Quickstart
 
 ```python
-from omigami_client import Spec2VecClient
+from omigami_client import Spec2Vec
 
-client = Spec2VecClient(token="your_token")
+client = Spec2Vec(token="your_token")
 mgf_file_path = "path_to_file.mgf"
 n_best_matches = 10
 
@@ -47,13 +47,13 @@ result = client.match_spectra_from_path(mgf_file_path, n_best_matches)
 ```
 
 #### Notebooks
-You can find a [tutorial](https://github.com/omigami/omigami_client/blob/master/notebooks/tutorial.ipynb) notebook and a [minimal example](https://github.com/omigami/omigami_client/blob/master/notebooks/minimal_example.ipynb) notebook in the `/notebooks/` folder.
+You can find a [tutorial](https://github.com/omigami/omigami_client/blob/master/notebooks/spec2vec/tutorial.ipynb) notebook in the `/notebooks/` folder.
 
 ## How it works
 
 ### Spec2Vec
 1. Save your spectra data in a MGF file locally
-2. Create an Spec2VecClient with your user token
+2. Create an Spec2Vec with your user token
 3. Call `match_spectra_from_path` with the location of your mgf file.
 4. The MGF spectra data will be processed and sent to the spec2vec model that will convert it into embeddings. 
 5. These embeddings will be compared against the reference embeddings around the Precursor MZ.
