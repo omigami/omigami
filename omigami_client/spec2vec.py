@@ -1,7 +1,7 @@
 import ast
 import json
 from logging import getLogger
-from typing import Dict, Union, List, Generator
+from typing import Dict, Union, List
 
 import pandas as pd
 import requests
@@ -15,7 +15,11 @@ log = getLogger(__file__)
 JSON = Union[List[dict], dict]
 
 
-class Spec2VecClient:
+class InvalidCredentials(Exception):
+    pass
+
+
+class Spec2Vec:
     _endpoint_url = (
         "https://omigami.datarevenue.com/seldon/seldon/spec2vec/api/v0.1/predictions"
     )
@@ -149,6 +153,11 @@ class Spec2VecClient:
             headers={"Authorization": f"Bearer {self._token}"},
             timeout=600,
         )
+
+        if api_request.status_code == 401:
+            raise InvalidCredentials(
+                "Your credentials are invalid, please revise your API token."
+            )
         return api_request
 
     @staticmethod
