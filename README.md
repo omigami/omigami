@@ -9,7 +9,7 @@
 <!-- image:: https://readthedocs.org/projects/omigami/badge/?version=latest :target: https://omigami.readthedocs.io/en/latest/?badge=latest :alt: Documentation Status -->
 
 
-A client package to access Omigami services.
+A package to access Omigami services.
 
 ## Installation
 
