@@ -1,8 +1,8 @@
 <img src="./omigami-gradient.png" width="50%">
 
-# Omigami Client
+# Omigami
 
-[![PyPI version shields.io](https://img.shields.io/pypi/v/omigami_client.svg)](https://pypi.python.org/pypi/omigami_client) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![PyPI version shields.io](https://img.shields.io/pypi/v/omigami.svg)](https://pypi.python.org/pypi/omigami) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 <!-- image:: https://img.shields.io/travis/datarevenue-berlin/omigami.svg :target: https://travis-ci.org/datarevenue-berlin/omigami -->
 
@@ -14,7 +14,7 @@ A client package to access Omigami services.
 ## Installation
 
 ```sh
-pip install omigami_client
+pip install omigami
 ```
 
 ## Acknowledgement
@@ -37,7 +37,7 @@ TODO
 #### Quickstart
 
 ```python
-from omigami_client import Spec2Vec
+from omigami import Spec2Vec
 
 client = Spec2Vec(token="your_token")
 mgf_file_path = "path_to_file.mgf"
@@ -47,7 +47,7 @@ result = client.match_spectra_from_path(mgf_file_path, n_best_matches)
 ```
 
 #### Notebooks
-You can find a [tutorial](https://github.com/omigami/omigami_client/blob/master/notebooks/spec2vec/tutorial.ipynb) notebook in the `/notebooks/` folder.
+You can find a [tutorial](https://github.com/omigami/omigami/blob/master/notebooks/spec2vec/tutorial.ipynb) notebook in the `/notebooks/` folder.
 
 ## How it works
 
@@ -61,7 +61,7 @@ You can find a [tutorial](https://github.com/omigami/omigami_client/blob/master/
 
 ## Contribute to Omigami
 
-1. Fork it (https://github.com/omigami/omigami_client/fork)
+1. Fork it (https://github.com/omigami/omigami/fork)
 2. Create your feature branch (git checkout -b feature/fooBar)
 3. Commit your changes (git commit -am 'Add some fooBar')
 4. Push to the branch (git push origin feature/fooBar)

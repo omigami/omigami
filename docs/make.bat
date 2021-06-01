@@ -9,7 +9,7 @@ if "%SPHINXBUILD%" == "" (
 )
 set SOURCEDIR=.
 set BUILDDIR=_build
-set SPHINXPROJ=omigami_client
+set SPHINXPROJ=omigami
 
 if "%1" == "" goto help
 
