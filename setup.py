@@ -37,7 +37,7 @@ setup(
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
     ],
-    description="A client to access Omigami",
+    description="A package to access Omigami services.",
     entry_points={
         "console_scripts": [
             "omigami=omigami.cli:main",
