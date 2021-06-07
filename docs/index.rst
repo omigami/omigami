@@ -1,4 +1,4 @@
-Welcome to Omigami Client's documentation!
+Welcome to Omigami's documentation!
 ======================================
 
 .. toctree::

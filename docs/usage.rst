@@ -2,6 +2,6 @@
 Usage
 =====
 
-To use Omigami Client in a project::
+To use Omigami in a project::
 
-    import omigami_client
+    import omigami

@@ -1,6 +1,6 @@
 import pytest
 
-from omigami_client.spec2vec import Spec2Vec
+from omigami.spec2vec import Spec2Vec
 
 
 @pytest.mark.internet_connection

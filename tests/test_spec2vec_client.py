@@ -2,8 +2,8 @@ import pandas as pd
 import pytest
 import requests
 
-from omigami_client import Spec2Vec
-from omigami_client.spec2vec import InvalidCredentials
+from omigami import Spec2Vec
+from omigami.spec2vec import InvalidCredentials
 
 
 def test_build_payload(mgf_generator):

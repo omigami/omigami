@@ -8,13 +8,13 @@ Installation
 Stable release
 --------------
 
-To install Omigami Client, run this command in your terminal:
+To install Omigami, run this command in your terminal:
 
 .. code-block:: console
 
-    $ pip install omigami_client
+    $ pip install omigami
 
-This is the preferred method to install Omigami Client, as it will always install the most recent stable release.
+This is the preferred method to install Omigami, as it will always install the most recent stable release.
 
 If you don't have `pip`_ installed, this `Python installation guide`_ can guide
 you through the process.
@@ -26,19 +26,19 @@ you through the process.
 From sources
 ------------
 
-The sources for Omigami Client can be downloaded from the `Github repo`_.
+The sources for Omigami can be downloaded from the `Github repo`_.
 
 You can either clone the public repository:
 
 .. code-block:: console
 
-    $ git clone git://github.com/datarevenue-berlin/omigami_client
+    $ git clone git://github.com/omigami/omigami
 
 Or download the `tarball`_:
 
 .. code-block:: console
 
-    $ curl  -OL https://github.com/datarevenue-berlin/omigami_client/tarball/master
+    $ curl  -OL https://github.com/omigami/omigami/tarball/master
 
 Once you have a copy of the source, you can install it with:
 
@@ -47,5 +47,5 @@ Once you have a copy of the source, you can install it with:
     $ python setup.py install
 
 
-.. _Github repo: https://github.com/datarevenue-berlin/omigami_client
-.. _tarball: https://github.com/datarevenue-berlin/omigami_client/tarball/master
+.. _Github repo: https://github.com/omigami/omigami
+.. _tarball: https://github.com/omigami/omigami/tarball/master

@@ -2,4 +2,4 @@
 Readme
 ======
 
-The package README is available on the `landing page of the repository  <https://github.com/omigami/omigami_client>`_
+The package README is available on the `landing page of the repository  <https://github.com/omigami/omigami>`_

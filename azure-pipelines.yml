@@ -30,7 +30,7 @@ steps:
 
 - script: |
     pip install pytest pytest-azurepipelines==1.0.0rc5
-    pytest --cov=omigami_client tests/ --cov-report html --nunitxml test-output.xml -m 'not slow'
+    pytest --cov=omigami tests/ --cov-report html --nunitxml test-output.xml -m 'not slow'
   displayName: 'Run fast tests'
 
 - script: |
