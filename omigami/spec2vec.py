@@ -1,7 +1,7 @@
 import ast
 import json
 from logging import getLogger
-from typing import Dict, Union, List, Optional
+from typing import Dict, Union, List, Optional, Tuple
 
 import pandas as pd
 import requests
@@ -9,6 +9,7 @@ from matchms import Spectrum
 from matchms.importing import load_from_mgf
 
 SPECTRA_LIMIT_PER_REQUEST = 100
+VALID_KEYS = {"smiles", "compound_name"}
 Payload = Dict[str, Dict[str, Dict[str, Union[int, dict]]]]
 log = getLogger(__file__)
 
@@ -49,7 +50,7 @@ class Spec2Vec:
         for these matches.
 
         """
-
+        self._validate_parameters(n_best, include_metadata)
         spectra_generator = load_from_mgf(mgf_path)
 
         # issue requests respecting the spectra limit per request
@@ -190,3 +191,23 @@ class Spec2Vec:
             predicted_spectra.append(library_spectra_dataframe)
 
         return predicted_spectra
+
+    @staticmethod
+    def _validate_parameters(
+        n_best: int, include_metadata: List[str]
+    ) -> Tuple[int, List[str]]:
+        try:
+            n_best = int(n_best)
+        except ValueError:
+            raise ValueError(
+                "The number of best features parameter must be an integer."
+            )
+
+        for key in include_metadata:
+            if key.lower() not in VALID_KEYS:
+                raise ValueError(
+                    f"The metadata {key} is not included in the valid keys list. "
+                    f"Please check documentation for the list of valid keys."
+                )
+
+        return n_best, include_metadata
