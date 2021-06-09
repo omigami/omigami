@@ -34,7 +34,7 @@ def test_unauthorized_request():
     }
 
     with pytest.raises(InvalidCredentials):
-        client._send_request(small_payload)
+        client._send_request(small_payload, client._PREDICT_ENDPOINT_POSITIVE_ION_MODE)
 
 
 def test_format_results(sample_response):
