@@ -11,7 +11,7 @@ ASSETS_DIR = Path(__file__).parent / "assets"
 
 @pytest.fixture(scope="package")
 def token():
-    return ENV["token"].get()
+    return ENV["login"]["dev"]["token"].get()
 
 
 # please download files below from https://gnps-external.ucsd.edu/gnpslibrary

@@ -1,3 +1,3 @@
 import confuse
 
-ENV = confuse.Configuration("spec2vec_mlops")
+ENV = confuse.Configuration("omigami", __name__)
