@@ -4,18 +4,29 @@ from pathlib import Path
 import pytest
 from matchms.importing import load_from_mgf
 
-from config import ENV
+from omigami import Spec2Vec
+from omigami.config import config
 
 ASSETS_DIR = Path(__file__).parent / "assets"
 
 
-@pytest.fixture(scope="package")
-def token():
-    return ENV["token"].get()
+@pytest.fixture(scope="module")
+def spec2vec_client():
+    token = config["login"]["dev"]["token"].get()
+    client = Spec2Vec(token)
+    client._endpoint_url = (
+        "https://mlops.datarevenue.com/seldon/seldon/spec2vec/api/v0.1/predictions"
+    )
+    return client
 
 
 # please download files below from https://gnps-external.ucsd.edu/gnpslibrary
 # and place them inside the assets directory
+@pytest.fixture(scope="session")
+def small_mgf_path():
+    return str(ASSETS_DIR / "gnps_small.mgf")
+
+
 @pytest.fixture(scope="session")
 def mgf_path():
     return str(ASSETS_DIR / "GNPS-COLLECTIONS-MISC.mgf")

@@ -63,7 +63,7 @@ class Spec2Vec:
                 requests.append(self._send_request(payload))
                 batch = []
         if batch:
-            payload = self._build_payload(batch, n_best)
+            payload = self._build_payload(batch, n_best, include_metadata)
             requests.append(self._send_request(payload))
 
         predictions = []
@@ -176,18 +176,12 @@ class Spec2Vec:
     @staticmethod
     def _format_results(api_request: requests.Response) -> List[pd.DataFrame]:
         response = json.loads(api_request.text)
-        library_spectra_raw = response["data"]["ndarray"]
+        library_spectra_raw = response["jsonData"]
 
         predicted_spectra = []
-        for i in range(len(library_spectra_raw)):
-            library_spectra_dataframe = pd.DataFrame(
-                data=[spectrum["score"] for spectrum in library_spectra_raw[i]],
-                index=[
-                    spectrum["match_spectrum_id"] for spectrum in library_spectra_raw[i]
-                ],
-                columns=["score"],
-            )
-            library_spectra_dataframe.index.name = f"matches of spectrum #{i + 1}"
+        for id_, matches in library_spectra_raw.items():
+            library_spectra_dataframe = pd.DataFrame(matches).T
+            library_spectra_dataframe.index.name = f"matches of {id_}"
             predicted_spectra.append(library_spectra_dataframe)
 
         return predicted_spectra
