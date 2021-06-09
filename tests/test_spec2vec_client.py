@@ -78,3 +78,13 @@ def test_validate_input():
         match="Precursor_MZ needs to be a string representation of a float",
     ):
         Spec2Vec._validate_input([{"Precursor_MZ": "float", "peaks_json": [10]}])
+
+
+def test_validate_parameters():
+    _ = Spec2Vec._validate_parameters(2.0, ["smiles"])
+
+    with pytest.raises(ValueError, match="batman"):
+        _ = Spec2Vec._validate_parameters(2, ["batman"])
+
+    with pytest.raises(ValueError, match="must be an integer"):
+        _ = Spec2Vec._validate_parameters("robin", ["smiles"])
