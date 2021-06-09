@@ -1,7 +1,7 @@
 import ast
 import json
 from logging import getLogger
-from typing import Dict, Union, List, Optional, Tuple
+from typing import Dict, Union, List, Any
 
 import pandas as pd
 import requests
@@ -50,7 +50,7 @@ class Spec2Vec:
         for these matches.
 
         """
-        self._validate_parameters(n_best, include_metadata)
+        parameters = self._build_parameters(n_best, include_metadata)
         spectra_generator = load_from_mgf(mgf_path)
 
         # issue requests respecting the spectra limit per request
@@ -59,11 +59,11 @@ class Spec2Vec:
         for spectrum in spectra_generator:
             batch.append(spectrum)
             if len(batch) == SPECTRA_LIMIT_PER_REQUEST:
-                payload = self._build_payload(batch, n_best, include_metadata)
+                payload = self._build_payload(batch, parameters)
                 requests.append(self._send_request(payload))
                 batch = []
         if batch:
-            payload = self._build_payload(batch, n_best, include_metadata)
+            payload = self._build_payload(batch, parameters)
             requests.append(self._send_request(payload))
 
         predictions = []
@@ -74,8 +74,7 @@ class Spec2Vec:
     def _build_payload(
         self,
         batch: List[Spectrum],
-        n_best_spectra: int,
-        include_metadata: Optional[List[str]],
+        parameters,
     ) -> JSON:
         """Extract abundance pairs and Precursor_MZ data, then build the json payload
 
@@ -106,10 +105,7 @@ class Spec2Vec:
         payload = {
             "data": {
                 "ndarray": {
-                    "parameters": {
-                        "n_best_spectra": n_best_spectra,
-                        "include_metadata": include_metadata,
-                    },
+                    "parameters": parameters,
                     "data": spectra,
                 }
             }
@@ -187,9 +183,7 @@ class Spec2Vec:
         return predicted_spectra
 
     @staticmethod
-    def _validate_parameters(
-        n_best: int, include_metadata: List[str]
-    ) -> Tuple[int, List[str]]:
+    def _build_parameters(n_best: int, include_metadata: List[str]) -> Dict[str, Any]:
         try:
             n_best = int(n_best)
         except ValueError:
@@ -197,11 +191,12 @@ class Spec2Vec:
                 "The number of best features parameter must be an integer."
             )
 
-        for key in include_metadata:
-            if key.lower() not in VALID_KEYS:
-                raise ValueError(
-                    f"The metadata {key} is not included in the valid keys list. "
-                    f"Please check documentation for the list of valid keys."
-                )
+        if include_metadata:
+            for key in include_metadata:
+                if key.lower() not in VALID_KEYS:
+                    raise ValueError(
+                        f"The metadata {key} is not included in the valid keys list. "
+                        f"Please check documentation for the list of valid keys."
+                    )
 
-        return n_best, include_metadata
+        return {"n_best_spectra": n_best, "include_metadata": include_metadata}

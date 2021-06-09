@@ -9,7 +9,7 @@ from omigami.spec2vec import InvalidCredentials
 def test_build_payload(mgf_generator):
     client = Spec2Vec("token")
 
-    payload = client._build_payload((mgf_generator), 10)
+    payload = client._build_payload((mgf_generator), {"n_best_spectra": 10})
 
     assert "data" in payload.keys()
     assert payload["data"]["ndarray"]["parameters"]["n_best_spectra"] == 10
@@ -44,8 +44,8 @@ def test_format_results(sample_response):
     results = client._format_results(sample_response)
 
     assert isinstance(results[0], pd.DataFrame)
-    assert results[0].index.name == "matches of spectrum #1"
-    assert all(results[0].values > 0)
+    assert results[0].index.name == "matches of spectrum-0"
+    assert all(results[0]["score"] > 0)
 
 
 def test_validate_input():
@@ -81,10 +81,11 @@ def test_validate_input():
 
 
 def test_validate_parameters():
-    _ = Spec2Vec._validate_parameters(2.0, ["smiles"])
+    parameters = Spec2Vec._build_parameters(2.0, ["smiles"])
+    assert {"n_best_spectra", "include_metadata"} == set(parameters.keys())
 
     with pytest.raises(ValueError, match="batman"):
-        _ = Spec2Vec._validate_parameters(2, ["batman"])
+        _ = Spec2Vec._build_parameters(2, ["batman"])
 
     with pytest.raises(ValueError, match="must be an integer"):
-        _ = Spec2Vec._validate_parameters("robin", ["smiles"])
+        _ = Spec2Vec._build_parameters("robin", ["smiles"])
