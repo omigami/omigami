@@ -17,7 +17,7 @@ def test_build_payload(mgf_generator):
 
 
 @pytest.mark.internet_connection
-def test_send_request():
+def test_unauthorized_request():
     client = Spec2Vec("bad_token")
     small_payload = {
         "data": {
