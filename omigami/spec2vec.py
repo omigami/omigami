@@ -1,7 +1,7 @@
 import ast
 import json
 from logging import getLogger
-from typing import Dict, Union, List
+from typing import Dict, Union, List, Optional
 
 import pandas as pd
 import requests
@@ -27,7 +27,9 @@ class Spec2Vec:
     def __init__(self, token: str):
         self._token = token
 
-    def match_spectra_from_path(self, mgf_path: str, n_best: int) -> List[pd.DataFrame]:
+    def match_spectra_from_path(
+        self, mgf_path: str, n_best: int, include_metadata: List[str] = None
+    ) -> List[pd.DataFrame]:
         """
         Finds the N best matches for spectra in a local mgf file using spec2vec algorithm.
 
@@ -37,10 +39,14 @@ class Spec2Vec:
             Local path to mgf file
         n_best:
             Number of best matches to select
+        include_metadata: List[str]
+            Metadata keys to include in the response. Will make response slower. Please
+            check the documentation for a list of valid keys.
 
         Returns
         -------
-        A list of pandas dataframes containing the best matches.
+        A list of pandas dataframes containing the best matches and optionally metadata
+        for these matches.
 
         """
 
@@ -52,7 +58,7 @@ class Spec2Vec:
         for spectrum in spectra_generator:
             batch.append(spectrum)
             if len(batch) == SPECTRA_LIMIT_PER_REQUEST:
-                payload = self._build_payload(batch, n_best)
+                payload = self._build_payload(batch, n_best, include_metadata)
                 requests.append(self._send_request(payload))
                 batch = []
         if batch:
@@ -64,7 +70,12 @@ class Spec2Vec:
             predictions.extend(self._format_results(r))
         return predictions
 
-    def _build_payload(self, batch: List[Spectrum], n_best_spectra: int) -> JSON:
+    def _build_payload(
+        self,
+        batch: List[Spectrum],
+        n_best_spectra: int,
+        include_metadata: Optional[List[str]],
+    ) -> JSON:
         """Extract abundance pairs and Precursor_MZ data, then build the json payload
 
         Returns:
@@ -96,6 +107,7 @@ class Spec2Vec:
                 "ndarray": {
                     "parameters": {
                         "n_best_spectra": n_best_spectra,
+                        "include_metadata": include_metadata,
                     },
                     "data": spectra,
                 }
