@@ -9,7 +9,14 @@ from matchms import Spectrum
 from matchms.importing import load_from_mgf
 
 SPECTRA_LIMIT_PER_REQUEST = 100
-VALID_KEYS = {"smiles", "compound_name"}
+VALID_KEYS = {
+    "smiles",
+    "compound_name",
+    "instrument",
+    "parent_mass",
+    "inchikey_smiles",
+    "inchikey_inchi",
+}
 Payload = Dict[str, Dict[str, Dict[str, Union[int, dict]]]]
 log = getLogger(__file__)
 
