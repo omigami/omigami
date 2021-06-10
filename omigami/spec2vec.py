@@ -19,6 +19,10 @@ class InvalidCredentials(Exception):
     pass
 
 
+class NotFoundError(Exception):
+    pass
+
+
 class Spec2Vec:
     _PREDICT_ENDPOINT_BASE = (
         "https://omigami.datarevenue.com/seldon/seldon/spec2vec/api/v0.1/spec2vec/"
@@ -175,6 +179,9 @@ class Spec2Vec:
             raise InvalidCredentials(
                 "Your credentials are invalid, please revise your API token."
             )
+        if api_request.status_code == 404:
+            raise NotFoundError("The API endpoint couldn't be reached.")
+
         return api_request
 
     @staticmethod
