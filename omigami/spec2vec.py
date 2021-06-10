@@ -20,16 +20,18 @@ class InvalidCredentials(Exception):
 
 
 class Spec2Vec:
-    _PREDICT_ENDPOINT_POSITIVE_ION_MODE = (
-        "https://omigami.datarevenue.com/seldon/seldon/spec2vec/api/v0.1/predictions"
+    _PREDICT_ENDPOINT_BASE = (
+        "https://omigami.datarevenue.com/seldon/seldon/spec2vec/api/v0.1/spec2vec/"
     )
-    _PREDICT_ENDPOINT_NEGATIVE_ION_MODE = "https://omigami.datarevenue.com/seldon/seldon/spec2vec/api/v0.1/predictions_negative"
 
     def __init__(self, token: str):
         self._token = token
 
     def match_spectra_from_path(
-        self, mgf_path: str, n_best: int, negative_ion_mode: bool = False
+        self,
+        mgf_path: str,
+        n_best: int,
+        ion_mode: str = "positive",
     ) -> List[pd.DataFrame]:
         """
         Finds the N best matches for spectra in a local mgf file using spec2vec algorithm.
@@ -38,26 +40,28 @@ class Spec2Vec:
         ----------
         mgf_path: str
             Local path to mgf file
-        n_best:
+        n_best: int
             Number of best matches to select
-        negative_ion_mode:
-            If True, then omigami will use a model trained with negative-ion mode sepctra data.
-            Default is set to False, so it will use the model trained with positive-ion spectra.
+        ion_mode: str
+            Selects which model will be used for the predictions: Either a model trained with
+            positive or negative ion mode sepctra data. Defaults to positive.
 
         Returns
         -------
         A list of pandas dataframes containing the best matches.
 
         """
+        # validates input
+        if ion_mode not in ["positive", "negative"]:
+            raise ValueError(
+                "Parameter ion_mode should be either set to 'positive' or 'negative. Defaults to 'positive'.'"
+            )
 
+        # loads spectra
         spectra_generator = load_from_mgf(mgf_path)
 
         # selects endpoint based on user choice of spectra ion mode
-        endpoint = (
-            self._PREDICT_ENDPOINT_POSITIVE_ION_MODE
-            if not negative_ion_mode
-            else self._PREDICT_ENDPOINT_POSITIVE_ION_MODE
-        )
+        endpoint = self._PREDICT_ENDPOINT_BASE + ion_mode + "/predict"
 
         # issue requests respecting the spectra limit per request
         batch = []
