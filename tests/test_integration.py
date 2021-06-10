@@ -19,7 +19,7 @@ def test_match_spectra_from_path(mgf_path, token):
 def test_match_spectra_from_path_negative_mode(mgf_path, token):
     client = Spec2Vec(token)
 
-    result = client.match_spectra_from_path(mgf_path, 10, True)
+    result = client.match_spectra_from_path(mgf_path, 10, "negative")
 
     assert result
     assert len(result) == 377
