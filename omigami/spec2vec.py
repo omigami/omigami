@@ -74,7 +74,7 @@ class Spec2Vec:
     def _build_payload(
         self,
         batch: List[Spectrum],
-        parameters,
+        parameters: Dict[str, Any],
     ) -> JSON:
         """Extract abundance pairs and Precursor_MZ data, then build the json payload
 
