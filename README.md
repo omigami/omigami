@@ -42,8 +42,11 @@ from omigami import Spec2Vec
 client = Spec2Vec(token="your_token")
 mgf_file_path = "path_to_file.mgf"
 n_best_matches = 10
+include_metadata = ["Smiles", "Compound_name"]
 
-result = client.match_spectra_from_path(mgf_file_path, n_best_matches)
+result = client.match_spectra_from_path(
+    mgf_file_path, n_best_matches, include_metadata
+)
 ```
 
 #### Notebooks
