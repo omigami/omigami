@@ -12,6 +12,7 @@
 A package to access Omigami services.
 
 ## Installation
+Omigami supports python 3.7 and 3.8. To install it, simply:
 
 ```sh
 pip install omigami
@@ -48,6 +49,14 @@ result = client.match_spectra_from_path(
     mgf_file_path, n_best_matches, include_metadata
 )
 ```
+
+The supported metadata keys for omigami are (case insensitive):
+- "smiles",
+- "compound_name",
+- "instrument",
+- "parent_mass",
+- "inchikey_smiles",
+- "inchikey_inchi"
 
 #### Notebooks
 You can find a [tutorial](https://github.com/omigami/omigami/blob/master/notebooks/spec2vec/tutorial.ipynb) notebook in the `/notebooks/` folder.
