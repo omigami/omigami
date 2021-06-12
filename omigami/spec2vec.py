@@ -191,8 +191,9 @@ class Spec2Vec:
 
     @staticmethod
     def _build_parameters(n_best: int, include_metadata: List[str]) -> Dict[str, Any]:
+        parameters = {}
         try:
-            n_best = int(n_best)
+            parameters["n_best_spectra"] = int(n_best)
         except ValueError:
             raise ValueError(
                 "The number of best features parameter must be an integer."
@@ -205,5 +206,6 @@ class Spec2Vec:
                         f"The metadata {key} is not included in the valid keys list. "
                         f"Please check documentation for the list of valid keys."
                     )
+            parameters["include_metadata"] = include_metadata
 
-        return {"n_best_spectra": n_best, "include_metadata": include_metadata}
+        return parameters
