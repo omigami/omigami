@@ -10,15 +10,15 @@ from omigami.spec2vec import InvalidCredentials
 def prediction_endpoints():
     _client = Spec2Vec("")
     return {
-        "positive": _client._PREDICT_ENDPOINT_BASE + "positive/predict",
-        "negative": _client._PREDICT_ENDPOINT_BASE + "negative/predict",
+        "positive": _client._PREDICT_ENDPOINT_BASE.format(ion_mode="positive"),
+        "negative": _client._PREDICT_ENDPOINT_BASE.format(ion_mode="negative"),
     }
 
 
 def test_build_payload(mgf_generator):
     client = Spec2Vec("token")
 
-    payload = client._build_payload((mgf_generator), 10)
+    payload = client._build_payload((mgf_generator), {"n_best_spectra": 10})
 
     assert "data" in payload.keys()
     assert payload["data"]["ndarray"]["parameters"]["n_best_spectra"] == 10
@@ -43,7 +43,7 @@ def test_unauthorized_request(prediction_endpoints):
     }
 
     with pytest.raises(InvalidCredentials):
-        client._send_request(small_payload, prediction_endpoints.positive)
+        client._send_request(small_payload, prediction_endpoints["positive"])
 
 
 def test_format_results(sample_response):
@@ -53,8 +53,8 @@ def test_format_results(sample_response):
     results = client._format_results(sample_response)
 
     assert isinstance(results[0], pd.DataFrame)
-    assert results[0].index.name == "matches of spectrum #1"
-    assert all(results[0].values > 0)
+    assert results[0].index.name == "matches of spectrum-0"
+    assert all(results[0]["score"] > 0)
 
 
 def test_validate_input():
@@ -87,3 +87,14 @@ def test_validate_input():
         match="Precursor_MZ needs to be a string representation of a float",
     ):
         Spec2Vec._validate_input([{"Precursor_MZ": "float", "peaks_json": [10]}])
+
+
+def test_validate_parameters():
+    parameters = Spec2Vec._build_parameters(2.0, ["smiles"])
+    assert {"n_best_spectra", "include_metadata"} == set(parameters.keys())
+
+    with pytest.raises(ValueError, match="batman"):
+        _ = Spec2Vec._build_parameters(2, ["batman"])
+
+    with pytest.raises(ValueError, match="must be an integer"):
+        _ = Spec2Vec._build_parameters("robin", ["smiles"])

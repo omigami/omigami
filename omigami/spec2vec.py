@@ -1,7 +1,7 @@
 import ast
 import json
 from logging import getLogger
-from typing import Dict, Union, List
+from typing import Dict, Union, List, Any
 
 import pandas as pd
 import requests
@@ -9,6 +9,14 @@ from matchms import Spectrum
 from matchms.importing import load_from_mgf
 
 SPECTRA_LIMIT_PER_REQUEST = 100
+VALID_KEYS = {
+    "smiles",
+    "compound_name",
+    "instrument",
+    "parent_mass",
+    "inchikey_smiles",
+    "inchikey_inchi",
+}
 Payload = Dict[str, Dict[str, Dict[str, Union[int, dict]]]]
 log = getLogger(__file__)
 
@@ -24,9 +32,7 @@ class NotFoundError(Exception):
 
 
 class Spec2Vec:
-    _PREDICT_ENDPOINT_BASE = (
-        "https://omigami.datarevenue.com/seldon/seldon/spec2vec/api/v0.1/spec2vec/"
-    )
+    _PREDICT_ENDPOINT_BASE = "https://mlops.datarevenue.com/seldon/seldon/spec2vec-{ion_mode}/api/v0.1/predictions"
 
     def __init__(self, token: str):
         self._token = token
@@ -35,6 +41,7 @@ class Spec2Vec:
         self,
         mgf_path: str,
         n_best: int,
+        include_metadata: List[str] = None,
         ion_mode: str = "positive",
     ) -> List[pd.DataFrame]:
         """
@@ -46,13 +53,17 @@ class Spec2Vec:
             Local path to mgf file
         n_best: int
             Number of best matches to select
+        include_metadata: List[str]
+            Metadata keys to include in the response. Will make response slower. Please
+            check the documentation for a list of valid keys.
         ion_mode: str
             Selects which model will be used for the predictions: Either a model trained with
             positive or negative ion mode spectra data. Defaults to positive.
 
         Returns
         -------
-        A list of pandas dataframes containing the best matches.
+        A list of pandas dataframes containing the best matches and optionally metadata
+        for these matches.
 
         """
         # validates input
@@ -61,11 +72,12 @@ class Spec2Vec:
                 "Parameter ion_mode should be either set to 'positive' or 'negative. Defaults to 'positive'.'"
             )
 
+        parameters = self._build_parameters(n_best, include_metadata)
         # loads spectra
         spectra_generator = load_from_mgf(mgf_path)
 
-        # defines the endpoint based on user choice of spectra ion mode
-        endpoint = self._PREDICT_ENDPOINT_BASE + ion_mode + "/predict"
+        # defines endpoint based on user choice of spectra ion mode
+        endpoint = self._PREDICT_ENDPOINT_BASE.format(ion_mode=ion_mode)
 
         # issue requests respecting the spectra limit per request
         batch = []
@@ -73,11 +85,11 @@ class Spec2Vec:
         for spectrum in spectra_generator:
             batch.append(spectrum)
             if len(batch) == SPECTRA_LIMIT_PER_REQUEST:
-                payload = self._build_payload(batch, n_best)
+                payload = self._build_payload(batch, parameters)
                 requests.append(self._send_request(payload, endpoint))
                 batch = []
         if batch:
-            payload = self._build_payload(batch, n_best)
+            payload = self._build_payload(batch, parameters)
             requests.append(self._send_request(payload, endpoint))
 
         predictions = []
@@ -85,7 +97,11 @@ class Spec2Vec:
             predictions.extend(self._format_results(r))
         return predictions
 
-    def _build_payload(self, batch: List[Spectrum], n_best_spectra: int) -> JSON:
+    def _build_payload(
+        self,
+        batch: List[Spectrum],
+        parameters: Dict[str, Any],
+    ) -> JSON:
         """Extract abundance pairs and Precursor_MZ data, then build the json payload
 
         Returns:
@@ -115,9 +131,7 @@ class Spec2Vec:
         payload = {
             "data": {
                 "ndarray": {
-                    "parameters": {
-                        "n_best_spectra": n_best_spectra,
-                    },
+                    "parameters": parameters,
                     "data": spectra,
                 }
             }
@@ -187,18 +201,33 @@ class Spec2Vec:
     @staticmethod
     def _format_results(api_request: requests.Response) -> List[pd.DataFrame]:
         response = json.loads(api_request.text)
-        library_spectra_raw = response["data"]["ndarray"]
+        library_spectra_raw = response["jsonData"]
 
         predicted_spectra = []
-        for i in range(len(library_spectra_raw)):
-            library_spectra_dataframe = pd.DataFrame(
-                data=[spectrum["score"] for spectrum in library_spectra_raw[i]],
-                index=[
-                    spectrum["match_spectrum_id"] for spectrum in library_spectra_raw[i]
-                ],
-                columns=["score"],
-            )
-            library_spectra_dataframe.index.name = f"matches of spectrum #{i + 1}"
+        for id_, matches in library_spectra_raw.items():
+            library_spectra_dataframe = pd.DataFrame(matches).T
+            library_spectra_dataframe.index.name = f"matches of {id_}"
             predicted_spectra.append(library_spectra_dataframe)
 
         return predicted_spectra
+
+    @staticmethod
+    def _build_parameters(n_best: int, include_metadata: List[str]) -> Dict[str, Any]:
+        parameters = {}
+        try:
+            parameters["n_best_spectra"] = int(n_best)
+        except ValueError:
+            raise ValueError(
+                "The number of best features parameter must be an integer."
+            )
+
+        if include_metadata:
+            for key in include_metadata:
+                if key.lower() not in VALID_KEYS:
+                    raise ValueError(
+                        f"The metadata {key} is not included in the valid keys list. "
+                        f"Please check documentation for the list of valid keys."
+                    )
+            parameters["include_metadata"] = include_metadata
+
+        return parameters
