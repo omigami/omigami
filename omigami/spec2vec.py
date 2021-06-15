@@ -29,7 +29,7 @@ class InvalidCredentials(Exception):
 
 class Spec2Vec:
     _PREDICT_ENDPOINT_BASE = (
-        "https://omigami.datarevenue.com/seldon/seldon/spec2vec/api/v0.1/spec2vec/"
+        "https://mlops.datarevenue.com/seldon/seldon/spec2vec-{ion_mode}/api/v0.1/predictions"
     )
 
     def __init__(self, token: str):
@@ -68,7 +68,7 @@ class Spec2Vec:
         spectra_generator = load_from_mgf(mgf_path)
 
         # selects endpoint based on user choice of spectra ion mode
-        endpoint = self._PREDICT_ENDPOINT_BASE + ion_mode + "/predict"
+        endpoint = self._PREDICT_ENDPOINT_BASE.format(ion_mode=ion_mode)
 
         # issue requests respecting the spectra limit per request
         batch = []
@@ -200,7 +200,7 @@ class Spec2Vec:
         return predicted_spectra
 
     @staticmethod
-    def _build_parameters(n_best: int, include_metadata: List[str], ion_mode: str) -> Dict[str, Any]:
+    def _build_parameters(n_best: int, include_metadata: List[str]) -> Dict[str, Any]:
         parameters = {}
         try:
             parameters["n_best_spectra"] = int(n_best)
@@ -217,11 +217,5 @@ class Spec2Vec:
                         f"Please check documentation for the list of valid keys."
                     )
             parameters["include_metadata"] = include_metadata
-
-        if ion_mode not in ["positive", "negative"]:
-            raise ValueError(
-                "Parameter ion_mode should be either set to 'positive' or 'negative. Defaults to 'positive'.'"
-            )
-        parameters["ion_mode"] = ion_mode
 
         return parameters

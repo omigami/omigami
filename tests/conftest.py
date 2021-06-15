@@ -20,8 +20,6 @@ def spec2vec_client():
     return client
 
 
-# please download files below from https://gnps-external.ucsd.edu/gnpslibrary
-# and place them inside the assets directory
 @pytest.fixture(scope="session")
 def small_mgf_path():
     return str(ASSETS_DIR / "gnps_small.mgf")
