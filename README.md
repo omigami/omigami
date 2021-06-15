@@ -24,8 +24,12 @@ pip install omigami
 Huber F, Ridder L, Verhoeven S, Spaaks JH, Diblen F, Rogers S, et al. (2021) Spec2Vec: Improved mass spectral similarity scoring through learning of structural relationships. PLoS Comput Biol 17(2): e1008724. https://doi.org/10.1371/journal.pcbi.1008724
 
 ## Motivation
-
-TODO
+Motivation
+We aim to support metabolomics research by providing the following :
+- Easy-to-use tools
+- Access and scalability to the newest algorithms
+- Maintenance, support and documentation of software, models and data
+- A community of metabolomics researchers via our [Slack](https://join.slack.com/t/ml4metabolomics/shared_invite/zt-r39udtdg-G36YE6GQt1YdVIwTdeT8aw)
 
 ## Features
 
