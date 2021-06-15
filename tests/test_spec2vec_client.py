@@ -9,7 +9,7 @@ from omigami.spec2vec import InvalidCredentials
 @pytest.fixture()
 def positive_ion_endpoint():
     _client = Spec2Vec("")
-    return _client._PREDICT_ENDPOINT_BASE + "positive/predict"
+    return _client._PREDICT_ENDPOINT_BASE.format(ion_mode="positive")
 
 
 def test_build_payload(mgf_generator):
