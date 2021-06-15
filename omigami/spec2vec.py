@@ -48,7 +48,7 @@ class Spec2Vec:
             Number of best matches to select
         ion_mode: str
             Selects which model will be used for the predictions: Either a model trained with
-            positive or negative ion mode sepctra data. Defaults to positive.
+            positive or negative ion mode spectra data. Defaults to positive.
 
         Returns
         -------
@@ -64,7 +64,7 @@ class Spec2Vec:
         # loads spectra
         spectra_generator = load_from_mgf(mgf_path)
 
-        # selects endpoint based on user choice of spectra ion mode
+        # defines the endpoint based on user choice of spectra ion mode
         endpoint = self._PREDICT_ENDPOINT_BASE + ion_mode + "/predict"
 
         # issue requests respecting the spectra limit per request
