@@ -15,7 +15,7 @@ def spec2vec_client():
     token = config["login"]["dev"]["token"].get()
     client = Spec2Vec(token)
     client._endpoint_url = (
-        "https://mlops.datarevenue.com/seldon/seldon/spec2vec/api/v0.1/predictions"
+        "https://mlops.datarevenue.com/seldon/seldon/spec2vec-{ion-mode}/api/v0.1/predictions"
     )
     return client
 

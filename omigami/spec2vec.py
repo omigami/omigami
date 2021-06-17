@@ -32,7 +32,7 @@ class NotFoundError(Exception):
 
 
 class Spec2Vec:
-    _PREDICT_ENDPOINT_BASE = "https://mlops.datarevenue.com/seldon/seldon/spec2vec-{ion_mode}/api/v0.1/predictions"
+    _PREDICT_ENDPOINT_BASE = "https://omigami.datarevenue.com/seldon/seldon/spec2vec-{ion_mode}/api/v0.1/predictions"
 
     def __init__(self, token: str):
         self._token = token
