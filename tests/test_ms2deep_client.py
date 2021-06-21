@@ -53,12 +53,8 @@ def test_format_results(sample_response):
 
 def test_validate_input():
     model_input = [
-        {
-            "peaks_json": "[[80.060677, 157.0], [337.508301, 230.0]]",
-        },
-        {
-            "peaks_json": "[[81.060677, 158.0], [339.508301, 240.0]]",
-        },
+        {"intensities": "[80.060677, 337.508301]", "mz": "[157.0, 230.0]"},
+        {"intensities": "[81.060677, 339.508301]", "mz": "[158.0, 240.0]"},
     ]
     # first validates if the input is correct then we test for errors
     MS2Deep._validate_input(model_input)
@@ -74,18 +70,25 @@ def test_validate_input():
     with pytest.raises(TypeError, match="Spectrum data must be a dictionary."):
         MS2Deep._validate_input(["not_a_dict", "also_not_a_dict"])
 
-    with pytest.raises(KeyError, match="Please include peaks_json in your input data."):
-        MS2Deep._validate_input([{"peaks_JASON": "[not a list]"}, {"peaks_json": []}])
+    with pytest.raises(KeyError, match="mandatory keys"):
+        MS2Deep._validate_input(
+            [{"intensi": "[not a list]"}, {"intensities": [], "mz": []}]
+        )
 
     with pytest.raises(
-        ValueError, match="peaks_json needs to be a valid python string representation"
+        ValueError, match="intensities needs to be a valid python string representation"
     ):
         MS2Deep._validate_input(
-            [{"peaks_json": "[not a list]"}, {"peaks_json": "[not a list]"}]
+            [
+                {"intensities": "[not a list]", "mz": []},
+                {"intensities": "[not a list]", "mz": []},
+            ]
         )
 
     with pytest.raises(
         ValueError,
-        match="peaks_json needs to be a valid python string representation",
+        match="mz needs to be a valid python string representation",
     ):
-        MS2Deep._validate_input([{"peaks_json": 10}, {"peaks_json": 10}])
+        MS2Deep._validate_input(
+            [{"intensities": [], "mz": 10}, {"intensities": [], "mz": 10}]
+        )

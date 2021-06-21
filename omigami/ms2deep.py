@@ -1,5 +1,6 @@
 import ast
 import json
+import numpy as np
 from logging import getLogger
 from typing import Dict, Union, List, Generator
 
@@ -71,14 +72,8 @@ class MS2Deep:
         for spectrum in pair:
             spectra.append(
                 {
-                    "peaks_json": str(
-                        [
-                            [mz, intensity]
-                            for mz, intensity in zip(
-                                spectrum.peaks.mz, spectrum.peaks.intensities
-                            )
-                        ]
-                    ),
+                    "intensities": spectrum.peaks.intensities,
+                    "mz": spectrum.peaks.mz,
                 }
             )
 
@@ -109,24 +104,30 @@ class MS2Deep:
                     f"Spectrum data must be a dictionary. Passed type: {type(spectrum)}"
                 )
 
-            if "peaks_json" not in spectrum.keys():
-                raise KeyError(f"Please include peaks_json in your input data.")
-
-            if isinstance(spectrum["peaks_json"], str):
-                try:
-                    ast.literal_eval(spectrum["peaks_json"])
-                except SyntaxError:
+            mandatory_keys = ["intensities", "mz"]
+            if any(key not in spectrum.keys() for key in mandatory_keys):
+                raise KeyError(
+                    f"Please include all the mandatory keys in your input data. "
+                    f"The mandatory keys are {mandatory_keys}",
+                )
+            for key in mandatory_keys:
+                if isinstance(spectrum[key], str):
+                    try:
+                        ast.literal_eval(spectrum[key])
+                    except SyntaxError:
+                        raise ValueError(
+                            f"{key} needs to be a valid python string representation "
+                            f"of a list or a list. Passed value: {spectrum[key]}",
+                            400,
+                        )
+                elif not isinstance(spectrum[key], list) and not isinstance(
+                    spectrum[key], np.ndarray
+                ):
                     raise ValueError(
-                        f"peaks_json needs to be a valid python string representation "
-                        f"of a list or a list. Passed value: {spectrum['peaks_json']}",
+                        f"{key} needs to be a valid python string representation of a "
+                        f"list or a list. Passed value: {spectrum[key]}",
                         400,
                     )
-            elif not isinstance(spectrum["peaks_json"], list):
-                raise ValueError(
-                    "peaks_json needs to be a valid python string representation of a "
-                    f"list or a list. Passed value: {spectrum['peaks_json']}",
-                    400,
-                )
 
     def _send_request(self, payload: Payload) -> requests.Response:
         api_request = requests.post(
