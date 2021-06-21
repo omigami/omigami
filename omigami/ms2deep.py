@@ -87,7 +87,7 @@ class MS2Deep:
         payload = {
             "data": {
                 "ndarray": {
-                    "parameters": [],  # maybe there will be some later on
+                    "parameters": {},  # maybe there will be some later on
                     "data": spectra,
                 }
             }
@@ -117,8 +117,8 @@ class MS2Deep:
                     ast.literal_eval(spectrum["peaks_json"])
                 except SyntaxError:
                     raise ValueError(
-                        "peaks_json needs to be a valid python string representation "
-                        "of a list or a list. Passed value: {spectrum['peaks_json']}",
+                        f"peaks_json needs to be a valid python string representation "
+                        f"of a list or a list. Passed value: {spectrum['peaks_json']}",
                         400,
                     )
             elif not isinstance(spectrum["peaks_json"], list):
