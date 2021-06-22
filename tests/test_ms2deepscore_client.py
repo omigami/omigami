@@ -44,7 +44,7 @@ def test_format_results(sample_response):
 
     results = client._format_results(sample_response)
 
-    assert isinstance(results, float)
+    assert isinstance(results, dict)
 
 
 def test_validate_input():
