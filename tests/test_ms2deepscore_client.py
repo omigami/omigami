@@ -1,12 +1,12 @@
 import pytest
 import requests
 
-from omigami.ms2deep import MS2Deep, InvalidNumberOfSpectra
+from omigami.ms2deepscore import MS2DeepScore, InvalidNumberOfSpectra
 from omigami.spec2vec import InvalidCredentials
 
 
 def test_build_payload(mgf_generator):
-    client = MS2Deep("token")
+    client = MS2DeepScore("token")
 
     payload = client._build_payload((mgf_generator[:2]))
 
@@ -17,7 +17,7 @@ def test_build_payload(mgf_generator):
 @pytest.mark.skip(reason="This test should only work when the endpoint is working")
 @pytest.mark.internet_connection
 def test_send_request():
-    client = MS2Deep("bad_token")
+    client = MS2DeepScore("bad_token")
     small_payload = {
         "data": {
             "ndarray": {
@@ -39,7 +39,7 @@ def test_send_request():
     "endpoint "
 )
 def test_format_results(sample_response):
-    client = MS2Deep("token")
+    client = MS2DeepScore("token")
     requests.Response()
 
     results = client._format_results(sample_response)
@@ -53,7 +53,7 @@ def test_validate_input():
         {"intensities": "[81.060677, 339.508301]", "mz": "[158.0, 240.0]"},
     ]
     # first validates if the input is correct then we test for errors
-    MS2Deep._validate_input(model_input)
+    MS2DeepScore._validate_input(model_input)
 
     with pytest.raises(
         InvalidNumberOfSpectra,
@@ -61,20 +61,20 @@ def test_validate_input():
         f"score for a pair of spectra. Please input "
         f"two spectra at a time. Found 1 spectra.",
     ):
-        MS2Deep._validate_input(["only_one_spectrum"])
+        MS2DeepScore._validate_input(["only_one_spectrum"])
 
     with pytest.raises(TypeError, match="Spectrum data must be a dictionary."):
-        MS2Deep._validate_input(["not_a_dict", "also_not_a_dict"])
+        MS2DeepScore._validate_input(["not_a_dict", "also_not_a_dict"])
 
     with pytest.raises(KeyError, match="mandatory keys"):
-        MS2Deep._validate_input(
+        MS2DeepScore._validate_input(
             [{"intensi": "[not a list]"}, {"intensities": [], "mz": []}]
         )
 
     with pytest.raises(
         ValueError, match="intensities needs to be a valid python string representation"
     ):
-        MS2Deep._validate_input(
+        MS2DeepScore._validate_input(
             [
                 {"intensities": "[not a list]", "mz": []},
                 {"intensities": "[not a list]", "mz": []},
@@ -85,6 +85,6 @@ def test_validate_input():
         ValueError,
         match="mz needs to be a valid python string representation",
     ):
-        MS2Deep._validate_input(
+        MS2DeepScore._validate_input(
             [{"intensities": [], "mz": 10}, {"intensities": [], "mz": 10}]
         )

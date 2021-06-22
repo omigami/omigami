@@ -23,7 +23,7 @@ class InvalidNumberOfSpectra(Exception):
     pass
 
 
-class MS2Deep:
+class MS2DeepScore:
     _endpoint_url = (
         "https://omigami.datarevenue.com/seldon/seldon/ms2deep/api/v0.1/predictions"
     )
@@ -37,7 +37,7 @@ class MS2Deep:
     ) -> float:
         """
         Predicts molecular structural similarities (Tanimoto scores) from pairs of
-        mass spectrometry spectra in local mgf files using ms2deepscore algorithm
+        mass spectrometry spectra in local mgf files using MS2DeepScore algorithm
 
         Parameters
         ----------
