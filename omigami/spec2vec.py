@@ -27,16 +27,22 @@ class InvalidCredentials(Exception):
     pass
 
 
+class NotFoundError(Exception):
+    pass
+
+
 class Spec2Vec:
-    _endpoint_url = (
-        "https://omigami.datarevenue.com/seldon/seldon/spec2vec/api/v0.1/predictions"
-    )
+    _PREDICT_ENDPOINT_BASE = "https://omigami.datarevenue.com/seldon/seldon/spec2vec-{ion_mode}/api/v0.1/predictions"
 
     def __init__(self, token: str):
         self._token = token
 
     def match_spectra_from_path(
-        self, mgf_path: str, n_best: int, include_metadata: List[str] = None
+        self,
+        mgf_path: str,
+        n_best: int,
+        include_metadata: List[str] = None,
+        ion_mode: str = "positive",
     ) -> List[pd.DataFrame]:
         """
         Finds the N best matches for spectra in a local mgf file using spec2vec algorithm.
@@ -45,11 +51,14 @@ class Spec2Vec:
         ----------
         mgf_path: str
             Local path to mgf file
-        n_best:
+        n_best: int
             Number of best matches to select
         include_metadata: List[str]
             Metadata keys to include in the response. Will make response slower. Please
             check the documentation for a list of valid keys.
+        ion_mode: str
+            Selects which model will be used for the predictions: Either a model trained with
+            positive or negative ion mode spectra data. Defaults to positive.
 
         Returns
         -------
@@ -57,8 +66,18 @@ class Spec2Vec:
         for these matches.
 
         """
+        # validates input
+        if ion_mode not in ["positive", "negative"]:
+            raise ValueError(
+                "Parameter ion_mode should be either set to 'positive' or 'negative. Defaults to 'positive'.'"
+            )
+
         parameters = self._build_parameters(n_best, include_metadata)
+        # loads spectra
         spectra_generator = load_from_mgf(mgf_path)
+
+        # defines endpoint based on user choice of spectra ion mode
+        endpoint = self._PREDICT_ENDPOINT_BASE.format(ion_mode=ion_mode)
 
         # issue requests respecting the spectra limit per request
         batch = []
@@ -67,11 +86,11 @@ class Spec2Vec:
             batch.append(spectrum)
             if len(batch) == SPECTRA_LIMIT_PER_REQUEST:
                 payload = self._build_payload(batch, parameters)
-                requests.append(self._send_request(payload))
+                requests.append(self._send_request(payload, endpoint))
                 batch = []
         if batch:
             payload = self._build_payload(batch, parameters)
-            requests.append(self._send_request(payload))
+            requests.append(self._send_request(payload, endpoint))
 
         predictions = []
         for r in requests:
@@ -162,9 +181,9 @@ class Spec2Vec:
                             400,
                         )
 
-    def _send_request(self, payload: Payload) -> requests.Response:
+    def _send_request(self, payload: Payload, endpoint: str) -> requests.Response:
         api_request = requests.post(
-            self._endpoint_url,
+            endpoint,
             json=payload,
             headers={"Authorization": f"Bearer {self._token}"},
             timeout=600,
@@ -174,6 +193,9 @@ class Spec2Vec:
             raise InvalidCredentials(
                 "Your credentials are invalid, please revise your API token."
             )
+        if api_request.status_code == 404:
+            raise NotFoundError("The API endpoint couldn't be reached.")
+
         return api_request
 
     @staticmethod

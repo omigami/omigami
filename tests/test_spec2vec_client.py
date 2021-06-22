@@ -6,6 +6,15 @@ from omigami import Spec2Vec
 from omigami.spec2vec import InvalidCredentials
 
 
+@pytest.fixture()
+def prediction_endpoints():
+    _client = Spec2Vec("")
+    return {
+        "positive": _client._PREDICT_ENDPOINT_BASE.format(ion_mode="positive"),
+        "negative": _client._PREDICT_ENDPOINT_BASE.format(ion_mode="negative"),
+    }
+
+
 def test_build_payload(mgf_generator):
     client = Spec2Vec("token")
 
@@ -17,7 +26,7 @@ def test_build_payload(mgf_generator):
 
 
 @pytest.mark.internet_connection
-def test_send_request():
+def test_unauthorized_request(prediction_endpoints):
     client = Spec2Vec("bad_token")
     small_payload = {
         "data": {
@@ -34,7 +43,7 @@ def test_send_request():
     }
 
     with pytest.raises(InvalidCredentials):
-        client._send_request(small_payload)
+        client._send_request(small_payload, prediction_endpoints["positive"])
 
 
 def test_format_results(sample_response):

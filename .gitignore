@@ -134,4 +134,3 @@ dmypy.json
 
 .idea/
 /notebooks/.ipynb_checkpoints/
-/tests/assets/

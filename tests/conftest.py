@@ -15,13 +15,11 @@ def spec2vec_client():
     token = config["login"]["dev"]["token"].get()
     client = Spec2Vec(token)
     client._endpoint_url = (
-        "https://mlops.datarevenue.com/seldon/seldon/spec2vec/api/v0.1/predictions"
+        "https://mlops.datarevenue.com/seldon/seldon/spec2vec-{ion-mode}/api/v0.1/predictions"
     )
     return client
 
 
-# please download files below from https://gnps-external.ucsd.edu/gnpslibrary
-# and place them inside the assets directory
 @pytest.fixture(scope="session")
 def small_mgf_path():
     return str(ASSETS_DIR / "gnps_small.mgf")
