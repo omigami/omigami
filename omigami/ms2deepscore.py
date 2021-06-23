@@ -146,4 +146,4 @@ class MS2DeepScore:
     @staticmethod
     def _format_results(api_request: requests.Response) -> Dict[str, float]:
         response = json.loads(api_request.text)
-        return {"Tanimoto Score:": response["jsonData"]}
+        return {"Tanimoto Score": response["jsonData"]}
