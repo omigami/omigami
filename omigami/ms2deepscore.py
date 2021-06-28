@@ -70,8 +70,8 @@ class MS2DeepScore:
         for spectrum in pair:
             spectra.append(
                 {
-                    "intensities": spectrum.peaks.intensities,
-                    "mz": spectrum.peaks.mz,
+                    "intensities": spectrum.peaks.intensities.tolist(),
+                    "mz": spectrum.peaks.mz.tolist(),
                 }
             )
 
@@ -118,9 +118,7 @@ class MS2DeepScore:
                             f"of a list or a list. Passed value: {spectrum[key]}",
                             400,
                         )
-                elif not isinstance(spectrum[key], list) and not isinstance(
-                    spectrum[key], np.ndarray
-                ):
+                elif not isinstance(spectrum[key], list):
                     raise ValueError(
                         f"{key} needs to be a valid python string representation of a "
                         f"list or a list. Passed value: {spectrum[key]}",
@@ -144,4 +142,4 @@ class MS2DeepScore:
     @staticmethod
     def _format_results(api_request: requests.Response) -> Dict[str, float]:
         response = json.loads(api_request.text)
-        return {"Tanimoto Score": response["jsonData"]}
+        return {"Tanimoto Score": response["jsonData"]["score"]}

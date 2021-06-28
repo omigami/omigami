@@ -15,9 +15,7 @@ ASSETS_DIR = Path(__file__).parent / "assets"
 def spec2vec_client():
     token = config["login"]["dev"]["token"].get()
     client = Spec2Vec(token)
-    client._endpoint_url = (
-        "https://mlops.datarevenue.com/seldon/seldon/spec2vec-{ion-mode}/api/v0.1/predictions"
-    )
+    client._endpoint_url = "https://mlops.datarevenue.com/seldon/seldon/spec2vec-{ion-mode}/api/v0.1/predictions"
     return client
 
 
@@ -57,3 +55,14 @@ def ms2deepscore_client():
         "https://mlops.datarevenue.com/seldon/seldon/ms2deepscore/api/v0.1/predictions"
     )
     return client
+
+
+# TODO: remove the assets once the endpoint only receives queries and not references
+@pytest.fixture(scope="session")
+def mgf_path_of_pair():
+    return str(ASSETS_DIR / "gnps_2_spectra.mgf")
+
+
+@pytest.fixture(scope="session")
+def mgf_path_of_equal_pair():
+    return str(ASSETS_DIR / "gnps_2_equal_spectra.mgf")
