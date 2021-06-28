@@ -2,7 +2,7 @@ import pytest
 import requests
 
 from omigami.ms2deepscore import MS2DeepScore, InvalidNumberOfSpectra
-from omigami.spec2vec import InvalidCredentials
+from omigami.ms2deepscore import InvalidCredentials
 
 
 def test_build_payload(mgf_generator):
@@ -14,10 +14,9 @@ def test_build_payload(mgf_generator):
     assert len(payload["data"]["ndarray"]["data"]) == 2
 
 
-@pytest.mark.skip(reason="This test should only work when the endpoint is working")
 @pytest.mark.internet_connection
-def test_send_request():
-    client = MS2DeepScore("bad_token")
+def test_send_request(ms2deepscore_client):
+    ms2deepscore_client._token = "bad_token"
     small_payload = {
         "data": {
             "ndarray": {
@@ -31,7 +30,7 @@ def test_send_request():
     }
 
     with pytest.raises(InvalidCredentials):
-        client._send_request(small_payload)
+        ms2deepscore_client._send_request(small_payload)
 
 
 @pytest.mark.skip(

@@ -6,6 +6,7 @@ from matchms.importing import load_from_mgf
 
 from omigami import Spec2Vec
 from omigami.config import config
+from omigami.ms2deepscore import MS2DeepScore
 
 ASSETS_DIR = Path(__file__).parent / "assets"
 
@@ -46,3 +47,13 @@ def sample_response():
         response = pickle.load(f)
 
     return response
+
+
+@pytest.fixture(scope="module")
+def ms2deepscore_client():
+    token = config["login"]["dev"]["token"].get()
+    client = MS2DeepScore(token)
+    client._endpoint_url = (
+        "https://mlops.datarevenue.com/seldon/seldon/ms2deepscore/api/v0.1/predictions"
+    )
+    return client
