@@ -24,9 +24,7 @@ class InvalidNumberOfSpectra(Exception):
 
 
 class MS2DeepScore:
-    _endpoint_url = (
-        "https://omigami.datarevenue.com/seldon/seldon/ms2deepscore/api/v0.1/predictions"
-    )
+    _endpoint_url = "https://omigami.datarevenue.com/seldon/seldon/ms2deepscore/api/v0.1/predictions"
 
     def __init__(self, token: str):
         self._token = token
