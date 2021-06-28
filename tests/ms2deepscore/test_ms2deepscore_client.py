@@ -15,8 +15,11 @@ def test_build_payload(mgf_generator):
 
 
 @pytest.mark.internet_connection
-def test_send_request(ms2deepscore_client):
-    ms2deepscore_client._token = "bad_token"
+def test_send_request():
+    client = MS2DeepScore("bad_token")
+    client._endpoint_url = (
+        "https://mlops.datarevenue.com/seldon/seldon/ms2deepscore/api/v0.1/predictions"
+    )
     small_payload = {
         "data": {
             "ndarray": {
@@ -30,7 +33,7 @@ def test_send_request(ms2deepscore_client):
     }
 
     with pytest.raises(InvalidCredentials):
-        ms2deepscore_client._send_request(small_payload)
+        client._send_request(small_payload)
 
 
 @pytest.mark.skip(
