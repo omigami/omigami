@@ -15,7 +15,7 @@ ASSETS_DIR = Path(__file__).parent / "assets"
 def spec2vec_client():
     token = config["login"]["dev"]["token"].get()
     client = Spec2Vec(token)
-    client._endpoint_url = "https://mlops.datarevenue.com/seldon/seldon/spec2vec-{ion-mode}/api/v0.1/predictions"
+    client._PREDICT_ENDPOINT_BASE = "https://mlops.datarevenue.com/seldon/seldon/spec2vec-{ion_mode}/api/v0.1/predictions"
     return client
 
 
