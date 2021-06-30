@@ -1,7 +1,6 @@
 import pytest
 import requests
 import pandas as pd
-from omigami import Spec2Vec
 from omigami.endpoint import Endpoint, InvalidCredentials
 
 
@@ -63,7 +62,7 @@ def test_validate_input():
         "peaks_json": "[[80.060677, 157.0], [337.508301, 230.0]]",
         "Precursor_MZ": "153.233",
     }
-    endpoint = Spec2Vec("token")
+    endpoint = Endpoint("token")
     # first validates if the input is correct then we test for errors
     endpoint._validate_input([model_input])
 
