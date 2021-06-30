@@ -1,6 +1,7 @@
 import pytest
 import requests
 import pandas as pd
+from omigami import Spec2Vec
 from omigami.endpoint import Endpoint, InvalidCredentials
 
 
