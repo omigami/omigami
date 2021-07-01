@@ -43,8 +43,8 @@ class Spec2Vec(Endpoint):
         # validates input
         if ion_mode not in ["positive", "negative"]:
             raise ValueError(
-                "Parameter ion_mode should be either set to 'positive' or 'negative. "
-                "Defaults to 'positive'.' "
+                "Parameter ion_mode should be either set to 'positive' or 'negative'. "
+                "Defaults to 'positive'. "
             )
         # defines endpoint based on user choice of spectra ion mode
         endpoint = self._PREDICT_ENDPOINT_BASE.format(ion_mode=ion_mode)
