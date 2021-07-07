@@ -57,12 +57,15 @@ def ms2deepscore_client():
     return client
 
 
-# TODO: remove the assets once the endpoint only receives queries and not references
 @pytest.fixture(scope="session")
 def mgf_path_of_pair():
     return str(ASSETS_DIR / "gnps_2_spectra.mgf")
 
 
-@pytest.fixture(scope="session")
-def mgf_path_of_equal_pair():
-    return str(ASSETS_DIR / "gnps_2_equal_spectra.mgf")
+@pytest.fixture()
+def spec2vec_prediction_endpoints():
+    _client = Spec2Vec("")
+    return {
+        "positive": _client._PREDICT_ENDPOINT_BASE.format(ion_mode="positive"),
+        "negative": _client._PREDICT_ENDPOINT_BASE.format(ion_mode="negative"),
+    }
