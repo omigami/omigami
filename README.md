@@ -76,9 +76,15 @@ You can find a [tutorial](https://github.com/omigami/omigami/blob/master/noteboo
 from omigami import MS2DeepScore
 
 client = MS2DeepScore(token="your_token")
-mgf_file_path = "path_to_file.mgf"
 
-result = client.predict_similarity_of_pair(mgf_file_path)
+mgf_file_path = "path_to_file.mgf"
+n_best_matches = 10
+include_metadata = ["Smiles", "Compound_name"]
+ion_mode = "positive"  # either positive or negative
+
+result = client.match_spectra_from_path(
+    mgf_file_path, n_best_matches, include_metadata, ion_mode=ion_mode,
+)
 ```
 
 #### Notebooks
@@ -97,7 +103,7 @@ You can find a [tutorial](https://github.com/omigami/omigami/blob/master/noteboo
 ### MS2DeepScore
 1. Save your pair of spectra data in a MGF file locally
 2. Create an MS2DeepScore with your user token
-3. Call `predict_similarity_of_pair` with the location of your mgf file.
+3. Call `match_spectra_from_path` with the location of your mgf file.
 4. The MGF spectra data will be processed and sent to the trained neural network that will predict the molecular structural similarity. 
 5. The prediction is returned on the response as a dictionary.  
 
