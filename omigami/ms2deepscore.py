@@ -48,10 +48,8 @@ class MS2DeepScore(Endpoint):
         """
         parameters = self._build_parameters(n_best, include_metadata)
 
-        # loads spectra
         spectra_generator = load_from_mgf(mgf_path)
 
-        # issue requests respecting the spectra limit per request
         return self._make_batch_requests(
             spectra_generator, parameters, self._endpoint_url
         )
