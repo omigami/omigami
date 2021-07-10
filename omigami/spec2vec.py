@@ -99,7 +99,7 @@ class Spec2Vec:
 
     def _build_payload(
         self,
-        batch: List[Spectrum],
+        spectra: List[Spectrum],
         parameters: Dict[str, Any],
     ) -> JSON:
         """Extract abundance pairs and Precursor_MZ data, then build the json payload
@@ -109,30 +109,39 @@ class Spec2Vec:
         - payload: JSON
             the full request payload with input data
         """
-        spectra = []
-        for spectrum in batch:
-            spectra.append(
-                {
-                    "peaks_json": str(
-                        [
-                            [mz, intensity]
-                            for mz, intensity in zip(
-                                spectrum.peaks.mz, spectrum.peaks.intensities
-                            )
-                        ]
-                    ),
-                    "Precursor_MZ": str(spectrum.metadata["pepmass"][0]),
-                }
-            )
+        spectra_payload = []
+        for spectrum in spectra:
+            spectrum_payload = {
+                "peaks_json": str(
+                    [
+                        [mz, intensity]
+                        for mz, intensity in zip(
+                            spectrum.peaks.mz, spectrum.peaks.intensities
+                        )
+                    ]
+                )
+            }
+            try:
+                spectrum_payload["Precursor_MZ"] = str(spectrum.metadata["pepmass"][0])
+            except KeyError:
+                if "precursor_mz" not in spectrum.metadata:
+                    raise KeyError(
+                        "One of 'precursor_mz' or 'pepmass' must be present for every spectra"
+                    )
+                spectrum_payload["Precursor_MZ"] = str(
+                    spectrum.metadata["precursor_mz"][0]
+                )
 
-        log.info(f"{len(spectra)} spectra found on input file.")
-        self._validate_input(spectra)
+            spectra_payload.append((spectrum_payload))
+
+        log.info(f"{len(spectra_payload)} spectra found on input file.")
+        self._validate_input(spectra_payload)
 
         payload = {
             "data": {
                 "ndarray": {
                     "parameters": parameters,
-                    "data": spectra,
+                    "data": spectra_payload,
                 }
             }
         }
