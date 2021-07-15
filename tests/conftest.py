@@ -50,7 +50,7 @@ def sample_response():
 @pytest.fixture(scope="module")
 def ms2deepscore_client():
     token = config["login"]["dev"]["token"].get()
-    client = MS2DeepScore(token)
+    client = MS2DeepScore("8b5gUlDpEMo3pZzkeLBmPZIar9dXpBs3")
     client._endpoint_url = (
         "https://mlops.datarevenue.com/seldon/seldon/ms2deepscore/api/v0.1/predictions"
     )
