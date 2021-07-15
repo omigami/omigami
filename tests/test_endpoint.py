@@ -44,11 +44,15 @@ def test_format_results(sample_response):
     assert isinstance(results[0], pd.DataFrame)
     assert results[0].index.name == "matches of spectrum-0"
     assert all(results[0]["score"] > 0)
+    assert all(results[0].columns == ["score", "compound_name", "smiles"])
 
 
 def test_validate_parameters():
     parameters = Endpoint._build_parameters(2, ["smiles"])
     assert {"n_best_spectra", "include_metadata"} == set(parameters.keys())
+
+    parameters = Endpoint._build_parameters(2, ["SMILES"])
+    assert parameters["include_metadata"] == ["smiles"]
 
     with pytest.raises(ValueError, match="batman"):
         _ = Endpoint._build_parameters(2, ["batman"])

@@ -9,13 +9,14 @@ from matchms import Spectrum
 
 SPECTRA_LIMIT_PER_REQUEST = 100
 VALID_KEYS = {
-    "smiles",
     "compound_name",
+    "inchikey_inchi",
+    "inchikey_smiles",
     "instrument",
     "parent_mass",
-    "inchikey_smiles",
-    "inchikey_inchi",
+    "smiles",
 }
+
 log = getLogger(__file__)
 
 JSON = Union[List[dict], dict]
@@ -28,6 +29,11 @@ class InvalidCredentials(Exception):
 
 class NotFoundError(Exception):
     pass
+
+
+def _sort_columns(df: pd.DataFrame):
+    sorted_columns = ["score"] + sorted(list(VALID_KEYS))
+    return df.reindex(columns=sorted_columns).dropna(axis=1, how="all")
 
 
 class Endpoint:
@@ -142,6 +148,7 @@ class Endpoint:
                         f"The metadata {key} is not included in the valid keys list. "
                         f"Please check documentation for the list of valid keys."
                     )
+            include_metadata = [key.lower() for key in include_metadata]
             parameters["include_metadata"] = include_metadata
 
         return parameters
@@ -195,6 +202,8 @@ class Endpoint:
         for id_, matches in library_spectra_raw.items():
             library_spectra_dataframe = pd.DataFrame(matches).T
             library_spectra_dataframe.index.name = f"matches of {id_}"
+            library_spectra_dataframe = _sort_columns(library_spectra_dataframe)
+
             predicted_spectra.append(library_spectra_dataframe)
 
         return predicted_spectra
