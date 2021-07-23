@@ -137,4 +137,6 @@ dmypy.json
 /notebooks/ms2deepscore/GNPS-2-SPECTRA.mgf
 /notebooks/spec2vec/GNPS-COLLECTIONS-MISC.mgf
 /notebooks/spec2vec/matches
+/notebooks/ms2deepscore/GNPS-COLLECTIONS-MISC.mgf
 
+*test-output.xml

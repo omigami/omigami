@@ -1,7 +1,7 @@
 import pytest
 import requests
 import pandas as pd
-from omigami.endpoint import Endpoint, InvalidCredentials
+from omigami.predictions.endpoint import Endpoint, InvalidCredentials
 
 
 def test_build_payload(mgf_generator):

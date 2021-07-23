@@ -7,28 +7,17 @@ import requests
 import pandas as pd
 from matchms import Spectrum
 
-SPECTRA_LIMIT_PER_REQUEST = 100
-VALID_KEYS = {
-    "compound_name",
-    "inchikey_inchi",
-    "inchikey_smiles",
-    "instrument",
-    "parent_mass",
-    "smiles",
-}
+from omigami.custom_exceptions import InvalidCredentials, NotFoundError
+
+from omigami.predictions.config import (
+    VALID_KEYS,
+    SPECTRA_LIMIT_PER_REQUEST)
 
 log = getLogger(__file__)
 
 JSON = Union[List[dict], dict]
 Payload = Dict[str, Dict[str, Dict[str, Union[int, dict]]]]
 
-
-class InvalidCredentials(Exception):
-    pass
-
-
-class NotFoundError(Exception):
-    pass
 
 
 def _sort_columns(df: pd.DataFrame):
@@ -44,11 +33,11 @@ class Endpoint:
 
     @abstractmethod
     def match_spectra_from_path(
-        self,
-        mgf_path: str,
-        n_best: int,
-        include_metadata: List[str] = None,
-        **kwargs,
+            self,
+            mgf_path: str,
+            n_best: int,
+            include_metadata: List[str] = None,
+            **kwargs,
     ) -> List[pd.DataFrame]:
         """
         Finds the N best matches for spectra in a local mgf file
@@ -56,9 +45,9 @@ class Endpoint:
         pass
 
     def _build_payload(
-        self,
-        batch: List[Spectrum],
-        parameters: Dict[str, Any],
+            self,
+            batch: List[Spectrum],
+            parameters: Dict[str, Any],
     ) -> JSON:
         """Extract abundance pairs and Precursor_MZ data, then build the json payload
 
@@ -75,8 +64,8 @@ class Endpoint:
                         [
                             [mz, intensity]
                             for mz, intensity in zip(
-                                spectrum.peaks.mz, spectrum.peaks.intensities
-                            )
+                            spectrum.peaks.mz, spectrum.peaks.intensities
+                        )
                         ]
                     ),
                     "Precursor_MZ": str(spectrum.metadata["pepmass"][0]),
@@ -114,6 +103,7 @@ class Endpoint:
             predictions.extend(self._format_results(r))
         return predictions
 
+    # TODO: This is a common method between endpoints
     def _send_request(self, payload: Payload, endpoint: str) -> requests.Response:
         api_request = requests.post(
             endpoint,

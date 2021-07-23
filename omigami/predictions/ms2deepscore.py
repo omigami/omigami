@@ -1,7 +1,7 @@
 from logging import getLogger
 from typing import Dict, Union, List
 from matchms.importing import load_from_mgf
-from omigami.endpoint import Endpoint
+from omigami.predictions.endpoint import Endpoint
 
 Payload = Dict[str, Dict[str, Dict[str, Union[int, dict]]]]
 log = getLogger(__file__)

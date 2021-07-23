@@ -12,7 +12,6 @@ from ._version import get_versions
 
 __version__ = get_versions()["version"]
 del get_versions
-from omigami.spec2vec import Spec2Vec
-from omigami.ms2deepscore import MS2DeepScore
+from omigami.predictions.spec2vec import Spec2Vec
 
 ROOT_DIR = Path(__file__).parent.parent

@@ -2,7 +2,7 @@ from typing import List
 
 import pandas as pd
 from matchms.importing import load_from_mgf
-from omigami.endpoint import Endpoint
+from omigami.predictions.endpoint import Endpoint
 
 
 class Spec2Vec(Endpoint):
@@ -50,7 +50,7 @@ class Spec2Vec(Endpoint):
         endpoint = self._PREDICT_ENDPOINT_BASE.format(ion_mode=ion_mode)
 
         parameters = self._build_parameters(n_best, include_metadata)
-        # loads spectra
+
         spectra_generator = load_from_mgf(mgf_path)
 
         # issue requests respecting the spectra limit per request

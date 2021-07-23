@@ -6,7 +6,7 @@ from matchms.importing import load_from_mgf
 
 from omigami import Spec2Vec
 from omigami.config import config
-from omigami.ms2deepscore import MS2DeepScore
+from omigami.predictions.ms2deepscore import MS2DeepScore
 
 ASSETS_DIR = Path(__file__).parent / "assets"
 
@@ -69,3 +69,8 @@ def spec2vec_prediction_endpoints():
         "positive": _client._PREDICT_ENDPOINT_BASE.format(ion_mode="positive"),
         "negative": _client._PREDICT_ENDPOINT_BASE.format(ion_mode="negative"),
     }
+
+
+@pytest.fixture(scope="session")
+def prediction_set_path():
+    return str(ASSETS_DIR / "spectrum_0.csv")
