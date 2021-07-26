@@ -1,13 +1,17 @@
 import json
 import ast
+import pickle
 from abc import abstractmethod
 from logging import getLogger
 import requests
 import pandas as pd
 from typing import List, Dict, Any, Union
 
+from IPython.core.display import Image
+from rdkit import Chem
 
-from omigami.custom_exceptions import InvalidCredentials, NotFoundError
+from omigami.custom_exceptions import InvalidCredentials, NotFoundError, InvalideSmilesStringError, \
+    InvalideInchiStringError
 from omigami.visualisation.config import VALID_KEYS, MATCH_LIMIT_PER_REQUEST
 
 JSON = Union[List[dict], dict]
@@ -20,7 +24,7 @@ class Endpoint:
 
     def __init__(self, token: str):
         self._token = token
-        self.mandatory_keys = ["compound_name"]
+        self.mandatory_keys = ["compound_name", "score"]
 
         # TODO: Find better name. For a key of which you dont need all of but at least one.
         self.semi_optional_keys = []
@@ -104,32 +108,41 @@ class Endpoint:
         }
         return payload
 
-    # TODO: Wrtie Validation input
     def _validate_input(self, model_input: List[Dict]):
 
-        for i, spectrum in enumerate(model_input):
+        for spectrum in model_input:
             if not isinstance(spectrum, Dict):
                 raise TypeError(
                     f"Spectrum data must be a dictionary. Passed type: {type(spectrum)}"
                 )
 
-            if any(key not in spectrum.keys() for key in self.mandatory_keys):
+            # TODO: Should i move the semi_optional_keys to this class or keep it in the upper one?
+            if any(key not in spectrum.keys() for key in self.mandatory_keys) or \
+                    not bool(set(self.semi_optional_keys) & set(spectrum.keys())):
                 raise KeyError(
                     f"Please include all the mandatory keys in your input data. "
                     f"The mandatory keys are {self.mandatory_keys}",
                 )
 
-            if isinstance(spectrum["compound_name"], str):
-                try:
-                    ast.literal_eval(spectrum["peaks_json"])
-                except SyntaxError:
-                    raise ValueError(
-                        f"compound_name needs to be a valid python string representation "
-                        f"of a list or a list. Passed value: {spectrum['compound_name']}",
-                        400,
-                    )
+            for molecule in model_input:
+                if "smiles" in molecule.keys():
+                    is_valid = Chem.MolFromSmiles(str(molecule["smiles"]), sanitize=False)
 
+                    if not is_valid:
+                        raise InvalideSmilesStringError(
+                            f"The smiles structure of the component {molecule['compound_name']} "
+                            f"({str(molecule['smiles'])}) is not valid")
 
+            for molecule in model_input:
+                if "inchikey_inchi" in molecule.keys():
+                    is_valid = Chem.MolFromInchi(str(molecule["inchikey_inchi"]), sanitize=False)
+
+                    if not is_valid:
+                        raise InvalideInchiStringError(
+                            f"The inchikey_inchi structure of the component {molecule['compound_name']} "
+                            f"({str(molecule['inchikey_inchi'])}) is not valid")
+
+    # TODO: duplicate code
     def _make_batch_requests(self, spectra_generator, parameters, endpoint):
         batch = []
         requests = []
@@ -145,9 +158,14 @@ class Endpoint:
             payload = self._build_payload(batch, parameters)
             requests.append(self._send_request(payload, endpoint))
 
-        predictions = []
+        images = []
         for r in requests:
-            predictions.extend(self._format_results(r))
-        return predictions
+            images.append(self._format_results(r))
+        return images
 
-
+    @staticmethod
+    def _format_results(api_request: requests.Response) -> Image:
+        response = json.loads(api_request.text)
+        image_as_pickle = response["jsonData"]
+        image = pickle.load(image_as_pickle)
+        return image

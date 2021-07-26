@@ -4,3 +4,9 @@ class InvalidCredentials(Exception):
 
 class NotFoundError(Exception):
     pass
+
+class InvalideSmilesStringError(Exception):
+    pass
+
+class InvalideInchiStringError(Exception):
+    pass

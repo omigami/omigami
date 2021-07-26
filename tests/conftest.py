@@ -72,5 +72,5 @@ def spec2vec_prediction_endpoints():
 
 
 @pytest.fixture(scope="session")
-def prediction_set_path():
-    return str(ASSETS_DIR / "spectrum_0.csv")
+def prediction_dataset_missing_smiles():
+    return str(ASSETS_DIR / "spectrum_missing_smiles.csv")

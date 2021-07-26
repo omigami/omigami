@@ -16,7 +16,8 @@ class PlotMolecules(Endpoint):
         self.endpoint = "https://omigami.datarevenue.com/seldon/seldon/utils/api/v0.1/plotmolecule"
         self.semi_optional_keys = ["smiles", "inchikey_inchi"]
 
-    def _convert_df_to_dict_list(self, df: pd.DataFrame, meta_data: List[str]) -> List[Dict]:
+    @staticmethod
+    def _convert_df_to_dict_list(df: pd.DataFrame, meta_data: List[str]) -> List[Dict]:
         data = []
 
         for index, content in df.iterrows():
@@ -25,13 +26,15 @@ class PlotMolecules(Endpoint):
         return data
 
     def plot(self,
-             scores_path: str,
+             dataset_path: str,
              n_best: int,
              include_metadata: List[str] = ["smiles", "compound_name"],
+             highlight_substructure_matching=False,
              **kwargs,
              ) -> Image:
 
         # Checks if at least one of the optional keys is found in the included metadata
+        # Should this be part of the validate function?
         if not bool(set(self.semi_optional_keys) & set(include_metadata)):
             raise ValueError(
                 "Parameter include_metadata should be either include 'smiles' or 'inchikey_inchi'. "
@@ -40,7 +43,7 @@ class PlotMolecules(Endpoint):
 
         parameters = self._build_parameters(n_best, include_metadata)
 
-        spectra_generator = read_csv(scores_path)
+        spectra_generator = read_csv(dataset_path)
         spectra_generator = spectra_generator.sort_values(by="score", ascending=False)[:n_best]
         spectra_generator = self._convert_df_to_dict_list(spectra_generator, parameters["include_metadata"])
 

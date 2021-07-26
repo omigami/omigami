@@ -2,14 +2,14 @@ import pytest
 
 from omigami.visualisation.plot_molecules import PlotMolecules
 
-from tests.conftest import prediction_set_path
+from tests.conftest import prediction_dataset_missing_smiles
 
 
 @pytest.mark.internet_connection
 # @pytest.mark.skip(reason="Requires a valid token")
-def test_plot(prediction_set_path):
+def test_plot(prediction_dataset_missing_smiles):
     plot_request = PlotMolecules("key")
 
-    response = plot_request.plot(scores_path=prediction_set_path, n_best=5)
+    response = plot_request.plot(dataset_path=prediction_dataset_missing_smiles, n_best=5)
 
     assert response
