@@ -123,7 +123,8 @@ class Endpoint:
                     f"Please include all the mandatory keys in your input data. "
                     f"The mandatory keys are {self.mandatory_keys}",
                 )
-
+            # TODO: Would you agree that having a bad smiles or inich string would result in an error rather then just filtering them out?
+            # TODO: Or filtering them out and throw a warning?
             for molecule in model_input:
                 if "smiles" in molecule.keys():
                     is_valid = Chem.MolFromSmiles(str(molecule["smiles"]), sanitize=False)
