@@ -69,3 +69,13 @@ def spec2vec_prediction_endpoints():
         "positive": _client._PREDICT_ENDPOINT_BASE.format(ion_mode="positive"),
         "negative": _client._PREDICT_ENDPOINT_BASE.format(ion_mode="negative"),
     }
+
+
+@pytest.fixture(scope="session")
+def spectra_match_data_path():
+    return str(ASSETS_DIR / "spectrum_matches.csv")
+
+
+@pytest.fixture(scope="session")
+def spectra_match_data_path_missing_smiles():
+    return str(ASSETS_DIR / "spectrum_missing_smiles.csv")

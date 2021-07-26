@@ -134,3 +134,7 @@ dmypy.json
 
 .idea/
 /notebooks/.ipynb_checkpoints/
+/notebooks/ms2deepscore/GNPS-COLLECTIONS-MISC.mgf
+/notebooks/spec2vec/GNPS-COLLECTIONS-MISC.mgf
+/notebooks/spec2vec/matches/
+*test-output.xml
