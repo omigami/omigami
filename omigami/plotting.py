@@ -1,32 +1,48 @@
 from PIL.PngImagePlugin import PngImageFile
-from pandas import DataFrame
+import pandas as  pd
 from rdkit import Chem
 from rdkit.Chem import Draw
+import itertools
 
 
-def _raise_errors(spectra_matches: DataFrame, representation: str = 'smiles'):
+def _raise_errors(spectra_matches: pd.DataFrame, representation: str = 'smiles'):
     if representation not in ["smiles", "inchi"]:
         raise ValueError(
             f"Got unexpected representation string. Needs to be either 'smiles' or 'inchi' got {representation}"
         )
 
-    if not isinstance(spectra_matches, type(DataFrame())):
+    if not isinstance(spectra_matches, pd.DataFrame):
         raise ValueError(
             f"Matches need to be a Pandas Dataframe got {type(spectra_matches)}"
         )
 
 
-def _clean_matches(spectra_matches: DataFrame, representation: str) -> DataFrame:
+def _clean_matches(spectra_matches: pd.DataFrame, representation: str) -> pd.DataFrame:
     spectra_matches = spectra_matches.drop_duplicates('compound_name')
     spectra_matches = spectra_matches.drop_duplicates(representation)
     spectra_matches = spectra_matches[spectra_matches[representation] != ""]
-    spectra_matches = spectra_matches[spectra_matches[representation].notna()]
+    spectra_matches = spectra_matches.dropna()
 
     return spectra_matches
 
 
-def plot_molecule_structure_grid(spectra_matches: DataFrame, representation: str = 'smiles',
-                                 sort_values: bool = True) -> PngImageFile:
+# Author: Takayuki Serizawa
+# Original Source: https://iwatobipen.wordpress.com/2017/02/25/draw-molecule-with-atom-index-in-rdkit/
+def _mol_with_atom_index(molecule):
+    for atom in molecule.GetAtoms():
+        atom.SetAtomMapNum(atom.GetIdx())
+    return molecule
+
+
+def _get_bonds_to_highlight(molecule, substructure):
+    substructure_matches = molecule.GetSubstructMatches(substructure)
+    merged_list = list(itertools.chain(*substructure_matches))
+    return merged_list
+
+
+def plot_molecule_structure_grid(spectra_matches: pd.DataFrame, representation: str = 'smiles',
+                                 sort_by_score: bool = True, draw_indices: bool = False,
+                                 substructure_highlight: str = "") -> PngImageFile:
     """
     Generate a grid image representation of the hits returned from Spec2Vec and MS2DeepScore outputs.
     All structures passed MUST have valid smiles or inchi representations.
@@ -36,25 +52,37 @@ def plot_molecule_structure_grid(spectra_matches: DataFrame, representation: str
     spectra_matches: DataFrame
     representation: str = 'smiles' or 'inchi'
     sort_values: bool = True
-
+    substructure_highlight: str = None
     Returns:
         A Plot showing the structure of the passed smiles/inchis
     """
 
     _raise_errors(spectra_matches, representation)
 
-    if sort_values:
+    if sort_by_score:
         spectra_matches = spectra_matches.sort_values('score', ascending=True)
 
     spectra_matches = _clean_matches(spectra_matches, representation)
 
-    structure_list = [spectra_matches.loc[x][representation] for x in spectra_matches.index.tolist()]
+    substructure = Chem.MolFromSmarts(substructure_highlight)
+    mol_render_list = []
+    highlight_bonds = []
 
-    mol_render_list = None
-    if representation == 'smiles':
-        mol_render_list = [Chem.MolFromSmiles(structure) for structure in structure_list]
-    elif representation == 'inchi':
-        mol_render_list = [Chem.MolFromInchi(structure) for structure in structure_list]
+    for structure in spectra_matches[representation]:
 
-    image = Draw.MolsToGridImage(mol_render_list, legends=spectra_matches.compound_name.tolist())
+        if representation == 'smiles':
+            molecule = Chem.MolFromSmiles(structure)
+        elif representation == 'inchi':
+            molecule = Chem.MolFromInchi(structure)
+
+        substructure_matches = _get_bonds_to_highlight(molecule, substructure)
+        highlight_bonds.append(substructure_matches)
+
+        if draw_indices:
+            molecule = _mol_with_atom_index(molecule)
+
+        mol_render_list.append(molecule)
+
+    image = Draw.MolsToGridImage(mol_render_list, legends=spectra_matches.compound_name.tolist(),
+                                 highlightBondLists=highlight_bonds)
     return image

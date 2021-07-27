@@ -33,7 +33,7 @@ def test_match_spectra_from_path_negative_mode(mgf_path, spec2vec_client):
 
 @pytest.mark.internet_connection
 @pytest.mark.skip(
-    reason="this is a stress test, run only when you know what you are doing"
+    reason="this is a stress tests, run only when you know what you are doing"
 )
 def test_match_spectra_from_path_with_huge_payload(mgf_huge_path, spec2vec_client):
     result = spec2vec_client.match_spectra_from_path(mgf_huge_path, 10)

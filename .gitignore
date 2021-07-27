@@ -41,7 +41,7 @@ MANIFEST
 pip-log.txt
 pip-delete-this-directory.txt
 
-# Unit test / coverage reports
+# Unit tests / coverage reports
 htmlcov/
 .tox/
 .nox/
@@ -134,7 +134,5 @@ dmypy.json
 
 .idea/
 /notebooks/.ipynb_checkpoints/
-/notebooks/ms2deepscore/GNPS-COLLECTIONS-MISC.mgf
-/notebooks/spec2vec/GNPS-COLLECTIONS-MISC.mgf
 /notebooks/spec2vec/matches/
 *test-output.xml

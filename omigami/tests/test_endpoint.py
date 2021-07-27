@@ -67,7 +67,7 @@ def test_validate_input():
         "Precursor_MZ": "153.233",
     }
     endpoint = Endpoint("token")
-    # first validates if the input is correct then we test for errors
+    # first validates if the input is correct then we tests for errors
     endpoint._validate_input([model_input])
 
     with pytest.raises(TypeError, match="Spectrum data must be a dictionary."):
