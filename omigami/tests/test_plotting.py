@@ -1,4 +1,3 @@
-import pytest
 import pandas as pd
 from PIL.PngImagePlugin import PngImageFile
 from rdkit import Chem

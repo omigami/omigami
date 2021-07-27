@@ -8,6 +8,10 @@ from rdkit.Chem.rdchem import Mol
 import itertools
 
 
+class MandatoryColumnMissingError(Exception):
+    pass
+
+
 def _raise_errors(spectra_matches: pd.DataFrame, representation: str = 'smiles'):
     if representation not in ["smiles", "inchi"]:
         raise ValueError(
@@ -16,8 +20,11 @@ def _raise_errors(spectra_matches: pd.DataFrame, representation: str = 'smiles')
 
     if not isinstance(spectra_matches, pd.DataFrame):
         raise ValueError(
-            f"Matches need to be a Pandas Dataframe got {type(spectra_matches)}"
+            f"Matches need to be a Pandas DataFrame got {type(spectra_matches)}"
         )
+
+    if "compound_name" not in spectra_matches.columns:
+        raise MandatoryColumnMissingError("The provided DataFrame must contain a column named compound_name")
 
 
 def _clean_matches(spectra_matches: pd.DataFrame, representation: str) -> pd.DataFrame:
@@ -43,8 +50,10 @@ def _get_bonds_to_highlight(molecule: Mol, substructure: Mol) -> List[int]:
     return merged_list
 
 
+# TODO: Add examples to notebooks
 def plot_molecule_structure_grid(spectra_matches: pd.DataFrame, representation: str = 'smiles',
                                  sort_by_score: bool = True, draw_indices: bool = False,
+                                 molecule_image_size: List[int] = [200, 200],
                                  substructure_highlight: str = "") -> PngImageFile:
     """
     Generate a grid image representation of the hits returned from Spec2Vec and MS2DeepScore outputs.
@@ -60,6 +69,8 @@ def plot_molecule_structure_grid(spectra_matches: pd.DataFrame, representation: 
         If true sorts the dataframe by the score column
     draw_indices: bool = False
         If true draws the indices of the atoms
+    molecule_image_size: List[int, int] = [200, 200]
+        The size of every individual image of a molecule. Need to be provided as a list with two ints
     substructure_highlight: str = None
         Needs to be a molecule substructure represented as a smiles.
 
@@ -94,6 +105,7 @@ def plot_molecule_structure_grid(spectra_matches: pd.DataFrame, representation: 
 
         mol_render_list.append(molecule)
 
-    image = Draw.MolsToGridImage(mol_render_list, legends=spectra_matches.compound_name.tolist(),
+    image = Draw.MolsToGridImage(mol_render_list, subImgSize=molecule_image_size,
+                                 legends=spectra_matches.compound_name.tolist(),
                                  highlightBondLists=highlight_bonds)
     return image
