@@ -1,7 +1,10 @@
+from typing import List
+
 from PIL.PngImagePlugin import PngImageFile
-import pandas as  pd
+import pandas as pd
 from rdkit import Chem
 from rdkit.Chem import Draw
+from rdkit.Chem.rdchem import Mol
 import itertools
 
 
@@ -28,13 +31,13 @@ def _clean_matches(spectra_matches: pd.DataFrame, representation: str) -> pd.Dat
 
 # Author: Takayuki Serizawa
 # Original Source: https://iwatobipen.wordpress.com/2017/02/25/draw-molecule-with-atom-index-in-rdkit/
-def _mol_with_atom_index(molecule):
+def _mol_with_atom_index(molecule: Mol) -> Mol:
     for atom in molecule.GetAtoms():
         atom.SetAtomMapNum(atom.GetIdx())
     return molecule
 
 
-def _get_bonds_to_highlight(molecule, substructure):
+def _get_bonds_to_highlight(molecule: Mol, substructure: Mol) -> List[int]:
     substructure_matches = molecule.GetSubstructMatches(substructure)
     merged_list = list(itertools.chain(*substructure_matches))
     return merged_list
@@ -50,10 +53,18 @@ def plot_molecule_structure_grid(spectra_matches: pd.DataFrame, representation: 
     Parameters:
     ----------
     spectra_matches: DataFrame
+        DataFrame resulting from either Spec2Vec or MS2DeepScore. Need to feature smiles or inchi, score and compound_name as columns.
     representation: str = 'smiles' or 'inchi'
-    sort_values: bool = True
+        The representation of the molecules found in the provided dataframe
+    sort_by_score: bool = True
+        If true sorts the dataframe by the score column
+    draw_indices: bool = False
+        If true draws the indices of the atoms
     substructure_highlight: str = None
+        Needs to be a molecule substructure represented as a smiles.
+
     Returns:
+    -------
         A Plot showing the structure of the passed smiles/inchis
     """
 
