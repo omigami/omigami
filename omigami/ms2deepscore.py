@@ -14,7 +14,7 @@ class InvalidCredentials(Exception):
 
 
 class MS2DeepScore(Endpoint):
-    _endpoint_url = "https://omigami.datarevenue.com/seldon/seldon/ms2deepscore/api/v0.1/predictions"
+    _PREDICT_ENDPOINT_BASE = "https://omigami.datarevenue.com/seldon/seldon/ms2deepscore-{ion_mode}/api/v0.1/predictions"
 
     def __init__(self, token: str):
         super().__init__(token)
@@ -23,6 +23,7 @@ class MS2DeepScore(Endpoint):
         self,
         mgf_path: str,
         n_best: int,
+        ion_mode: str,
         include_metadata: List[str] = None,
         **kwargs,
     ) -> float:
@@ -36,6 +37,8 @@ class MS2DeepScore(Endpoint):
             Local path to mgf file with two spectra
         n_best: int
             Number of best matches to select
+        ion_mode: str
+            String setting the ion mode. Can either be 'positive' or 'negative'
         include_metadata: List[str]
             Metadata keys to include in the response. Will make response slower. Please
             check the documentation for a list of valid keys.
@@ -46,6 +49,13 @@ class MS2DeepScore(Endpoint):
         for these matches.
 
         """
+        if ion_mode not in ["positive", "negative"]:
+            raise ValueError(
+                "Parameter ion_mode should be either set to 'positive' or 'negative'. "
+                "Defaults to 'positive'. "
+            )
+
+        endpoint = self._PREDICT_ENDPOINT_BASE.format(ion_mode=ion_mode)
         parameters = self._build_parameters(n_best, include_metadata)
 
         # loads spectra
@@ -53,5 +63,5 @@ class MS2DeepScore(Endpoint):
 
         # issue requests respecting the spectra limit per request
         return self._make_batch_requests(
-            spectra_generator, parameters, self._endpoint_url
+            spectra_generator, parameters, endpoint
         )

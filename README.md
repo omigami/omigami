@@ -102,10 +102,10 @@ You can find a [tutorial](https://github.com/omigami/omigami/blob/master/noteboo
 
 ### MS2DeepScore
 1. Save your pair of spectra data in a MGF file locally
-2. Create an MS2DeepScore with your user token
+2. Create an MS2DeepScore object with your user token
 3. Call `match_spectra_from_path` with the location of your mgf file.
 4. The MGF spectra data will be processed and sent to the trained neural network that will predict the molecular structural similarity. 
-5. The prediction is returned on the response as a dictionary.  
+5. The prediction is returned on the response as a pandas dataframe.  
 
 ## Contribute to Omigami
 

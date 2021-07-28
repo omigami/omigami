@@ -1,0 +1,1 @@
+<?xml version="1.0" encoding="utf-8"?><testsuite errors="0" failures="0" name="pytest" skips="0" tests="1" time="5.679"><testcase classname="omigami.tests.test_plotting" file="omigami/tests/test_plotting.py" line="46" name="test_plot_NPclassifier_result" time="5.656435489654541"></testcase></testsuite>
