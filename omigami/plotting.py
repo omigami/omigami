@@ -17,7 +17,7 @@ class MandatoryColumnMissingError(Exception):
     pass
 
 
-class MSPlotter:
+class MoleculePlotter:
 
     def plot_molecule_structure_grid(self, spectra_matches: pd.DataFrame, representation: str = 'smiles',
                                      sort_by_score: bool = True, draw_indices: bool = False,
