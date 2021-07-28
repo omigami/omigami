@@ -9,6 +9,8 @@ import itertools
 import matplotlib.pyplot as plt
 import requests
 
+from omigami.config import CLASSYFIRE_URL, NPCLASSIFER_URL
+
 
 class MandatoryColumnMissingError(Exception):
     pass
@@ -78,11 +80,11 @@ class MSPlots:
 
     @staticmethod
     def plot_classyfire_result(smiles_list: List[str], color="g"):
-        """TODO: Ask joe what those classifiers actually classfi"""
+        """TODO: Ask joe what those classifiers actually classfy"""
         class_stats = dict()
         for smiles in smiles_list:
             try:
-                classyfire_result = requests.get('https://gnps-structure.ucsd.edu/classyfire?smiles=' + smiles).json()
+                classyfire_result = requests.get(CLASSYFIRE_URL + smiles).json()
                 class_assignment = classyfire_result['class']['name']
 
                 if class_assignment in class_stats.keys():
@@ -101,7 +103,7 @@ class MSPlots:
         for smiles in smiles_list:
 
             try:
-                NPclassifier_result = requests.get('https://npclassifier.ucsd.edu/classify?smiles=' + smiles).json()
+                NPclassifier_result = requests.get(NPCLASSIFER_URL + smiles).json()
                 class_assignment = NPclassifier_result['superclass_results'][0]
                 if class_assignment in class_stats.keys():
                     class_stats[class_assignment] += 1
@@ -149,5 +151,3 @@ class MSPlots:
         for atom in molecule.GetAtoms():
             atom.SetAtomMapNum(atom.GetIdx())
         return molecule
-
-
