@@ -26,7 +26,7 @@ steps:
     pip install -r requirements.txt
     pip install -r requirements_dev.txt
     pip install twine
-    conda install rdkit
+    conda install -c rdkit rdkit
   displayName: 'Install dependencies'
 
 - script: |
