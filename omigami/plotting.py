@@ -7,6 +7,7 @@ from rdkit.Chem import Draw
 from rdkit.Chem.rdchem import Mol
 import itertools
 import matplotlib.pyplot as plt
+from matplotlib.container import BarContainer
 import requests
 
 from omigami.config import CLASSYFIRE_URL, NPCLASSIFER_URL
@@ -16,8 +17,7 @@ class MandatoryColumnMissingError(Exception):
     pass
 
 
-# TODO: Dont know about the name though
-class MSPlots:
+class MSPlotter:
 
     def plot_molecule_structure_grid(self, spectra_matches: pd.DataFrame, representation: str = 'smiles',
                                      sort_by_score: bool = True, draw_indices: bool = False,
@@ -79,7 +79,7 @@ class MSPlots:
         return image
 
     @staticmethod
-    def plot_classyfire_result(smiles_list: List[str], color="g"):
+    def plot_classyfire_result(smiles_list: List[str], color="g") -> BarContainer:
         """TODO: Ask joe what those classifiers actually classfy"""
         class_stats = dict()
         for smiles in smiles_list:
@@ -97,7 +97,7 @@ class MSPlots:
         return plt.barh(list(class_stats.keys()), class_stats.values(), color=color)
 
     @staticmethod
-    def plot_NPclassifier_result(smiles_list: List[str], color="g"):
+    def plot_NPclassifier_result(smiles_list: List[str], color="g") -> BarContainer:
         class_stats = dict()
         class_stats['Cannot_Assign'] = 0
         for smiles in smiles_list:
@@ -134,7 +134,7 @@ class MSPlots:
         spectra_matches = spectra_matches.drop_duplicates('compound_name')
         spectra_matches = spectra_matches.drop_duplicates(representation)
         spectra_matches = spectra_matches[spectra_matches[representation] != ""]
-        spectra_matches = spectra_matches.dropna()
+        spectra_matches = spectra_matches.dropna(subset=[representation])
 
         return spectra_matches
 

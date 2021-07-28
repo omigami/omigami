@@ -137,4 +137,4 @@ dmypy.json
 
 notebooks/spec2vec/matches/
 *.orig
-*/test-output.xml
+tests/test-output.xml
