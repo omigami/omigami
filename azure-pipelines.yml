@@ -22,7 +22,6 @@ steps:
   displayName: 'Use Python $(python.version)'
 
 - script: |
-    python -m pip install --upgrade pip
     conda install -c rdkit rdkit
     pip install -r requirements.txt
     pip install -r requirements_dev.txt
