@@ -134,5 +134,7 @@ dmypy.json
 
 .idea/
 /notebooks/.ipynb_checkpoints/
-/notebooks/spec2vec/matches/
-*test-output.xml
+
+notebooks/spec2vec/matches/
+*.orig
+*/test-output.xml
