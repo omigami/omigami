@@ -1,4 +1,5 @@
 pip==19.2
+cmake
 wheel==0.32.1
 watchdog==0.9.0
 flake8==3.5.0
