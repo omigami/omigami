@@ -48,7 +48,7 @@ class Endpoint:
         mgf_path: str,
         n_best: int,
         include_metadata: List[str] = None,
-        **kwargs,
+        ion_mode: str = "positive",
     ) -> List[pd.DataFrame]:
         """
         Finds the N best matches for spectra in a local mgf file
