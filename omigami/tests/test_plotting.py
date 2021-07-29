@@ -33,9 +33,9 @@ def test_plot_clean_matches(spectra_match_data_path_missing_smiles):
     assert len(results) == 5
     assert isinstance(results, pd.DataFrame)
 
+
 @pytest.mark.internet_connection
 def test_plot_classyfire_result(spectra_match_data_path):
-
     spectra_match_data_path = pd.read_csv(spectra_match_data_path)
     smiles = spectra_match_data_path["smiles"]
 
@@ -46,7 +46,6 @@ def test_plot_classyfire_result(spectra_match_data_path):
 
 @pytest.mark.internet_connection
 def test_plot_NPclassifier_result(spectra_match_data_path):
-
     spectra_match_data_path = pd.read_csv(spectra_match_data_path)
     smiles = spectra_match_data_path["smiles"]
 
