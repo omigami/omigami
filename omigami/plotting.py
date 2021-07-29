@@ -1,3 +1,4 @@
+from json import JSONDecodeError
 from typing import List
 
 from PIL.PngImagePlugin import PngImageFile
@@ -10,7 +11,7 @@ import matplotlib.pyplot as plt
 from matplotlib.container import BarContainer
 import requests
 
-from omigami.config import CLASSYFIRE_URL, NPCLASSIFER_URL
+from omigami.config import CLASSYFIRE_URL, NPCLASSIFIER_URL
 
 
 class MandatoryColumnMissingError(Exception):
@@ -119,32 +120,42 @@ class MoleculePlotter:
             atom.SetAtomMapNum(atom.GetIdx())
         return molecule
 
+    # Original Source: https://jcheminf.biomedcentral.com/articles/10.1186/s13321-016-0174-y
     @staticmethod
-    def plot_classyfire_result(smiles_list: List[str], color="g") -> BarContainer:
-        """TODO: Ask joe what those classifiers actually classfy"""
+    def plot_classyfire_result(spectra_matches: pd.DataFrame, color="g") -> BarContainer:
+        """Uses the ClassyFire API to classify and plot molecule structures"""
         class_stats = dict()
+
+        smiles_list = spectra_matches["smiles"].to_list()
+
         for smiles in smiles_list:
             try:
-                classyfire_result = requests.get(CLASSYFIRE_URL + smiles).json()
+                classyfire_result = requests.get(str(CLASSYFIRE_URL) + smiles).json()
                 class_assignment = classyfire_result['class']['name']
 
                 if class_assignment in class_stats.keys():
                     class_stats[class_assignment] += 1
                 elif class_assignment not in class_stats.keys():
                     class_stats[class_assignment] = 1
-            except:
+
+            except KeyError:
                 pass
 
         return plt.barh(list(class_stats.keys()), class_stats.values(), color=color)
 
+    # Original Source: https://chemrxiv.org/engage/chemrxiv/article-details/60c74f58702a9ba8dc18bb6b
     @staticmethod
-    def plot_NPclassifier_result(smiles_list: List[str], color="g") -> BarContainer:
+    def plot_NPclassifier_result(spectra_matches: pd.DataFrame, color="g") -> BarContainer:
+        """Uses the NP-Classifier API to classify natural products."""
         class_stats = dict()
         class_stats['Cannot_Assign'] = 0
+
+        smiles_list = spectra_matches["smiles"].to_list()
+
         for smiles in smiles_list:
 
             try:
-                NPclassifier_result = requests.get(NPCLASSIFER_URL + smiles).json()
+                NPclassifier_result = requests.get(str(NPCLASSIFIER_URL) + smiles).json()
                 class_assignment = NPclassifier_result['superclass_results'][0]
 
                 if class_assignment in class_stats.keys():
@@ -152,8 +163,10 @@ class MoleculePlotter:
                 elif class_assignment not in class_stats.keys():
                     class_stats[class_assignment] = 1
 
-            except:
+            except JSONDecodeError:
                 class_stats['Cannot_Assign'] += 1
+
+        if class_stats["Cannot_Assign"] == 0:
+            del class_stats["Cannot_Assign"]
+
         return plt.barh(list(class_stats.keys()), class_stats.values(), color=color)
-
-

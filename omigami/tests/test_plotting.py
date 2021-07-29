@@ -35,20 +35,18 @@ def test_plot_clean_matches(spectra_match_data_path_missing_smiles):
 
 
 @pytest.mark.internet_connection
-def test_plot_classyfire_result(spectra_match_data_path):
-    spectra_match_data_path = pd.read_csv(spectra_match_data_path)
-    smiles = spectra_match_data_path["smiles"]
+def test_plot_classyfire_result(spectra_match_data_path_web_api_error):
+    spectra_match_data_path = pd.read_csv(spectra_match_data_path_web_api_error)
 
-    plot = MoleculePlotter.plot_classyfire_result(smiles)
+    plot = MoleculePlotter.plot_classyfire_result(spectra_match_data_path)
 
     assert isinstance(plot, matplotlib.container.BarContainer)
 
 
 @pytest.mark.internet_connection
-def test_plot_NPclassifier_result(spectra_match_data_path):
-    spectra_match_data_path = pd.read_csv(spectra_match_data_path)
-    smiles = spectra_match_data_path["smiles"]
+def test_plot_NPclassifier_result(spectra_match_data_path_web_api_error):
+    spectra_match_data_path = pd.read_csv(spectra_match_data_path_web_api_error)
 
-    plot = MoleculePlotter.plot_NPclassifier_result(smiles)
+    plot = MoleculePlotter.plot_NPclassifier_result(spectra_match_data_path)
 
     assert isinstance(plot, matplotlib.container.BarContainer)

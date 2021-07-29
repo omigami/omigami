@@ -79,3 +79,9 @@ def spectra_match_data_path():
 @pytest.fixture(scope="session")
 def spectra_match_data_path_missing_smiles():
     return str(ASSETS_DIR / "spectrum_missing_smiles.csv")
+
+
+@pytest.fixture(scope="session")
+def spectra_match_data_path_web_api_error():
+    return str(ASSETS_DIR / "spectrum_matches_error_on_classyfire.csv")
+
