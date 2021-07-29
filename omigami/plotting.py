@@ -165,6 +165,8 @@ class MoleculePlotter:
 
             except JSONDecodeError:
                 class_stats['Cannot_Assign'] += 1
+            except IndexError:
+                class_stats['Cannot_Assign'] += 1
 
         if class_stats["Cannot_Assign"] == 0:
             del class_stats["Cannot_Assign"]
