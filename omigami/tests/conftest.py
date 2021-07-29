@@ -51,9 +51,7 @@ def sample_response():
 def ms2deepscore_client():
     token = config["login"]["dev"]["token"].get()
     client = MS2DeepScore(token)
-    client._PREDICT_ENDPOINT_BASE = (
-        "https://mlops.datarevenue.com/seldon/seldon/ms2deepscore-{ion_mode}/api/v0.1/predictions"
-    )
+    client._PREDICT_ENDPOINT_BASE = "https://mlops.datarevenue.com/seldon/seldon/ms2deepscore-{ion_mode}/api/v0.1/predictions"
     return client
 
 
@@ -93,4 +91,3 @@ def spectra_match_data_path_missing_smiles():
 @pytest.fixture(scope="session")
 def spectra_match_data_path_web_api_error():
     return str(ASSETS_DIR / "spectrum_matches_error_on_classyfire.csv")
-
