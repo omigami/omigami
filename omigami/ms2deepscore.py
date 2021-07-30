@@ -23,9 +23,8 @@ class MS2DeepScore(Endpoint):
         self,
         mgf_path: str,
         n_best: int,
-        ion_mode: str,
         include_metadata: List[str] = None,
-        **kwargs,
+        ion_mode: str = "positive",
     ) -> float:
         """
         Finds the N best matches for spectra in a local mgf file using MS2DeepScore

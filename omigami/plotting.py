@@ -19,11 +19,14 @@ class MandatoryColumnMissingError(Exception):
 
 
 class MoleculePlotter:
-
-    def plot_molecule_structure_grid(self, spectra_matches: pd.DataFrame, representation: str = 'smiles',
-                                     sort_by_score: bool = True, draw_indices: bool = False,
-                                     molecule_image_size: List[int] = [200, 200],
-                                     substructure_highlight: str = "") -> PngImageFile:
+    def plot_molecule_structure_grid(
+        self,
+        spectra_matches: pd.DataFrame,
+        representation: str = "smiles",
+        draw_indices: bool = False,
+        molecule_image_size: List[int] = [200, 200],
+        substructure_highlight: str = "",
+    ) -> PngImageFile:
         """
         Generate a grid image representation of the hits returned from Spec2Vec and MS2DeepScore outputs.
         All structures passed MUST have valid smiles or inchi representations.
@@ -34,8 +37,6 @@ class MoleculePlotter:
             DataFrame resulting from either Spec2Vec or MS2DeepScore. Need to feature smiles or inchi, score and compound_name as columns.
         representation: str = 'smiles' or 'inchi'
             The representation of the molecules found in the provided dataframe
-        sort_by_score: bool = True
-            If true sorts the dataframe by the score column
         draw_indices: bool = False
             If true draws the indices of the atoms
         molecule_image_size: List[int, int] = [200, 200]
@@ -50,9 +51,6 @@ class MoleculePlotter:
 
         self._validate_data(spectra_matches, representation)
 
-        if sort_by_score:
-            spectra_matches = spectra_matches.sort_values('score', ascending=True)
-
         spectra_matches = self._clean_matches(spectra_matches, representation)
 
         substructure = Chem.MolFromSmarts(substructure_highlight)
@@ -61,9 +59,9 @@ class MoleculePlotter:
 
         for structure in spectra_matches[representation]:
 
-            if representation == 'smiles':
+            if representation == "smiles":
                 molecule = Chem.MolFromSmiles(structure)
-            elif representation == 'inchi':
+            elif representation == "inchi":
                 molecule = Chem.MolFromInchi(structure)
 
             substructure_matches = self._get_bonds_to_highlight(molecule, substructure)
@@ -74,16 +72,20 @@ class MoleculePlotter:
 
             mol_render_list.append(molecule)
 
-        image = Draw.MolsToGridImage(mol_render_list, subImgSize=molecule_image_size,
-                                     legends=spectra_matches.compound_name.tolist(),
-                                     highlightBondLists=highlight_bonds)
+        image = Draw.MolsToGridImage(
+            mol_render_list,
+            subImgSize=molecule_image_size,
+            legends=spectra_matches.compound_name.tolist(),
+            highlightBondLists=highlight_bonds,
+        )
         return image
 
     @staticmethod
-    def _validate_data(spectra_matches: pd.DataFrame, representation: str = 'smiles'):
+    def _validate_data(spectra_matches: pd.DataFrame, representation: str = "smiles"):
         if representation not in ["smiles", "inchi"]:
             raise ValueError(
-                f"Got unexpected representation string. Needs to be either 'smiles' or 'inchi' got {representation}"
+                f"Got unexpected representation string. Needs to be either 'smiles' "
+                f"or 'inchi' got {representation} "
             )
 
         if not isinstance(spectra_matches, pd.DataFrame):
@@ -92,12 +94,17 @@ class MoleculePlotter:
             )
 
         if "compound_name" not in spectra_matches.columns:
-            raise MandatoryColumnMissingError("The provided DataFrame must contain a column named compound_name")
+            raise MandatoryColumnMissingError(
+                "The provided DataFrame must contain a column named compound_name"
+            )
 
     @staticmethod
-    def _clean_matches(spectra_matches: pd.DataFrame, representation: str) -> pd.DataFrame:
-        """Drops all molecules that are missing a compound_name, are a duplicate structure or are missing a structure"""
-        spectra_matches = spectra_matches.drop_duplicates('compound_name')
+    def _clean_matches(
+        spectra_matches: pd.DataFrame, representation: str
+    ) -> pd.DataFrame:
+        """Drops all molecules that are missing a compound_name, are a duplicate
+        structure or are missing a structure """
+        spectra_matches = spectra_matches.drop_duplicates("compound_name")
         spectra_matches = spectra_matches.drop_duplicates(representation)
         spectra_matches = spectra_matches[spectra_matches[representation] != ""]
         spectra_matches = spectra_matches.dropna(subset=[representation])
@@ -106,8 +113,8 @@ class MoleculePlotter:
 
     @staticmethod
     def _get_bonds_to_highlight(molecule: Mol, substructure: Mol) -> List[int]:
-        """Gets the indexes of a molecule substructure as a single list. Where every match is represented by two
-        consecutively ints"""
+        """Gets the indexes of a molecule substructure as a single list. Where every
+        match is represented by two consecutively ints """
         substructure_matches = molecule.GetSubstructMatches(substructure)
         merged_list = list(itertools.chain(*substructure_matches))
         return merged_list
@@ -122,7 +129,9 @@ class MoleculePlotter:
 
     # Original Source: https://jcheminf.biomedcentral.com/articles/10.1186/s13321-016-0174-y
     @staticmethod
-    def plot_classyfire_result(spectra_matches: pd.DataFrame, color="g") -> BarContainer:
+    def plot_classyfire_result(
+        spectra_matches: pd.DataFrame, color="g"
+    ) -> BarContainer:
         """Uses the ClassyFire API to classify and plot a barchart of the classifications"""
         class_stats = dict()
 
@@ -131,7 +140,7 @@ class MoleculePlotter:
         for smiles in smiles_list:
             try:
                 classyfire_result = requests.get(str(CLASSYFIRE_URL) + smiles).json()
-                class_assignment = classyfire_result['class']['name']
+                class_assignment = classyfire_result["class"]["name"]
 
                 if class_assignment in class_stats.keys():
                     class_stats[class_assignment] += 1
@@ -145,18 +154,22 @@ class MoleculePlotter:
 
     # Original Source: https://chemrxiv.org/engage/chemrxiv/article-details/60c74f58702a9ba8dc18bb6b
     @staticmethod
-    def plot_NPclassifier_result(spectra_matches: pd.DataFrame, color="g") -> BarContainer:
+    def plot_NPclassifier_result(
+        spectra_matches: pd.DataFrame, color="g"
+    ) -> BarContainer:
         """Uses the NP-Classifier API to classify natural products."""
         class_stats = dict()
-        class_stats['Cannot_Assign'] = 0
+        class_stats["Cannot_Assign"] = 0
 
         smiles_list = spectra_matches["smiles"].to_list()
 
         for smiles in smiles_list:
 
             try:
-                NPclassifier_result = requests.get(str(NPCLASSIFIER_URL) + smiles).json()
-                class_assignment = NPclassifier_result['superclass_results'][0]
+                NPclassifier_result = requests.get(
+                    str(NPCLASSIFIER_URL) + smiles
+                ).json()
+                class_assignment = NPclassifier_result["superclass_results"][0]
 
                 if class_assignment in class_stats.keys():
                     class_stats[class_assignment] += 1
@@ -164,7 +177,7 @@ class MoleculePlotter:
                     class_stats[class_assignment] = 1
 
             except JSONDecodeError:
-                class_stats['Cannot_Assign'] += 1
+                class_stats["Cannot_Assign"] += 1
             except IndexError:
                 class_stats['Cannot_Assign'] += 1
 

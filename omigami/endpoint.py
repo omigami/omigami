@@ -48,7 +48,7 @@ class Endpoint:
         mgf_path: str,
         n_best: int,
         include_metadata: List[str] = None,
-        **kwargs,
+        ion_mode: str = "positive",
     ) -> List[pd.DataFrame]:
         """
         Finds the N best matches for spectra in a local mgf file
@@ -203,6 +203,9 @@ class Endpoint:
             library_spectra_dataframe = pd.DataFrame(matches).T
             library_spectra_dataframe.index.name = f"matches of {id_}"
             library_spectra_dataframe = _sort_columns(library_spectra_dataframe)
+            library_spectra_dataframe = library_spectra_dataframe.sort_values(
+                by=["score"], ascending=False
+            )
 
             predicted_spectra.append(library_spectra_dataframe)
 
