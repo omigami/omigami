@@ -132,7 +132,7 @@ class MoleculePlotter:
     def plot_classyfire_result(
         spectra_matches: pd.DataFrame, color="g"
     ) -> BarContainer:
-        """Uses the ClassyFire API to classify and plot molecule structures"""
+        """Uses the ClassyFire API to classify and plot a barchart of the classifications"""
         class_stats = dict()
 
         smiles_list = spectra_matches["smiles"].to_list()
@@ -178,6 +178,8 @@ class MoleculePlotter:
 
             except JSONDecodeError:
                 class_stats["Cannot_Assign"] += 1
+            except IndexError:
+                class_stats['Cannot_Assign'] += 1
 
         if class_stats["Cannot_Assign"] == 0:
             del class_stats["Cannot_Assign"]
