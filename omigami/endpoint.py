@@ -31,11 +31,6 @@ class NotFoundError(Exception):
     pass
 
 
-def _sort_columns(df: pd.DataFrame):
-    sorted_columns = ["score"] + sorted(list(VALID_KEYS))
-    return df.reindex(columns=sorted_columns).dropna(axis=1, how="all")
-
-
 class Endpoint:
     def __init__(self, token: str):
         self._token = token
@@ -202,7 +197,9 @@ class Endpoint:
         for id_, matches in library_spectra_raw.items():
             library_spectra_dataframe = pd.DataFrame(matches).T
             library_spectra_dataframe.index.name = f"matches of {id_}"
-            library_spectra_dataframe = _sort_columns(library_spectra_dataframe)
+            library_spectra_dataframe = library_spectra_dataframe.sort_values(
+                by=["score"], ascending=False
+            )
 
             predicted_spectra.append(library_spectra_dataframe)
 
