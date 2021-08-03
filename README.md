@@ -101,7 +101,7 @@ plotter = MoleculePlotter()
 plotter.plot_molecule_structure_grid(result[1], draw_indices=True, molecule_image_size=[600, 600], substructure_highlight="C(=O)")
 ```
 
-![alt text](docs/readme_documents/molecule_plot.png)
+![alt text](docs/readme_documents/molecule_plot.png | width=100)
 
 Want to plot the results of the [Classyfire](https://jcheminf.biomedcentral.com/articles/10.1186/s13321-016-0174-y) model. The following code will handel that for you.
 ```python
@@ -109,7 +109,7 @@ from omigami import MoleculePlotter
 plotter = MoleculePlotter()
 plotter.plot_classyfire_result(result[1])
 ```
-![alt text](docs/readme_documents/classyfire_plot.png)
+![alt text](docs/readme_documents/classyfire_plot.png | width=100)
 
 Furthermore, omigami provides the possibility to use the [NPClassifier](https://www.researchgate.net/publication/344008670_NPClassifier_A_Deep_Neural_Network-Based_Structural_Classification_Tool_for_Natural_Products) API.
 
@@ -118,7 +118,7 @@ from omigami import MoleculePlotter
 plotter = MoleculePlotter()
 plotter.plot_NPclassifier_result(result[1], color='orange')
 ```
-![alt text](docs/readme_documents/NP_classifier_plot.png)
+![alt text](docs/readme_documents/NP_classifier_plot.png | width=100)
 
 ## How it works
 
