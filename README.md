@@ -104,24 +104,7 @@ plotter.plot_molecule_structure_grid(best_matches,
                                      substructure_highlight="C(=O)")
 ```
 
-
-#### Plotting
-Plotting works the same way for both Spec2Vec and MS2DeepScore.
-
-
-The following example will plot the structures of the molecules of the best matches.
-```python
-from omigami import MoleculePlotter
-plotter = MoleculePlotter()
-plotter.plot_molecule_structure_grid(best_matches, 
-                                     draw_indices=True, 
-                                     molecule_image_size=[600, 600], 
-                                     substructure_highlight="C(=O)")
-```
-<img src="docs/images/molecule_plot.png " width="500">
-
-
-Want to plot the results of the [Classyfire](https://jcheminf.biomedcentral.com/articles/10.1186/s13321-016-0174-y) model. The following code will handle that for you.
+The following code allows us to plot the results of the [Classyfire](https://jcheminf.biomedcentral.com/articles/10.1186/s13321-016-0174-y) model API.
 ```python
 from omigami import MoleculePlotter
 plotter = MoleculePlotter()
@@ -129,12 +112,12 @@ plotter.plot_classyfire_result(best_matches)
 ```
 <img src="docs/images/classyfire_plot.png" width="500">
 
-Furthermore, omigami provides the possibility to use the [NPClassifier](https://www.researchgate.net/publication/344008670_NPClassifier_A_Deep_Neural_Network-Based_Structural_Classification_Tool_for_Natural_Products) API.
+Furthermore, Omigami provides the possibility to use the [NPClassifier](https://www.researchgate.net/publication/344008670_NPClassifier_A_Deep_Neural_Network-Based_Structural_Classification_Tool_for_Natural_Products) API.
 
 ```python
 from omigami import MoleculePlotter
 plotter = MoleculePlotter()
-plotter.plot_NPclassifier_result(result[1], color='orange')
+plotter.plot_NPclassifier_result(best_matches, color='orange')
 ```
 <img src="docs/images/NP_classifier_plot.png" width="500">
 
