@@ -91,7 +91,7 @@ result = client.match_spectra_from_path(
 You can find a [tutorial](https://github.com/omigami/omigami/blob/master/notebooks/ms2deepscore/tutorial.ipynb) notebook in the `/notebooks/` folder.
 
 #### Plotting
-Plotting graphs works the same way for both Spec2Vec and MA2DeepScore.
+Plotting graphs works the same way for both Spec2Vec and MS2DeepScore.
 
 
 The following example will plot the structures of the molecules
