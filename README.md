@@ -23,6 +23,9 @@ pip install omigami
 ### Spec2Vec 
 Huber F, Ridder L, Verhoeven S, Spaaks JH, Diblen F, Rogers S, et al. (2021) Spec2Vec: Improved mass spectral similarity scoring through learning of structural relationships. PLoS Comput Biol 17(2): e1008724. https://doi.org/10.1371/journal.pcbi.1008724
 
+### MS2DeepScore
+Florian Huber, Sven van der Burg, Justin J.J. van der Hooft, Lars Ridder. (2021) MS2DeepScore - a novel deep learning similarity measure for mass fragmentation spectrum comparisons. bioRxiv 2021, doi: https://doi.org/10.1101/2021.04.18.440324 
+
 ## Motivation
 Motivation
 We aim to support metabolomics research by providing the following :
@@ -34,7 +37,7 @@ We aim to support metabolomics research by providing the following :
 ## Features
 
 - [x] Spec2Vec spectra matching
-- [ ] MS2Deep score
+- [x] MS2Deep score
 
 ## Usage
 
@@ -66,6 +69,58 @@ The supported metadata keys for omigami are (case insensitive):
 #### Notebooks
 You can find a [tutorial](https://github.com/omigami/omigami/blob/master/notebooks/spec2vec/tutorial.ipynb) notebook in the `/notebooks/` folder.
 
+### MS2DeepScore
+#### Quickstart
+
+```python
+from omigami import MS2DeepScore
+
+client = MS2DeepScore(token="your_token")
+
+mgf_file_path = "path_to_file.mgf"
+n_best_matches = 10
+include_metadata = ["Smiles", "Compound_name"]
+ion_mode = "positive"  # either positive or negative
+
+result = client.match_spectra_from_path(
+    mgf_file_path, n_best_matches, include_metadata, ion_mode=ion_mode,
+)
+```
+
+#### Notebooks
+You can find a [tutorial](https://github.com/omigami/omigami/blob/master/notebooks/ms2deepscore/tutorial.ipynb) notebook in the `/notebooks/` folder.
+
+#### Plotting
+Plotting graphs works the same way for both Spec2Vec and MS2DeepScore.
+
+
+The following example will plot the structures of the molecules
+```python
+from omigami import MoleculePlotter
+plotter = MoleculePlotter()
+plotter.plot_molecule_structure_grid(best_matches, 
+                                     draw_indices=True, 
+                                     molecule_image_size=[600, 600], 
+                                     substructure_highlight="C(=O)")
+```
+
+The following code allows us to plot the results of the [Classyfire](https://jcheminf.biomedcentral.com/articles/10.1186/s13321-016-0174-y) model API.
+```python
+from omigami import MoleculePlotter
+plotter = MoleculePlotter()
+plotter.plot_classyfire_result(best_matches)
+```
+<img src="docs/images/classyfire_plot.png" width="500">
+
+Furthermore, Omigami provides the possibility to use the [NPClassifier](https://www.researchgate.net/publication/344008670_NPClassifier_A_Deep_Neural_Network-Based_Structural_Classification_Tool_for_Natural_Products) API.
+
+```python
+from omigami import MoleculePlotter
+plotter = MoleculePlotter()
+plotter.plot_NPclassifier_result(best_matches, color='orange')
+```
+<img src="docs/images/NP_classifier_plot.png" width="500">
+
 ## How it works
 
 ### Spec2Vec
@@ -75,6 +130,13 @@ You can find a [tutorial](https://github.com/omigami/omigami/blob/master/noteboo
 4. The MGF spectra data will be processed and sent to the spec2vec model that will convert it into embeddings. 
 5. These embeddings will be compared against the reference embeddings around the Precursor MZ.
 6. The N best matches per spectrum are returned on the response as pandas dataframes.  
+
+### MS2DeepScore
+1. Save your pair of spectra data in a MGF file locally
+2. Create an MS2DeepScore object with your user token
+3. Call `match_spectra_from_path` with the location of your mgf file.
+4. The MGF spectra data will be processed and sent to the trained neural network that will predict the molecular structural similarity. 
+5. The prediction is returned on the response as a pandas dataframe.  
 
 ## Contribute to Omigami
 

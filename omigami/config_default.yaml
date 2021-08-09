@@ -1,0 +1,4 @@
+plotting:
+  urls:
+    NPclassifier: 'https://npclassifier.ucsd.edu/classify?smiles='
+    classyfire: 'https://gnps-structure.ucsd.edu/classyfire?smiles='

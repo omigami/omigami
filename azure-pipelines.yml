@@ -1,5 +1,5 @@
 # Python package
-# Create and test a Python package on multiple Python versions.
+# Create and tests a Python package on multiple Python versions.
 # Add steps that analyze code, save the dist with the build record, publish to a PyPI-compatible index, and more:
 # https://docs.microsoft.com/azure/devops/pipelines/languages/python
 
@@ -22,7 +22,7 @@ steps:
   displayName: 'Use Python $(python.version)'
 
 - script: |
-    python -m pip install --upgrade pip
+    conda install -c rdkit rdkit
     pip install -r requirements.txt
     pip install -r requirements_dev.txt
     pip install twine
@@ -30,7 +30,7 @@ steps:
 
 - script: |
     pip install pytest pytest-azurepipelines==1.0.0rc5
-    pytest --cov=omigami tests/ --cov-report html --nunitxml test-output.xml -m 'not slow'
+    pytest --cov=omigami omigami/tests/ --cov-report html --nunitxml test-output.xml -m 'not slow'
   displayName: 'Run fast tests'
 
 - script: |
