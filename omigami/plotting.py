@@ -12,12 +12,12 @@ except ModuleNotFoundError:
     import warnings
     import platform
 
-    if platform.system() == "Windows":
-        warnings.warn("You are missing the rdkit module, "
-                      "unfortunately rdkit can't be installed by using pip on Windows. "
-                      "Please install it by executing 'conda install -c rdkit rdkit'.")
-    else:
-        raise ModuleNotFoundError("Module rdkit is missing")
+    #    if platform.system() == "Windows":
+    warnings.warn("You are missing the rdkit module, "
+                  "unfortunately rdkit can't be installed by using pip on Windows. "
+                  "Please install it by executing 'conda install -c rdkit rdkit'.")
+    # else:
+    #    raise ModuleNotFoundError("Module rdkit is missing")
 
 import itertools
 import matplotlib.pyplot as plt
@@ -32,37 +32,37 @@ class MandatoryColumnMissingError(Exception):
 
 
 class MoleculePlotter:
-    try:
-        def plot_molecule_structure_grid(
-                self,
-                spectra_matches: pd.DataFrame,
-                representation: str = "smiles",
-                draw_indices: bool = False,
-                molecule_image_size: List[int] = [200, 200],
-                substructure_highlight: str = "",
-        ) -> PngImageFile:
-            """
-            Generate a grid image representation of the hits returned from Spec2Vec and MS2DeepScore outputs.
-            All structures passed MUST have valid smiles or inchi representations.
 
-            Parameters:
-            ----------
-            spectra_matches: DataFrame
-                DataFrame resulting from either Spec2Vec or MS2DeepScore. Need to feature smiles or inchi, score and compound_name as columns.
-            representation: str = 'smiles' or 'inchi'
-                The representation of the molecules found in the provided dataframe
-            draw_indices: bool = False
-                If true draws the indices of the atoms
-            molecule_image_size: List[int, int] = [200, 200]
-                The size of every individual image of a molecule. Need to be provided as a list with two ints
-            substructure_highlight: str = None
-                Needs to be a molecule substructure represented as a smiles.
+    def plot_molecule_structure_grid(
+            self,
+            spectra_matches: pd.DataFrame,
+            representation: str = "smiles",
+            draw_indices: bool = False,
+            molecule_image_size: List[int] = [200, 200],
+            substructure_highlight: str = "",
+    ) -> PngImageFile:
+        """
+        Generate a grid image representation of the hits returned from Spec2Vec and MS2DeepScore outputs.
+        All structures passed MUST have valid smiles or inchi representations.
 
-            Returns:
-            -------
-                A Plot showing the structure of the passed smiles/inchis
-            """
+        Parameters:
+        ----------
+        spectra_matches: DataFrame
+            DataFrame resulting from either Spec2Vec or MS2DeepScore. Need to feature smiles or inchi, score and compound_name as columns.
+        representation: str = 'smiles' or 'inchi'
+            The representation of the molecules found in the provided dataframe
+        draw_indices: bool = False
+            If true draws the indices of the atoms
+        molecule_image_size: List[int, int] = [200, 200]
+            The size of every individual image of a molecule. Need to be provided as a list with two ints
+        substructure_highlight: str = None
+            Needs to be a molecule substructure represented as a smiles.
 
+        Returns:
+        -------
+            A Plot showing the structure of the passed smiles/inchis
+        """
+        try:
             self._validate_data(spectra_matches, representation)
 
             spectra_matches = self._clean_matches(spectra_matches, representation)
@@ -93,7 +93,13 @@ class MoleculePlotter:
                 highlightBondLists=highlight_bonds,
             )
             return image
+        except NameError:
 
+            warnings.warn("You are missing the rdkit module, "
+                              "unfortunately rdkit can't be installed by using pip on Windows. "
+                              "Please install it by executing 'conda install -c rdkit rdkit'.")
+
+    try:
         @staticmethod
         def _validate_data(spectra_matches: pd.DataFrame, representation: str = "smiles"):
             if representation not in ["smiles", "inchi"]:
