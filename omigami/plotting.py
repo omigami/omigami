@@ -12,12 +12,12 @@ except ModuleNotFoundError:
     import warnings
     import platform
 
-    #    if platform.system() == "Windows":
-    warnings.warn("You are missing the rdkit module, "
-                  "unfortunately rdkit can't be installed by using pip on Windows. "
-                  "Please install it by executing 'conda install -c rdkit rdkit'.")
-    # else:
-    #    raise ModuleNotFoundError("Module rdkit is missing")
+    if platform.system() == "Windows":
+        warnings.warn("You are missing the rdkit module, "
+                      "unfortunately rdkit can't be installed by using pip on Windows. "
+                      "Please install it by executing 'conda install -c rdkit rdkit'.")
+    else:
+        raise ModuleNotFoundError("Module rdkit is missing")
 
 import itertools
 import matplotlib.pyplot as plt
@@ -96,8 +96,8 @@ class MoleculePlotter:
         except NameError:
 
             warnings.warn("You are missing the rdkit module, "
-                              "unfortunately rdkit can't be installed by using pip on Windows. "
-                              "Please install it by executing 'conda install -c rdkit rdkit'.")
+                          "unfortunately rdkit can't be installed by using pip on Windows. "
+                          "Please install it by executing 'conda install -c rdkit rdkit'.")
 
     try:
         @staticmethod
