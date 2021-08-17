@@ -99,56 +99,54 @@ class MoleculePlotter:
                           "unfortunately rdkit can't be installed by using pip on Windows. "
                           "Please install it by executing 'conda install -c rdkit rdkit'.")
 
-    try:
-        @staticmethod
-        def _validate_data(spectra_matches: pd.DataFrame, representation: str = "smiles"):
-            if representation not in ["smiles", "inchi"]:
-                raise ValueError(
-                    f"Got unexpected representation string. Needs to be either 'smiles' "
-                    f"or 'inchi' got {representation} "
-                )
 
-            if not isinstance(spectra_matches, pd.DataFrame):
-                raise ValueError(
-                    f"Matches need to be a Pandas DataFrame got {type(spectra_matches)}"
-                )
+    @staticmethod
+    def _validate_data(spectra_matches: pd.DataFrame, representation: str = "smiles"):
+        if representation not in ["smiles", "inchi"]:
+            raise ValueError(
+                f"Got unexpected representation string. Needs to be either 'smiles' "
+                f"or 'inchi' got {representation} "
+            )
 
-            if "compound_name" not in spectra_matches.columns:
-                raise MandatoryColumnMissingError(
-                    "The provided DataFrame must contain a column named compound_name"
-                )
+        if not isinstance(spectra_matches, pd.DataFrame):
+            raise ValueError(
+                f"Matches need to be a Pandas DataFrame got {type(spectra_matches)}"
+            )
 
-        @staticmethod
-        def _clean_matches(
-                spectra_matches: pd.DataFrame, representation: str
-        ) -> pd.DataFrame:
-            """Drops all molecules that are missing a compound_name, are a duplicate
-            structure or are missing a structure """
-            spectra_matches = spectra_matches.drop_duplicates("compound_name")
-            spectra_matches = spectra_matches.drop_duplicates(representation)
-            spectra_matches = spectra_matches[spectra_matches[representation] != ""]
-            spectra_matches = spectra_matches.dropna(subset=[representation])
+        if "compound_name" not in spectra_matches.columns:
+            raise MandatoryColumnMissingError(
+                "The provided DataFrame must contain a column named compound_name"
+            )
 
-            return spectra_matches
+    @staticmethod
+    def _clean_matches(
+            spectra_matches: pd.DataFrame, representation: str
+    ) -> pd.DataFrame:
+        """Drops all molecules that are missing a compound_name, are a duplicate
+        structure or are missing a structure """
+        spectra_matches = spectra_matches.drop_duplicates("compound_name")
+        spectra_matches = spectra_matches.drop_duplicates(representation)
+        spectra_matches = spectra_matches[spectra_matches[representation] != ""]
+        spectra_matches = spectra_matches.dropna(subset=[representation])
 
-        @staticmethod
-        def _get_bonds_to_highlight(molecule: Mol, substructure: Mol) -> List[int]:
-            """Gets the indexes of a molecule substructure as a single list. Where every
-            match is represented by two consecutively ints """
-            substructure_matches = molecule.GetSubstructMatches(substructure)
-            merged_list = list(itertools.chain(*substructure_matches))
-            return merged_list
+        return spectra_matches
 
-        # Author: Takayuki Serizawa
-        # Original Source: https://iwatobipen.wordpress.com/2017/02/25/draw-molecule-with-atom-index-in-rdkit/
-        @staticmethod
-        def _add_index_to_atoms(molecule: Mol) -> Mol:
-            for atom in molecule.GetAtoms():
-                atom.SetAtomMapNum(atom.GetIdx())
-            return molecule
+    @staticmethod
+    def _get_bonds_to_highlight(molecule, substructure) -> List[int]:
+        """Gets the indexes of a molecule substructure as a single list. Where every
+        match is represented by two consecutively ints """
+        substructure_matches = molecule.GetSubstructMatches(substructure)
+        merged_list = list(itertools.chain(*substructure_matches))
+        return merged_list
 
-    except NameError:
-        pass
+    # Author: Takayuki Serizawa
+    # Original Source: https://iwatobipen.wordpress.com/2017/02/25/draw-molecule-with-atom-index-in-rdkit/
+    @staticmethod
+    def _add_index_to_atoms(molecule):
+        for atom in molecule.GetAtoms():
+            atom.SetAtomMapNum(atom.GetIdx())
+        return molecule
+
 
     # Original Source: https://jcheminf.biomedcentral.com/articles/10.1186/s13321-016-0174-y
     @staticmethod
