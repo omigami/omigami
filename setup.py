@@ -12,13 +12,10 @@ with open("docs/readme.rst") as readme_file:
 with open("HISTORY.rst") as history_file:
     history = history_file.read()
 
-requirements = [
-    "Click>=6.0",
-    "matchms==0.8.2",
-    "pandas==1.1.3",
-    "requests==2.24.0",
-    "confuse==1.4.0",
-]
+with open("requirements.txt") as requirements_file:
+    requirements = requirements_file.read().split("\n")
+    if "" in requirements:
+        requirements.remove("")
 
 setup_requirements = [
     "pytest-runner",
