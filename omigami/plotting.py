@@ -3,9 +3,20 @@ from typing import List
 
 from PIL.PngImagePlugin import PngImageFile
 import pandas as pd
-from rdkit import Chem
-from rdkit.Chem import Draw
-from rdkit.Chem.rdchem import Mol
+import warnings
+
+try:
+    from rdkit import Chem
+    from rdkit.Chem import Draw
+    from rdkit.Chem.rdchem import Mol
+except ModuleNotFoundError:
+    import platform
+    if platform.system() == "Windows":
+        warnings.warn("You are missing the rdkit module, unfortunately rdkit cant be installed by using pip on Windows."
+                      " Please install it by executing 'conda install -c rdkit rdkit'.")
+    else:
+        raise ModuleNotFoundError()
+
 import itertools
 import matplotlib.pyplot as plt
 from matplotlib.container import BarContainer
