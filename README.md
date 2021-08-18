@@ -17,8 +17,13 @@ Omigami supports python 3.7 and 3.8. To install it, simply:
 ```sh
 pip install omigami
 ```
+To be able to visualise the molecule plots, you need to install `rdkit`.
+For Mac and Linux users, please do: 
 
-Should you be on a Windows system, you need to follow up the pip installation with:
+```sh
+pip install omigami[plots]
+```
+For Windows users, you need to do the following:
 
 ```sh
 conda install -c conda-forge rdkit

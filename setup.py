@@ -17,18 +17,14 @@ with open("requirements.txt") as requirements_file:
     requirements = requirements_file.read().split("\n")
     if "" in requirements:
         requirements.remove("")
-    if platform.system() == "Windows":
-        requirements = [
-            requirement
-            for requirement in requirements
-            if "rdkit-pypi" not in requirement
-        ]
+
 
 setup_requirements = [
     "pytest-runner",
 ]
 
 test_requirements = ["pytest"]
+extras_require = {"plots": ["rdkit-pypi==2021.3.4"]}
 
 setup(
     author="Data Revenue GmbH",
@@ -61,4 +57,5 @@ setup(
     version=versioneer.get_version(),
     cmdclass=versioneer.get_cmdclass(),
     zip_safe=False,
+    extras_require=extras_require,
 )
