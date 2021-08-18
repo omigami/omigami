@@ -13,9 +13,11 @@ except ModuleNotFoundError:
     import platform
 
     if platform.system() == "Windows":
-        warnings.warn("You are missing the rdkit module, "
-                      "unfortunately rdkit can't be installed by using pip on Windows. "
-                      "Please install it by executing 'conda install -c rdkit rdkit'.")
+        warnings.warn(
+            "You are missing the rdkit module, "
+            "unfortunately rdkit can't be installed by using pip on Windows. "
+            "Please install it by executing 'conda install -c conda-forge rdkit'."
+        )
     else:
         raise ModuleNotFoundError("Module rdkit is missing")
 
@@ -32,14 +34,13 @@ class MandatoryColumnMissingError(Exception):
 
 
 class MoleculePlotter:
-
     def plot_molecule_structure_grid(
-            self,
-            spectra_matches: pd.DataFrame,
-            representation: str = "smiles",
-            draw_indices: bool = False,
-            molecule_image_size: List[int] = [200, 200],
-            substructure_highlight: str = "",
+        self,
+        spectra_matches: pd.DataFrame,
+        representation: str = "smiles",
+        draw_indices: bool = False,
+        molecule_image_size: List[int] = [200, 200],
+        substructure_highlight: str = "",
     ) -> PngImageFile:
         """
         Generate a grid image representation of the hits returned from Spec2Vec and MS2DeepScore outputs.
@@ -78,7 +79,9 @@ class MoleculePlotter:
                 elif representation == "inchi":
                     molecule = Chem.MolFromInchi(structure)
 
-                substructure_matches = self._get_bonds_to_highlight(molecule, substructure)
+                substructure_matches = self._get_bonds_to_highlight(
+                    molecule, substructure
+                )
                 highlight_bonds.append(substructure_matches)
 
                 if draw_indices:
@@ -94,9 +97,11 @@ class MoleculePlotter:
             )
             return image
         except NameError:
-            raise NameError("You are missing the rdkit module, "
-                            "unfortunately rdkit can't be installed by using pip on Windows. "
-                            "Please install it by executing 'conda install -c rdkit rdkit'.")
+            raise NameError(
+                "You are missing the rdkit module, "
+                "unfortunately rdkit can't be installed by using pip on Windows. "
+                "Please install it by executing 'conda install -c conda-forge rdkit'."
+            )
 
     @staticmethod
     def _validate_data(spectra_matches: pd.DataFrame, representation: str = "smiles"):
@@ -118,10 +123,10 @@ class MoleculePlotter:
 
     @staticmethod
     def _clean_matches(
-            spectra_matches: pd.DataFrame, representation: str
+        spectra_matches: pd.DataFrame, representation: str
     ) -> pd.DataFrame:
         """Drops all molecules that are missing a compound_name, are a duplicate
-        structure or are missing a structure """
+        structure or are missing a structure"""
         spectra_matches = spectra_matches.drop_duplicates("compound_name")
         spectra_matches = spectra_matches.drop_duplicates(representation)
         spectra_matches = spectra_matches[spectra_matches[representation] != ""]
@@ -132,7 +137,7 @@ class MoleculePlotter:
     @staticmethod
     def _get_bonds_to_highlight(molecule, substructure) -> List[int]:
         """Gets the indexes of a molecule substructure as a single list. Where every
-        match is represented by two consecutively ints """
+        match is represented by two consecutively ints"""
         substructure_matches = molecule.GetSubstructMatches(substructure)
         merged_list = list(itertools.chain(*substructure_matches))
         return merged_list
@@ -148,7 +153,7 @@ class MoleculePlotter:
     # Original Source: https://jcheminf.biomedcentral.com/articles/10.1186/s13321-016-0174-y
     @staticmethod
     def plot_classyfire_result(
-            spectra_matches: pd.DataFrame, color="g"
+        spectra_matches: pd.DataFrame, color="g"
     ) -> BarContainer:
         """Uses the ClassyFire API to classify and plot a barchart of the classifications"""
         class_stats = dict()
@@ -173,7 +178,7 @@ class MoleculePlotter:
     # Original Source: https://chemrxiv.org/engage/chemrxiv/article-details/60c74f58702a9ba8dc18bb6b
     @staticmethod
     def plot_NPclassifier_result(
-            spectra_matches: pd.DataFrame, color="g"
+        spectra_matches: pd.DataFrame, color="g"
     ) -> BarContainer:
         """Uses the NP-Classifier API to classify natural products."""
         class_stats = dict()
@@ -197,7 +202,7 @@ class MoleculePlotter:
             except JSONDecodeError:
                 class_stats["Cannot_Assign"] += 1
             except IndexError:
-                class_stats['Cannot_Assign'] += 1
+                class_stats["Cannot_Assign"] += 1
 
         if class_stats["Cannot_Assign"] == 0:
             del class_stats["Cannot_Assign"]
