@@ -5,6 +5,7 @@
 from setuptools import setup, find_packages
 
 import versioneer
+import platform
 
 with open("docs/readme.rst") as readme_file:
     readme = readme_file.read()
@@ -17,11 +18,13 @@ with open("requirements.txt") as requirements_file:
     if "" in requirements:
         requirements.remove("")
 
+
 setup_requirements = [
     "pytest-runner",
 ]
 
 test_requirements = ["pytest"]
+extras_require = {"plots": ["rdkit-pypi==2021.3.4"]}
 
 setup(
     author="Data Revenue GmbH",
@@ -54,4 +57,5 @@ setup(
     version=versioneer.get_version(),
     cmdclass=versioneer.get_cmdclass(),
     zip_safe=False,
+    extras_require=extras_require,
 )
