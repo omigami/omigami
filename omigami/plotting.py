@@ -10,16 +10,12 @@ try:
     from rdkit.Chem.rdchem import Mol
 except ModuleNotFoundError:
     import warnings
-    import platform
 
-    if platform.system() == "Windows":
-        warnings.warn(
-            "You are missing the rdkit module, "
-            "unfortunately rdkit can't be installed by using pip on Windows. "
-            "Please install it by executing 'conda install -c conda-forge rdkit'."
-        )
-    else:
-        raise ModuleNotFoundError("Module rdkit is missing")
+    warnings.warn(
+        "You are missing the rdkit module. "
+        "Please go to Omigami's README for instructions on how to install it."
+    )
+
 
 import itertools
 import matplotlib.pyplot as plt
@@ -98,9 +94,8 @@ class MoleculePlotter:
             return image
         except NameError:
             raise NameError(
-                "You are missing the rdkit module, "
-                "unfortunately rdkit can't be installed by using pip on Windows. "
-                "Please install it by executing 'conda install -c conda-forge rdkit'."
+                "You are missing the rdkit module. "
+                "Please go to Omigami's README for instructions on how to install it."
             )
 
     @staticmethod
