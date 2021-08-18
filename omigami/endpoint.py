@@ -37,10 +37,22 @@ def _sort_columns(df: pd.DataFrame):
 
 
 class Endpoint:
-    def __init__(self, token: str):
-        self._token = token
-        self.mandatory_keys = ["peaks_json", "Precursor_MZ"]
-        self.float_keys = ["Precursor_MZ"]
+    mandatory_keys: List[str] = ["peaks_json", "Precursor_MZ"]
+    float_keys: List[str] = ["Precursor_MZ"]
+
+    def __init__(self):
+        # WIP
+        credentials = self._get_saved_credentials()
+        if not credentials:
+            # maybe here ask if the user wants to set it up right now...
+            print(
+                "Warning, you have not setup your credentials yet. "
+                "Please do so by using 'omigami credentials-helper' CLI functionality and"
+                "then instantiate again your Spec2Vec client or run 'client.update_credentials()'"
+            )
+        else:
+            self._username = credentials["username"]
+            self._password = credentials["password"]
 
     @abstractmethod
     def match_spectra_from_path(
@@ -192,6 +204,9 @@ class Endpoint:
                             f"Passed value: {spectrum[key]}",
                             400,
                         )
+
+    def _authenticate(self):
+        pass
 
     @staticmethod
     def _format_results(api_request: requests.Response) -> List[pd.DataFrame]:

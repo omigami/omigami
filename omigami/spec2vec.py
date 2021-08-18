@@ -49,6 +49,9 @@ class Spec2Vec(Endpoint):
         # defines endpoint based on user choice of spectra ion mode
         endpoint = self._PREDICT_ENDPOINT_BASE.format(ion_mode=ion_mode)
 
+        # gets token from user credentials
+        self._authenticate()
+
         parameters = self._build_parameters(n_best, include_metadata)
         # loads spectra
         spectra_generator = load_from_mgf(mgf_path)
