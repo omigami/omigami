@@ -94,11 +94,9 @@ class MoleculePlotter:
             )
             return image
         except NameError:
-
-            warnings.warn("You are missing the rdkit module, "
-                          "unfortunately rdkit can't be installed by using pip on Windows. "
-                          "Please install it by executing 'conda install -c rdkit rdkit'.")
-
+            raise NameError("You are missing the rdkit module, "
+                            "unfortunately rdkit can't be installed by using pip on Windows. "
+                            "Please install it by executing 'conda install -c rdkit rdkit'.")
 
     @staticmethod
     def _validate_data(spectra_matches: pd.DataFrame, representation: str = "smiles"):
@@ -146,7 +144,6 @@ class MoleculePlotter:
         for atom in molecule.GetAtoms():
             atom.SetAtomMapNum(atom.GetIdx())
         return molecule
-
 
     # Original Source: https://jcheminf.biomedcentral.com/articles/10.1186/s13321-016-0174-y
     @staticmethod
