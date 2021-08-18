@@ -5,6 +5,7 @@
 from setuptools import setup, find_packages
 
 import versioneer
+import platform
 
 with open("docs/readme.rst") as readme_file:
     readme = readme_file.read()
@@ -16,6 +17,12 @@ with open("requirements.txt") as requirements_file:
     requirements = requirements_file.read().split("\n")
     if "" in requirements:
         requirements.remove("")
+    if platform.system() == "Windows":
+        requirements = [
+            requirement
+            for requirement in requirements
+            if "rdkit-pypi" not in requirement
+        ]
 
 setup_requirements = [
     "pytest-runner",
