@@ -18,7 +18,7 @@ Omigami supports python 3.7 and 3.8. To install it, simply:
 pip install omigami
 ```
 
-Should you be on a Windows system you need to follow the pip installation up with:
+Should you be on a Windows system, you need to follow up the pip installation with:
 
 ```sh
 conda install -c conda-forge rdkit
