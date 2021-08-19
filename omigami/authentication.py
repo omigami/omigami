@@ -24,7 +24,7 @@ AUTH = Auth()
 
 
 # authentication related methods
-def authenticate(self):
+def authenticate_client(self):
     """
     Will find the user's credentials as stored in his machine (or raise exception if not set) and
     use them to get a session token. If token already present under expiration date, do nothing.

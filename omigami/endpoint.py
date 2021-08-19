@@ -7,6 +7,7 @@ import requests
 import pandas as pd
 from matchms import Spectrum
 
+from omigami.authentication import AUTH
 from omigami.exceptions import InvalidCredentials, NotFoundError
 
 SPECTRA_LIMIT_PER_REQUEST = 100
@@ -110,7 +111,7 @@ class Endpoint:
         api_request = requests.post(
             endpoint,
             json=payload,
-            headers={"Authorization": f"Bearer {self._token}"},
+            headers={"Authorization": f"Bearer {AUTH.token}"},
             timeout=600,
         )
 

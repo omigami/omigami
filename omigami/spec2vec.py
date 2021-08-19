@@ -2,6 +2,8 @@ from typing import List
 
 import pandas as pd
 from matchms.importing import load_from_mgf
+
+from omigami.authentication import authenticate_client
 from omigami.endpoint import Endpoint
 
 
@@ -47,7 +49,7 @@ class Spec2Vec(Endpoint):
         endpoint = self._PREDICT_ENDPOINT_BASE.format(ion_mode=ion_mode)
 
         # gets token from user credentials
-        self._authenticate()
+        authenticate_client()
 
         parameters = self._build_parameters(n_best, include_metadata)
         # loads spectra

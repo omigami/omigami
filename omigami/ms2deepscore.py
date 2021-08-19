@@ -1,6 +1,8 @@
 from logging import getLogger
 from typing import Dict, Union, List
 from matchms.importing import load_from_mgf
+
+from omigami.authentication import authenticate_client
 from omigami.endpoint import Endpoint
 
 Payload = Dict[str, Dict[str, Dict[str, Union[int, dict]]]]
@@ -53,6 +55,9 @@ class MS2DeepScore(Endpoint):
 
         endpoint = self._PREDICT_ENDPOINT_BASE.format(ion_mode=ion_mode)
         parameters = self._build_parameters(n_best, include_metadata)
+
+        # gets token from user credentials
+        authenticate_client()
 
         # loads spectra
         spectra_generator = load_from_mgf(mgf_path)
