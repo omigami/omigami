@@ -16,9 +16,6 @@ class InvalidCredentials(Exception):
 class MS2DeepScore(Endpoint):
     _PREDICT_ENDPOINT_BASE = "https://omigami.datarevenue.com/seldon/seldon/ms2deepscore-{ion_mode}/api/v0.1/predictions"
 
-    def __init__(self, token: str):
-        super().__init__(token)
-
     def match_spectra_from_path(
         self,
         mgf_path: str,
@@ -61,6 +58,4 @@ class MS2DeepScore(Endpoint):
         spectra_generator = load_from_mgf(mgf_path)
 
         # issue requests respecting the spectra limit per request
-        return self._make_batch_requests(
-            spectra_generator, parameters, endpoint
-        )
+        return self._make_batch_requests(spectra_generator, parameters, endpoint)

@@ -7,6 +7,8 @@ import requests
 import pandas as pd
 from matchms import Spectrum
 
+from omigami.exceptions import InvalidCredentials, NotFoundError
+
 SPECTRA_LIMIT_PER_REQUEST = 100
 VALID_KEYS = {
     "compound_name",
@@ -23,14 +25,6 @@ JSON = Union[List[dict], dict]
 Payload = Dict[str, Dict[str, Dict[str, Union[int, dict]]]]
 
 
-class InvalidCredentials(Exception):
-    pass
-
-
-class NotFoundError(Exception):
-    pass
-
-
 def _sort_columns(df: pd.DataFrame):
     sorted_columns = ["score"] + sorted(list(VALID_KEYS))
     return df.reindex(columns=sorted_columns).dropna(axis=1, how="all")
@@ -39,20 +33,6 @@ def _sort_columns(df: pd.DataFrame):
 class Endpoint:
     mandatory_keys: List[str] = ["peaks_json", "Precursor_MZ"]
     float_keys: List[str] = ["Precursor_MZ"]
-
-    def __init__(self):
-        # WIP
-        credentials = self._get_saved_credentials()
-        if not credentials:
-            # maybe here ask if the user wants to set it up right now...
-            print(
-                "Warning, you have not setup your credentials yet. "
-                "Please do so by using 'omigami credentials-helper' CLI functionality and"
-                "then instantiate again your Spec2Vec client or run 'client.update_credentials()'"
-            )
-        else:
-            self._username = credentials["username"]
-            self._password = credentials["password"]
 
     @abstractmethod
     def match_spectra_from_path(
@@ -204,9 +184,6 @@ class Endpoint:
                             f"Passed value: {spectrum[key]}",
                             400,
                         )
-
-    def _authenticate(self):
-        pass
 
     @staticmethod
     def _format_results(api_request: requests.Response) -> List[pd.DataFrame]:

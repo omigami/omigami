@@ -1,6 +1,6 @@
 import click
-import os
 from cryptography.fernet import Fernet
+from omi_settings import get_credentials_path
 
 
 @click.command()
@@ -15,7 +15,7 @@ def credentials_helper(username, password, unset):
     """
     CLI Helper for configuring the user machine to access the Omigami endpoints
     """
-    path = os.path.expanduser("~") + "/.omigami/credentials"
+    path = get_credentials_path()
 
     if unset:
         open(path, "w").close()
@@ -24,12 +24,12 @@ def credentials_helper(username, password, unset):
 
     key = Fernet.generate_key()
     f = Fernet(key)
-    utoken = f.encrypt(password)
-    ptoken = f.encrypt(username)
+    utoken = f.encrypt(username)
+    ptoken = f.encrypt(password)
 
     with open(path, "w") as file:
-        file.write(utoken)
-        file.write(ptoken)
-        file.write(key)
+        print(utoken, file=file)
+        print(ptoken, file=file)
+        print(key, file=file)
 
     print("Crendetials successfully saved.")

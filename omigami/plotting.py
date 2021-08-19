@@ -22,7 +22,7 @@ import matplotlib.pyplot as plt
 from matplotlib.container import BarContainer
 import requests
 
-from omigami.config import CLASSYFIRE_URL, NPCLASSIFIER_URL
+from omigami.omi_settings import CLASSYFIRE_URL, NPCLASSIFIER_URL
 
 
 class MandatoryColumnMissingError(Exception):

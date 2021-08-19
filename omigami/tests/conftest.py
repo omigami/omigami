@@ -5,7 +5,7 @@ import pytest
 from matchms.importing import load_from_mgf
 
 from omigami import Spec2Vec
-from omigami.config import config
+from omigami.omi_settings import config
 from omigami.ms2deepscore import MS2DeepScore
 
 ASSETS_DIR = Path(__file__).parent / "assets"

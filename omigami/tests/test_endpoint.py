@@ -1,7 +1,8 @@
 import pytest
 import requests
 import pandas as pd
-from omigami.endpoint import Endpoint, InvalidCredentials
+from omigami.endpoint import Endpoint
+from omigami.exceptions import InvalidCredentials
 
 
 def test_build_payload(mgf_generator):
