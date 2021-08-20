@@ -9,7 +9,7 @@ from datetime import datetime
 
 
 class Auth:
-    credentials: Dict[str]
+    credentials: Dict[str, str]
     session_token: str
     session_expiration: datetime
 
@@ -39,7 +39,7 @@ def authenticate_client():
         del creds
 
 
-def _get_configured_credentials() -> Dict[str]:
+def _get_configured_credentials() -> Dict[str, str]:
     path = get_credentials_path()
 
     credentials: List[str]
@@ -54,7 +54,7 @@ def _get_configured_credentials() -> Dict[str]:
     return {"u": credentials[0], "p": credentials[1], "k": credentials[2]}
 
 
-def _decrypt_credentials() -> Dict[str]:
+def _decrypt_credentials() -> Dict[str, str]:
     f = Fernet(AUTH.credentials["k"])
     decripted = {
         "u": f.decrypt(AUTH.credentials["u"]),

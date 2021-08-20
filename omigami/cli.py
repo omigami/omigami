@@ -1,6 +1,6 @@
 import click
 from cryptography.fernet import Fernet
-from omi_settings import get_credentials_path
+from omigami.omi_settings import get_credentials_path
 
 
 @click.command()
@@ -33,3 +33,11 @@ def credentials_helper(username, password, unset):
         print(key, file=file)
 
     print("Crendetials successfully saved.")
+
+
+@click.group()
+def omigami():
+    pass
+
+
+omigami.add_command(credentials_helper)

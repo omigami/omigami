@@ -5,7 +5,6 @@
 from setuptools import setup, find_packages
 
 import versioneer
-import platform
 
 with open("docs/readme.rst") as readme_file:
     readme = readme_file.read()
@@ -40,7 +39,7 @@ setup(
     description="A package to access Omigami services.",
     entry_points={
         "console_scripts": [
-            "omigami=omigami.cli:main",
+            "omigami=omigami.cli:omigami",
         ],
     },
     install_requires=requirements,
