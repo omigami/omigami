@@ -5,16 +5,23 @@ import pytest
 from matchms.importing import load_from_mgf
 
 from omigami import Spec2Vec
+from omigami.authentication import encrypt_credentials, AUTH
 from omigami.omi_settings import config
 from omigami.ms2deepscore import MS2DeepScore
 
 ASSETS_DIR = Path(__file__).parent / "assets"
 
 
+def set_credentials_for_tests():
+    username = config["login"]["dev"]["username"].get()
+    pwd = config["login"]["dev"]["password"].get()
+    AUTH.credentials = encrypt_credentials(username, pwd)
+
+
 @pytest.fixture(scope="module")
 def spec2vec_client():
-    token = config["login"]["dev"]["token"].get()
-    client = Spec2Vec(token)
+    set_credentials_for_tests()
+    client = Spec2Vec()
     client._PREDICT_ENDPOINT_BASE = "https://mlops.datarevenue.com/seldon/seldon/spec2vec-{ion_mode}/api/v0.1/predictions"
     return client
 
@@ -49,15 +56,15 @@ def sample_response():
 
 @pytest.fixture(scope="module")
 def ms2deepscore_client():
-    token = config["login"]["dev"]["token"].get()
-    client = MS2DeepScore(token)
+    set_credentials_for_tests()
+    client = MS2DeepScore()
     client._PREDICT_ENDPOINT_BASE = "https://mlops.datarevenue.com/seldon/seldon/ms2deepscore-{ion_mode}/api/v0.1/predictions"
     return client
 
 
 @pytest.fixture()
 def ms2deepscore_prediction_endpoints():
-    _client = Spec2Vec("")
+    _client = Spec2Vec()
     return {
         "positive": _client._PREDICT_ENDPOINT_BASE.format(ion_mode="positive"),
         "negative": _client._PREDICT_ENDPOINT_BASE.format(ion_mode="negative"),
@@ -71,7 +78,7 @@ def mgf_path_of_2_spectra():
 
 @pytest.fixture()
 def spec2vec_prediction_endpoints():
-    _client = Spec2Vec("")
+    _client = Spec2Vec()
     return {
         "positive": _client._PREDICT_ENDPOINT_BASE.format(ion_mode="positive"),
         "negative": _client._PREDICT_ENDPOINT_BASE.format(ion_mode="negative"),

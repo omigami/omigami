@@ -69,7 +69,7 @@ def _decrypt_credentials() -> Dict[str, str]:
     return decripted
 
 
-def _get_session_token_using_credentials(credentials):
+def _get_session_token_using_credentials(credentials: Dict[str, str]):
     flow = requests.get(
         "https://omigami.datarevenue.com/.ory/kratos/public/self-service/login/api"
     )
@@ -101,3 +101,14 @@ def _get_session_token_using_credentials(credentials):
     # removes microseconds from the string
     expiration = expiration.split(".")[0]
     AUTH.expiration_date = datetime.strptime(expiration, "%Y-%m-%dT%H:%M:%S")
+
+
+def encrypt_credentials(username: str, password: str) -> Dict[str, bytes]:
+    key = Fernet.generate_key()
+    f = Fernet(key)
+    creds = {
+        "u": f.encrypt(username.encode("ascii")),
+        "p": f.encrypt(password.encode("ascii")),
+        "k": key,
+    }
+    return creds

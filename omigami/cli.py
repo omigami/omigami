@@ -4,7 +4,7 @@ from pathlib import Path
 import click
 from cryptography.fernet import Fernet
 
-from omigami.authentication import authenticate_client
+from omigami.authentication import authenticate_client, encrypt_credentials
 from omigami.omi_settings import get_credentials_path, get_credentials_folder_path
 
 
@@ -28,13 +28,7 @@ def credentials_helper(username, password, unset):
         print("Crendetials successfully unset.")
         return
 
-    key = Fernet.generate_key()
-    f = Fernet(key)
-    creds = {
-        "u": f.encrypt(username.encode("ascii")),
-        "p": f.encrypt(password.encode("ascii")),
-        "k": key,
-    }
+    creds = encrypt_credentials(username, password)
 
     with open(path, "wb") as file_handle:
         pickle.dump(creds, file_handle, protocol=pickle.HIGHEST_PROTOCOL)
