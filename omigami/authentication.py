@@ -1,4 +1,5 @@
-from typing import List, Dict
+import pickle
+from typing import Dict
 
 import requests
 from cryptography.fernet import Fernet
@@ -9,7 +10,7 @@ from datetime import datetime
 
 
 class Auth:
-    credentials: Dict[str, str]
+    credentials: Dict[str, bytes]
     session_token: str
     session_expiration: datetime
 
@@ -39,26 +40,31 @@ def authenticate_client():
         del creds
 
 
-def _get_configured_credentials() -> Dict[str, str]:
+def _get_configured_credentials() -> Dict[str, bytes]:
     path = get_credentials_path()
 
-    credentials: List[str]
-    with open(path, "r") as cred_file:
-        credentials = cred_file.read().splitlines()
+    credentials: Dict[str, bytes]
+    with open(path, "rb") as file_handle:
+        credentials = pickle.load(file_handle)
         if len(credentials) == 0:
             raise ConfigurationError(
                 "You have not setup your credentials yet. "
                 "Please do so by using 'omigami credentials-helper' CLI functionality and try again."
             )
+        if not all(key in ["k", "u", "p"] for key in credentials.keys()):
+            raise ConfigurationError(
+                "Something seems wrong with your credentials. "
+                "Please, run 'omigami credentials-helper --unset' to remove them and then set them again."
+            )
 
-    return {"u": credentials[0], "p": credentials[1], "k": credentials[2]}
+    return credentials
 
 
 def _decrypt_credentials() -> Dict[str, str]:
     f = Fernet(AUTH.credentials["k"])
     decripted = {
-        "u": f.decrypt(AUTH.credentials["u"]),
-        "p": f.decrypt(AUTH.credentials["p"]),
+        "u": f.decrypt(AUTH.credentials["u"]).decode("ascii"),
+        "p": f.decrypt(AUTH.credentials["p"]).decode("ascii"),
     }
     return decripted
 
@@ -85,13 +91,13 @@ def _get_session_token_using_credentials(credentials):
     if api_request.status_code == 404:
         raise NotFoundError("The API endpoint couldn't be reached.")
 
-    if "session_token" not in api_request.json().keys:
+    if "session_token" not in api_request.json().keys():
         raise ServerAuthError(
             "The server did not responded accordingly. Please try again or contact DataRevenue for assistance."
         )
 
     AUTH.token = api_request.json()["session_token"]
-    expiration = api_request.json()["session_token"]
+    expiration = api_request.json()["session"]["expires_at"]
     # removes microseconds from the string
-    expiration = expiration.split(".", 0)[0]
+    expiration = expiration.split(".")[0]
     AUTH.expiration_date = datetime.strptime(expiration, "%Y-%m-%dT%H:%M:%S")

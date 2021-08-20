@@ -11,5 +11,9 @@ def get_credentials_path():
     return os.path.expanduser("~") + "/.omigami/credentials"
 
 
+def get_credentials_folder_path():
+    return os.path.expanduser("~") + "/.omigami"
+
+
 class ConfigurationError(Exception):
     pass

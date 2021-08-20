@@ -1,6 +1,11 @@
+import pickle
+from pathlib import Path
+
 import click
 from cryptography.fernet import Fernet
-from omigami.omi_settings import get_credentials_path
+
+from omigami.authentication import authenticate_client
+from omigami.omi_settings import get_credentials_path, get_credentials_folder_path
 
 
 @click.command()
@@ -16,6 +21,7 @@ def credentials_helper(username, password, unset):
     CLI Helper for configuring the user machine to access the Omigami endpoints
     """
     path = get_credentials_path()
+    Path(get_credentials_folder_path()).mkdir(parents=True, exist_ok=True)
 
     if unset:
         open(path, "w").close()
@@ -24,15 +30,21 @@ def credentials_helper(username, password, unset):
 
     key = Fernet.generate_key()
     f = Fernet(key)
-    utoken = f.encrypt(username)
-    ptoken = f.encrypt(password)
+    creds = {
+        "u": f.encrypt(username.encode("ascii")),
+        "p": f.encrypt(password.encode("ascii")),
+        "k": key,
+    }
 
-    with open(path, "w") as file:
-        print(utoken, file=file)
-        print(ptoken, file=file)
-        print(key, file=file)
+    with open(path, "wb") as file_handle:
+        pickle.dump(creds, file_handle, protocol=pickle.HIGHEST_PROTOCOL)
 
     print("Crendetials successfully saved.")
+
+
+@click.command()
+def auth():
+    authenticate_client()
 
 
 @click.group()
@@ -41,3 +53,4 @@ def omigami():
 
 
 omigami.add_command(credentials_helper)
+omigami.add_command(auth)
