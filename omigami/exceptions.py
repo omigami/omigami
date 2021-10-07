@@ -8,3 +8,7 @@ class NotFoundError(Exception):
 
 class ServerAuthError(Exception):
     pass
+
+
+class InternalServerError(Exception):
+    pass

@@ -1,5 +1,6 @@
 import pickle
 from pathlib import Path
+from unittest.mock import patch
 
 import pytest
 from matchms.importing import load_from_mgf
@@ -12,15 +13,21 @@ from omigami.ms2deepscore import MS2DeepScore
 ASSETS_DIR = Path(__file__).parent / "assets"
 
 
-def set_credentials_for_tests():
+def _set_credentials_and_auth_for_tests():
+    """
+    This uses the default dev credentials "omigami@dev.org" and setup necessary variable values for testing
+    """
     username = config["login"]["dev"]["username"].get()
     pwd = config["login"]["dev"]["password"].get()
     AUTH.credentials = encrypt_credentials(username, pwd)
+    AUTH.self_service_endpoint = (
+        "https://mlops.datarevenue.com/.ory/kratos/public/self-service/login/api"
+    )
 
 
 @pytest.fixture(scope="module")
 def spec2vec_client():
-    set_credentials_for_tests()
+    _set_credentials_and_auth_for_tests()
     client = Spec2Vec()
     client._PREDICT_ENDPOINT_BASE = "https://mlops.datarevenue.com/seldon/seldon/spec2vec-{ion_mode}/api/v0.1/predictions"
     return client
@@ -56,7 +63,7 @@ def sample_response():
 
 @pytest.fixture(scope="module")
 def ms2deepscore_client():
-    set_credentials_for_tests()
+    _set_credentials_and_auth_for_tests()
     client = MS2DeepScore()
     client._PREDICT_ENDPOINT_BASE = "https://mlops.datarevenue.com/seldon/seldon/ms2deepscore-{ion_mode}/api/v0.1/predictions"
     return client

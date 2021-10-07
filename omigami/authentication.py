@@ -8,23 +8,43 @@ from omigami.exceptions import InvalidCredentials, NotFoundError, ServerAuthErro
 from omigami.omi_settings import get_credentials_path, ConfigurationError
 from datetime import datetime
 
+"""
+ > AUTH CLASS
+"""
+
 
 class Auth:
+    """
+    Class necessary to hold mutable session-related values
+    Only one instance of this class is expected to exist
+    """
+
     credentials: Dict[str, bytes]
     session_token: str
     session_expiration: datetime
+    self_service_endpoint: str
 
     def __init__(self):
         self.credentials = {}
         self.session_token = ""
         self.session_expiration = datetime.now()
+        self.self_service_endpoint = (
+            "https://omigami.datarevenue.com/.ory/kratos/public/self-service/login/api"
+        )
 
 
-# global auth information, to be used by all endpoints
+"""
+ > AUTH: 
+ > global singleton auth information, to be used inside this module by all endpoints 
+"""
 AUTH = Auth()
 
 
-# authentication related methods
+"""
+ > PUBLIC FUNCTIONS
+"""
+
+
 def authenticate_client():
     """
     Will find the user's credentials as stored in his machine (or raise exception if not set) and
@@ -36,11 +56,40 @@ def authenticate_client():
 
     if not AUTH.session_token or AUTH.session_expiration <= datetime.now():
         creds = _decrypt_credentials()
-        AUTH.token = _get_session_token_using_credentials(creds)
+        _get_session_token_using_credentials(creds)
         del creds
 
 
+def encrypt_credentials(username: str, password: str) -> Dict[str, bytes]:
+    """
+    Utilizes Fernet library to generate a random key to encrypt credentials and save both creds and key to disk.
+    """
+    key = Fernet.generate_key()
+    f = Fernet(key)
+    creds = {
+        "u": f.encrypt(username.encode("ascii")),
+        "p": f.encrypt(password.encode("ascii")),
+        "k": key,
+    }
+    return creds
+
+
+def get_session() -> Auth:
+    """
+    Returns the singleton AUTH object
+    """
+    return AUTH
+
+
+"""
+ > PRIVATE FUNCTIONS
+"""
+
+
 def _get_configured_credentials() -> Dict[str, bytes]:
+    """
+    Get the encryupted credentials stored in disk
+    """
     path = get_credentials_path()
 
     credentials: Dict[str, bytes]
@@ -61,6 +110,9 @@ def _get_configured_credentials() -> Dict[str, bytes]:
 
 
 def _decrypt_credentials() -> Dict[str, str]:
+    """
+    Uses Fernet + key to decrypt encrypted credentials
+    """
     f = Fernet(AUTH.credentials["k"])
     decripted = {
         "u": f.decrypt(AUTH.credentials["u"]).decode("ascii"),
@@ -69,10 +121,12 @@ def _decrypt_credentials() -> Dict[str, str]:
     return decripted
 
 
-def _get_session_token_using_credentials(credentials: Dict[str, str]):
-    flow = requests.get(
-        "https://omigami.datarevenue.com/.ory/kratos/public/self-service/login/api"
-    )
+def _get_session_token_using_credentials(credentials: Dict[str, str]) -> None:
+    """
+    Uses the AUTH object and decrypted credentials to get the self service endpoint, authenticate,
+    and update the AUTH object with session information
+    """
+    flow = requests.get(AUTH.self_service_endpoint)
     action_url = flow.json()["ui"]["action"]
     api_request = requests.post(
         action_url,
@@ -96,19 +150,8 @@ def _get_session_token_using_credentials(credentials: Dict[str, str]):
             "The server did not responded accordingly. Please try again or contact DataRevenue for assistance."
         )
 
-    AUTH.token = api_request.json()["session_token"]
+    AUTH.session_token = api_request.json()["session_token"]
     expiration = api_request.json()["session"]["expires_at"]
     # removes microseconds from the string
     expiration = expiration.split(".")[0]
     AUTH.expiration_date = datetime.strptime(expiration, "%Y-%m-%dT%H:%M:%S")
-
-
-def encrypt_credentials(username: str, password: str) -> Dict[str, bytes]:
-    key = Fernet.generate_key()
-    f = Fernet(key)
-    creds = {
-        "u": f.encrypt(username.encode("ascii")),
-        "p": f.encrypt(password.encode("ascii")),
-        "k": key,
-    }
-    return creds
