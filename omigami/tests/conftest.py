@@ -1,4 +1,5 @@
 import pickle
+import os
 from pathlib import Path
 
 import pytest
@@ -16,8 +17,8 @@ def _set_credentials_and_auth_for_tests():
     """
     This uses the default dev credentials "omigami@dev.org" and setup necessary variable values for testing
     """
-    username = config["login"]["dev"]["username"].get()
-    pwd = config["login"]["dev"]["password"].get()
+    username = os.getenv("OMIGAMI_USERNAME") or config["login"]["dev"]["username"].get()
+    pwd = os.getenv("OMIGAMI_PWD") or config["login"]["dev"]["password"].get()
     AUTH.credentials = encrypt_credentials(username, pwd)
     AUTH.self_service_endpoint = (
         "https://mlops.datarevenue.com/.ory/kratos/public/self-service/login/api"
