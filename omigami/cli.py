@@ -4,7 +4,7 @@ from pathlib import Path
 import click
 from click import ClickException
 
-from omigami.authentication import authenticate_client, encrypt_credentials
+from omigami.authentication import encrypt_credentials
 from omigami.omi_settings import get_credentials_path, get_credentials_folder_path
 
 
@@ -42,15 +42,9 @@ def credentials_helper(username, password, unset):
     print("Crendetials successfully saved.")
 
 
-@click.command()
-def auth():
-    authenticate_client()
-
-
 @click.group()
 def omigami():
     pass
 
 
 omigami.add_command(credentials_helper)
-omigami.add_command(auth)
