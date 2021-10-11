@@ -52,13 +52,23 @@ We aim to support metabolomics research by providing the following :
 
 ## Usage
 
+### Configuration
+Before start using Omigami, you will need to signup at omigami.com and verify your email to confirm your account.
+Then, you should configure your credentials in your working machine.
+You can do so by using the command line utility `omigami credentials-helper` 
+and providing the parameters `--username <yourusername> --password <yourpassword>`
+
+Your encrypted credentials will be safely stored in your machine, if you want to revoke the configuration at any point,
+you may use `omigami credentials-helper --unset`.
+
 ### Spec2Vec
 #### Quickstart
 
 ```python
 from omigami import Spec2Vec
 
-client = Spec2Vec(token="your_token")
+client = Spec2Vec()
+
 mgf_file_path = "path_to_file.mgf"
 n_best_matches = 10
 include_metadata = ["Smiles", "Compound_name"]
@@ -86,7 +96,7 @@ You can find a [tutorial](https://github.com/omigami/omigami/blob/master/noteboo
 ```python
 from omigami import MS2DeepScore
 
-client = MS2DeepScore(token="your_token")
+client = MS2DeepScore()
 
 mgf_file_path = "path_to_file.mgf"
 n_best_matches = 10
