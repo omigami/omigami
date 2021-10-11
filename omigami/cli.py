@@ -23,16 +23,16 @@ def credentials_helper(username, password, unset):
     path = get_credentials_path()
     Path(get_credentials_folder_path()).mkdir(parents=True, exist_ok=True)
 
+    if unset:
+        open(path, "w").close()
+        print("Crendetials successfully unset.")
+        return
+
     if not username or not password:
         raise ClickException(
             "Please provide username and password using --username and --password arguments, "
             "placing values between single quotes is recommended"
         )
-
-    if unset:
-        open(path, "w").close()
-        print("Crendetials successfully unset.")
-        return
 
     creds = encrypt_credentials(username, password)
 
