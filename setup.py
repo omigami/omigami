@@ -47,7 +47,7 @@ setup(
     long_description=readme + "\n\n" + history,
     include_package_data=True,
     keywords="omigami",
-    name="omigami",
+    name="omigami-client",
     packages=find_packages(include=["omigami"]),
     setup_requires=setup_requirements,
     test_suite="tests",
