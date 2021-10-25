@@ -2,14 +2,13 @@ from typing import List
 
 import pandas as pd
 from matchms.importing import load_from_mgf
+
+from omigami.authentication import authenticate_client
 from omigami.endpoint import Endpoint
 
 
 class Spec2Vec(Endpoint):
     _PREDICT_ENDPOINT_BASE = "https://omigami.datarevenue.com/seldon/seldon/spec2vec-{ion_mode}/api/v0.1/predictions"
-
-    def __init__(self, token: str):
-        super().__init__(token)
 
     def match_spectra_from_path(
         self,
@@ -48,6 +47,9 @@ class Spec2Vec(Endpoint):
             )
         # defines endpoint based on user choice of spectra ion mode
         endpoint = self._PREDICT_ENDPOINT_BASE.format(ion_mode=ion_mode)
+
+        # gets token from user credentials
+        authenticate_client()
 
         parameters = self._build_parameters(n_best, include_metadata)
         # loads spectra
