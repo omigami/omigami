@@ -8,7 +8,9 @@ from omigami.endpoint import Endpoint
 
 
 class Spec2Vec(Endpoint):
-    _PREDICT_ENDPOINT_BASE = "https://omigami.datarevenue.com/seldon/seldon/spec2vec-{ion_mode}/api/v0.1/predictions"
+    _PREDICT_ENDPOINT_BASE = (
+        "https://omigami.com/seldon/seldon/spec2vec-{ion_mode}/api/v0.1/predictions"
+    )
 
     def match_spectra_from_path(
         self,

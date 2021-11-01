@@ -29,7 +29,7 @@ class Auth:
         self.session_token = ""
         self.session_expiration = datetime.now()
         self.self_service_endpoint = (
-            "https://omigami.datarevenue.com/.ory/kratos/public/self-service/login/api"
+            "https://omigami.com/.ory/kratos/public/self-service/login/api"
         )
 
 
