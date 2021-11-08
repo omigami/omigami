@@ -1,6 +1,8 @@
 from logging import getLogger
 from typing import Dict, Union, List
 from matchms.importing import load_from_mgf
+
+from omigami.authentication import authenticate_client
 from omigami.endpoint import Endpoint
 
 Payload = Dict[str, Dict[str, Dict[str, Union[int, dict]]]]
@@ -14,10 +16,9 @@ class InvalidCredentials(Exception):
 
 
 class MS2DeepScore(Endpoint):
-    _PREDICT_ENDPOINT_BASE = "https://omigami.datarevenue.com/seldon/seldon/ms2deepscore-{ion_mode}/api/v0.1/predictions"
-
-    def __init__(self, token: str):
-        super().__init__(token)
+    _PREDICT_ENDPOINT_BASE = (
+        "https://app.omigami.com/seldon/seldon/ms2deepscore-{ion_mode}/api/v0.1/predictions"
+    )
 
     def match_spectra_from_path(
         self,
@@ -57,10 +58,11 @@ class MS2DeepScore(Endpoint):
         endpoint = self._PREDICT_ENDPOINT_BASE.format(ion_mode=ion_mode)
         parameters = self._build_parameters(n_best, include_metadata)
 
+        # gets token from user credentials
+        authenticate_client()
+
         # loads spectra
         spectra_generator = load_from_mgf(mgf_path)
 
         # issue requests respecting the spectra limit per request
-        return self._make_batch_requests(
-            spectra_generator, parameters, endpoint
-        )
+        return self._make_batch_requests(spectra_generator, parameters, endpoint)
