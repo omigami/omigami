@@ -14,6 +14,7 @@ A package to access Omigami services.
 ## Installation
 Omigami supports python 3.7 and 3.8. To install it, simply:
 
+
 ```sh
 pip install omigami
 ```
