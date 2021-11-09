@@ -17,7 +17,7 @@ class InvalidCredentials(Exception):
 
 class MS2DeepScore(Endpoint):
     _PREDICT_ENDPOINT_BASE = (
-        "https://omigami.com/seldon/seldon/ms2deepscore-{ion_mode}/api/v0.1/predictions"
+        "https://app.omigami.com/seldon/seldon/ms2deepscore-{ion_mode}/api/v0.1/predictions"
     )
 
     def match_spectra_from_path(

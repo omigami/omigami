@@ -23,7 +23,7 @@ def _set_credentials_and_auth_for_tests():
     pwd = os.getenv("TEST_OMIGAMI_PWD") or config["login"]["dev"]["password"].get()
     AUTH.credentials = encrypt_credentials(username, pwd)
     AUTH.self_service_endpoint = (
-        "https://mlops.datarevenue.com/.ory/kratos/public/self-service/login/api"
+       "https://mlops.datarevenue.com/.ory/kratos/public/self-service/login/api"
     )
 
 
