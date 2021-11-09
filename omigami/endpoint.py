@@ -7,6 +7,9 @@ import requests
 import pandas as pd
 from matchms import Spectrum
 
+from omigami.authentication import get_session
+from omigami.exceptions import InvalidCredentials, NotFoundError, InternalServerError
+
 SPECTRA_LIMIT_PER_REQUEST = 100
 VALID_KEYS = {
     "compound_name",
@@ -23,24 +26,14 @@ JSON = Union[List[dict], dict]
 Payload = Dict[str, Dict[str, Dict[str, Union[int, dict]]]]
 
 
-class InvalidCredentials(Exception):
-    pass
-
-
-class NotFoundError(Exception):
-    pass
-
-
 def _sort_columns(df: pd.DataFrame):
     sorted_columns = ["score"] + sorted(list(VALID_KEYS))
     return df.reindex(columns=sorted_columns).dropna(axis=1, how="all")
 
 
 class Endpoint:
-    def __init__(self, token: str):
-        self._token = token
-        self.mandatory_keys = ["peaks_json", "Precursor_MZ"]
-        self.float_keys = ["Precursor_MZ"]
+    mandatory_keys: List[str] = ["peaks_json", "Precursor_MZ"]
+    float_keys: List[str] = ["Precursor_MZ"]
 
     @abstractmethod
     def match_spectra_from_path(
@@ -99,12 +92,14 @@ class Endpoint:
     def _make_batch_requests(self, spectra_generator, parameters, endpoint):
         batch = []
         requests = []
+
         for spectrum in spectra_generator:
             batch.append(spectrum)
             if len(batch) == SPECTRA_LIMIT_PER_REQUEST:
                 payload = self._build_payload(batch, parameters)
                 requests.append(self._send_request(payload, endpoint))
                 batch = []
+
         if batch:
             payload = self._build_payload(batch, parameters)
             requests.append(self._send_request(payload, endpoint))
@@ -115,10 +110,11 @@ class Endpoint:
         return predictions
 
     def _send_request(self, payload: Payload, endpoint: str) -> requests.Response:
+        auth = get_session()
         api_request = requests.post(
             endpoint,
             json=payload,
-            headers={"Authorization": f"Bearer {self._token}"},
+            headers={"Authorization": f"Bearer {auth.session_token}"},
             timeout=600,
         )
 
@@ -195,6 +191,12 @@ class Endpoint:
 
     @staticmethod
     def _format_results(api_request: requests.Response) -> List[pd.DataFrame]:
+        if api_request.status_code == 500:
+            raise InternalServerError(
+                "Something went wrong, the requested service is probably unavailable at the moment. "
+                "Please try again later or contact DataRevenue for more information."
+            )
+
         response = json.loads(api_request.text)
         library_spectra_raw = response["jsonData"]
 

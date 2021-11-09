@@ -1,11 +1,14 @@
 import pytest
 import requests
 import pandas as pd
-from omigami.endpoint import Endpoint, InvalidCredentials
+
+from omigami.authentication import AUTH
+from omigami.endpoint import Endpoint
+from omigami.exceptions import InvalidCredentials
 
 
 def test_build_payload(mgf_generator):
-    client = Endpoint("token")
+    client = Endpoint()
 
     payload = client._build_payload((mgf_generator), {"n_best_spectra": 10})
 
@@ -16,7 +19,8 @@ def test_build_payload(mgf_generator):
 
 @pytest.mark.internet_connection
 def test_unauthorized_request(spec2vec_prediction_endpoints):
-    client = Endpoint("bad_token")
+    AUTH.token = ""
+    client = Endpoint()
     small_payload = {
         "data": {
             "ndarray": {
@@ -36,7 +40,7 @@ def test_unauthorized_request(spec2vec_prediction_endpoints):
 
 
 def test_format_results(sample_response):
-    client = Endpoint("token")
+    client = Endpoint()
     requests.Response()
 
     results = client._format_results(sample_response)
@@ -66,7 +70,7 @@ def test_validate_input():
         "peaks_json": "[[80.060677, 157.0], [337.508301, 230.0]]",
         "Precursor_MZ": "153.233",
     }
-    endpoint = Endpoint("token")
+    endpoint = Endpoint()
     # first validates if the input is correct then we test for errors
     endpoint._validate_input([model_input])
 

@@ -6,3 +6,8 @@ History
 ------------------
 
 * First release on PyPI.
+
+0.2.0 (WIP)
+------------------
+
+* Implemented user and password authentication via CLI
