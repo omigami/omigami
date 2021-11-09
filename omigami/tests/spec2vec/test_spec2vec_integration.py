@@ -4,6 +4,7 @@ from omigami.tests.conftest import spec2vec_client
 
 
 @pytest.mark.internet_connection
+@pytest.mark.skip(reason="Requires valid credentials")
 def test_match_spectra_from_path_small(small_mgf_path, spec2vec_client):
     """
     Tests matching spectra against library with a very small ammount of spectra ( < 50 )
@@ -19,6 +20,7 @@ def test_match_spectra_from_path_small(small_mgf_path, spec2vec_client):
 
 
 @pytest.mark.internet_connection
+@pytest.mark.skip(reason="Requires valid credentials")
 def test_match_spectra_from_path(mgf_path, spec2vec_client):
     """
     Tests matching spectra against library with a more substantial ammount of spectra ( > 350 )
@@ -30,6 +32,7 @@ def test_match_spectra_from_path(mgf_path, spec2vec_client):
 
 
 @pytest.mark.internet_connection
+@pytest.mark.skip(reason="Requires valid credentials")
 def test_match_spectra_from_path_negative_mode(mgf_path, spec2vec_client):
     result = spec2vec_client.match_spectra_from_path(mgf_path, 10, "negative")
 
