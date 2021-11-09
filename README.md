@@ -15,7 +15,7 @@ A package to access Omigami services.
 Omigami supports python 3.7 up to 3.9. To install it, simply:
 
 ```sh
-pip install omigami
+pip install omigami-client
 ```
 To be able to visualise the molecule plots, you need to install `rdkit`.
 For Mac and Linux users, please do: 
