@@ -1,14 +1,23 @@
+from __future__ import annotations
+
 import ast
 import json
-from abc import abstractmethod
+from io import StringIO
 from logging import getLogger
-from typing import List, Dict, Any, Union
+from typing import List, Dict, Any, Union, Generator
 import requests
 import pandas as pd
 from matchms import Spectrum
+from matchms.importing import load_from_mgf
 
-from omigami.authentication import get_session
-from omigami.exceptions import InvalidCredentials, NotFoundError, InternalServerError
+
+from omigami.authentication import get_session, authenticate_client
+from omigami.exceptions import (
+    InvalidCredentials,
+    NotFoundError,
+    InternalServerError,
+    InvalidUsageError,
+)
 
 SPECTRA_LIMIT_PER_REQUEST = 100
 VALID_KEYS = {
@@ -26,27 +35,87 @@ JSON = Union[List[dict], dict]
 Payload = Dict[str, Dict[str, Dict[str, Union[int, dict]]]]
 
 
-def _sort_columns(df: pd.DataFrame):
-    sorted_columns = ["score"] + sorted(list(VALID_KEYS))
-    return df.reindex(columns=sorted_columns).dropna(axis=1, how="all")
+class SpectraMatching:
+    _PREDICT_ENDPOINT_BASE = "https://app.omigami.com/seldon/seldon/{algorithm}-{ion_mode}/api/v0.1/predictions"
+    _ENDPOINT = None
 
-
-class Endpoint:
     mandatory_keys: List[str] = ["peaks_json", "Precursor_MZ"]
     float_keys: List[str] = ["Precursor_MZ"]
 
-    @abstractmethod
-    def match_spectra_from_path(
+    def match_spectra(
         self,
-        mgf_path: str,
+        source: Union[str, list[Spectrum], StringIO],
         n_best: int,
         include_metadata: List[str] = None,
         ion_mode: str = "positive",
-    ) -> List[pd.DataFrame]:
+    ):
         """
-        Finds the N best matches for spectra in a local mgf file
+        Finds the N best matches for spectra in a local mgf file using spec2vec algorithm.
+
+        Parameters
+        ----------
+        source: str or list[Spectrum] or StringIO
+            either a local path to mgf file (str), or a list of preloaded Spectrum objects, or a StringIO obj
+            from a loaded mgf file
+        n_best: int
+            Number of best matches to select
+        include_metadata: List[str]
+            Metadata keys to include in the response. Will make response slower. Please
+            check the documentation for a list of valid keys.
+        ion_mode: str
+            Selects which model will be used for the predictions: Either a model trained with
+            positive or negative ion mode spectra data. Defaults to positive.
+
+        Returns
+        -------
+        A list of pandas dataframes containing the best matches and optionally metadata
+        for these matches.
+
         """
-        pass
+
+        spectra_generator: Generator[Spectrum]
+        if type(source) == str or type(source) == StringIO:
+            spectra_generator = load_from_mgf(source)
+        else:
+            # create the generator
+            spectra_generator = None
+
+        return self._match_spectra(
+            spectra_generator, n_best, include_metadata, ion_mode
+        )
+
+    def _match_spectra(
+        self,
+        spectra_generator: Generator[Spectrum],
+        n_best: int,
+        include_metadata: List[str] = None,
+        ion_mode: str = "positive",
+    ):
+        if self._ENDPOINT is None:
+            raise InvalidUsageError(
+                "You should only evoke match_spectra from either "
+                "a MS2DeepScore or a Spec2Vec class instance."
+            )
+
+        # defines endpoint based on user choice of spectra ion mode
+        endpoint = self._PREDICT_ENDPOINT_BASE.format(
+            algorithm=self._ENDPOINT, ion_mode=ion_mode
+        )
+
+        # validates input
+        if ion_mode not in ["positive", "negative"]:
+            raise ValueError(
+                "Parameter ion_mode should be either set to 'positive' or 'negative'. "
+                "Defaults to 'positive'. "
+            )
+
+        # gets token from user credentials
+        authenticate_client()
+
+        parameters = self._build_parameters(n_best, include_metadata)
+
+        # issue requests respecting the spectra limit per request
+        return self._make_batch_requests(spectra_generator, parameters, endpoint)
 
     def _build_payload(
         self,
@@ -119,9 +188,7 @@ class Endpoint:
         )
 
         if api_request.status_code == 401:
-            raise InvalidCredentials(
-                "Your credentials are invalid, please revise your API token."
-            )
+            raise InvalidCredentials("Your credentials are invalid.")
         if api_request.status_code == 404:
             raise NotFoundError("The API endpoint couldn't be reached.")
 
@@ -191,6 +258,10 @@ class Endpoint:
 
     @staticmethod
     def _format_results(api_request: requests.Response) -> List[pd.DataFrame]:
+        def _sort_columns(df: pd.DataFrame):
+            sorted_columns = ["score"] + sorted(list(VALID_KEYS))
+            return df.reindex(columns=sorted_columns).dropna(axis=1, how="all")
+
         if api_request.status_code == 500:
             raise InternalServerError(
                 "Something went wrong, the requested service is probably unavailable at the moment. "
@@ -212,3 +283,11 @@ class Endpoint:
             predicted_spectra.append(library_spectra_dataframe)
 
         return predicted_spectra
+
+
+class MS2DeepScore(SpectraMatching):
+    _ENDPOINT = "ms2deepscore"
+
+
+class Spec2Vec(SpectraMatching):
+    _ENDPOINT = "spec2vec"

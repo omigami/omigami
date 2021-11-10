@@ -3,12 +3,12 @@ import requests
 import pandas as pd
 
 from omigami.authentication import AUTH
-from omigami.endpoint import Endpoint
+from omigami.spectra_matching import SpectraMatching
 from omigami.exceptions import InvalidCredentials
 
 
 def test_build_payload(mgf_generator):
-    client = Endpoint()
+    client = SpectraMatching()
 
     payload = client._build_payload((mgf_generator), {"n_best_spectra": 10})
 
@@ -20,7 +20,7 @@ def test_build_payload(mgf_generator):
 @pytest.mark.internet_connection
 def test_unauthorized_request(spec2vec_prediction_endpoints):
     AUTH.token = ""
-    client = Endpoint()
+    client = SpectraMatching()
     small_payload = {
         "data": {
             "ndarray": {
@@ -40,7 +40,7 @@ def test_unauthorized_request(spec2vec_prediction_endpoints):
 
 
 def test_format_results(sample_response):
-    client = Endpoint()
+    client = SpectraMatching()
     requests.Response()
 
     results = client._format_results(sample_response)
@@ -52,17 +52,17 @@ def test_format_results(sample_response):
 
 
 def test_validate_parameters():
-    parameters = Endpoint._build_parameters(2, ["smiles"])
+    parameters = SpectraMatching._build_parameters(2, ["smiles"])
     assert {"n_best_spectra", "include_metadata"} == set(parameters.keys())
 
-    parameters = Endpoint._build_parameters(2, ["SMILES"])
+    parameters = SpectraMatching._build_parameters(2, ["SMILES"])
     assert parameters["include_metadata"] == ["smiles"]
 
     with pytest.raises(ValueError, match="batman"):
-        _ = Endpoint._build_parameters(2, ["batman"])
+        _ = SpectraMatching._build_parameters(2, ["batman"])
 
     with pytest.raises(ValueError, match="must be an integer"):
-        _ = Endpoint._build_parameters("robin", ["smiles"])
+        _ = SpectraMatching._build_parameters("robin", ["smiles"])
 
 
 def test_validate_input():
@@ -70,7 +70,7 @@ def test_validate_input():
         "peaks_json": "[[80.060677, 157.0], [337.508301, 230.0]]",
         "Precursor_MZ": "153.233",
     }
-    endpoint = Endpoint()
+    endpoint = SpectraMatching()
     # first validates if the input is correct then we test for errors
     endpoint._validate_input([model_input])
 
