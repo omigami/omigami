@@ -21,7 +21,7 @@ To be able to visualise the molecule plots, you need to install `rdkit`.
 For Mac and Linux users, please do: 
 
 ```sh
-pip install omigami[plots]
+pip install "omigami-client[plots]"
 ```
 For Windows users, you need to do the following:
 
