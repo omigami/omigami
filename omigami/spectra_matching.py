@@ -77,8 +77,12 @@ class SpectraMatching:
         if type(source) == str or type(source) == StringIO:
             spectra_generator = load_from_mgf(source)
         else:
-            # create the generator
-            spectra_generator = None
+
+            def _spectra_generator(sepctra_list: List[Spectrum]) -> Generator[Spectrum]:
+                for spectrum in sepctra_list:
+                    yield spectrum
+
+            spectra_generator = _spectra_generator
 
         return self._match_spectra(
             spectra_generator, n_best, include_metadata, ion_mode
