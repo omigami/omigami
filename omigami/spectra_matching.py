@@ -78,11 +78,11 @@ class SpectraMatching:
             spectra_generator = load_from_mgf(source)
         else:
 
-            def _spectra_generator(sepctra_list: List[Spectrum]) -> Generator[Spectrum]:
-                for spectrum in sepctra_list:
+            def _spectra_generator(spectra_list: List[Spectrum]) -> Generator[Spectrum]:
+                for spectrum in spectra_list:
                     yield spectrum
 
-            spectra_generator = _spectra_generator
+            spectra_generator = _spectra_generator(source)
 
         return self._match_spectra(
             spectra_generator, n_best, include_metadata, ion_mode
