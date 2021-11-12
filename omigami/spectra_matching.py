@@ -27,6 +27,7 @@ VALID_KEYS = {
     "instrument",
     "parent_mass",
     "smiles",
+    "precursor_mz",
 }
 
 log = getLogger(__file__)
