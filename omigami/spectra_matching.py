@@ -4,14 +4,14 @@ import ast
 import json
 from io import StringIO
 from logging import getLogger
-from typing import List, Dict, Any, Union, Generator
+from typing import List, Dict, Any, Union, Generator, Optional
 import requests
 import pandas as pd
 from matchms import Spectrum
 from matchms.importing import load_from_mgf
 
 
-from omigami.authentication import get_session, authenticate_client
+from omigami.authentication import get_session, authenticate_client, set_token
 from omigami.exceptions import (
     InvalidCredentials,
     NotFoundError,
@@ -39,9 +39,13 @@ Payload = Dict[str, Dict[str, Dict[str, Union[int, dict]]]]
 class SpectraMatching:
     _PREDICT_ENDPOINT_BASE = "https://app.omigami.com/seldon/seldon/{algorithm}-{ion_mode}/api/v0.1/predictions"
     _ENDPOINT = None
+    _optional_token = None
 
     mandatory_keys: List[str] = ["peaks_json", "Precursor_MZ"]
     float_keys: List[str] = ["Precursor_MZ"]
+
+    def __init__(self, optional_token: Optional[str] = None):
+        self._optional_token = optional_token
 
     def match_spectra(
         self,
@@ -115,7 +119,10 @@ class SpectraMatching:
             )
 
         # gets token from user credentials
-        authenticate_client()
+        if self._optional_token is not None:
+            set_token(self._optional_token)
+        else:
+            authenticate_client()
 
         parameters = self._build_parameters(n_best, include_metadata)
 
@@ -293,6 +300,12 @@ class SpectraMatching:
 class MS2DeepScore(SpectraMatching):
     _ENDPOINT = "ms2deepscore"
 
+    def __init__(self, optional_token: Optional[str] = None):
+        super(MS2DeepScore, self).__init__(optional_token)
+
 
 class Spec2Vec(SpectraMatching):
     _ENDPOINT = "spec2vec"
+
+    def __init__(self, optional_token: Optional[str] = None):
+        super(Spec2Vec, self).__init__(optional_token)
