@@ -1,4 +1,5 @@
 import pytest
+from matchms.importing import load_from_mgf
 
 from omigami.tests.conftest import spec2vec_client
 
@@ -12,6 +13,24 @@ def test_match_spectra_from_path_small(small_mgf_path, spec2vec_client):
 
     result = spec2vec_client.match_spectra(
         small_mgf_path, 10, ["smiles", "compound_name"], ion_mode="positive"
+    )
+
+    assert result
+    assert set(result[0].columns) == {"smiles", "score", "compound_name"}
+    assert len(result) == 46
+
+
+@pytest.mark.internet_connection
+@pytest.mark.skip(reason="Requires valid credentials")
+def test_match_spectra_from_list(small_mgf_path, spec2vec_client):
+    """
+    Tests matching spectra against library with a very small ammount of spectra ( < 50 )
+    """
+
+    spectra = list(load_from_mgf(small_mgf_path))
+
+    result = spec2vec_client.match_spectra(
+        spectra, 10, ["smiles", "compound_name"], ion_mode="positive"
     )
 
     assert result

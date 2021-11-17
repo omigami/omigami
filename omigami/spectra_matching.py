@@ -27,6 +27,7 @@ VALID_KEYS = {
     "instrument",
     "parent_mass",
     "smiles",
+    "precursor_mz",
 }
 
 log = getLogger(__file__)
@@ -78,8 +79,12 @@ class SpectraMatching:
         if type(source) == str or type(source) == StringIO:
             spectra_generator = load_from_mgf(source)
         else:
-            # create the generator
-            spectra_generator = None
+
+            def _spectra_generator(spectra_list: List[Spectrum]) -> Generator[Spectrum]:
+                for spectrum in spectra_list:
+                    yield spectrum
+
+            spectra_generator = _spectra_generator(source)
 
         if self._ENDPOINT is None:
             raise InvalidUsageError(

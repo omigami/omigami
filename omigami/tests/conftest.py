@@ -34,6 +34,14 @@ def spec2vec_client():
     return client
 
 
+@pytest.fixture(scope="module")
+def ms2deepscore_client():
+    _set_credentials_and_auth_for_tests()
+    client = MS2DeepScore()
+    client._PREDICT_ENDPOINT_BASE = "https://mlops.datarevenue.com/seldon/seldon/ms2deepscore-{ion_mode}/api/v0.1/predictions"
+    return client
+
+
 @pytest.fixture(scope="session")
 def small_mgf_path():
     return str(ASSETS_DIR / "gnps_small.mgf")
@@ -60,14 +68,6 @@ def sample_response():
         response = pickle.load(f)
 
     return response
-
-
-@pytest.fixture(scope="module")
-def ms2deepscore_client():
-    _set_credentials_and_auth_for_tests()
-    client = MS2DeepScore()
-    # client._PREDICT_ENDPOINT_BASE = "https://mlops.datarevenue.com/seldon/seldon/ms2deepscore-{ion_mode}/api/v0.1/predictions"
-    return client
 
 
 @pytest.fixture()
