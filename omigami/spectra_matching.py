@@ -50,7 +50,8 @@ class SpectraMatching:
         ion_mode: str = "positive",
     ):
         """
-        Finds the N best matches for spectra in a local mgf file using spec2vec algorithm.
+        From a spectra source, issues requests to either MS2DeepScore or Spec2Vec endpoints to find the N best library
+        matches.
 
         Parameters
         ----------
@@ -80,17 +81,6 @@ class SpectraMatching:
             # create the generator
             spectra_generator = None
 
-        return self._match_spectra(
-            spectra_generator, n_best, include_metadata, ion_mode
-        )
-
-    def _match_spectra(
-        self,
-        spectra_generator: Generator[Spectrum],
-        n_best: int,
-        include_metadata: List[str] = None,
-        ion_mode: str = "positive",
-    ):
         if self._ENDPOINT is None:
             raise InvalidUsageError(
                 "You should only evoke match_spectra from either "
