@@ -81,6 +81,14 @@ def get_session() -> Auth:
     return AUTH
 
 
+def set_token(token: str) -> None:
+    """
+    Sets a session token if obtained outside the CLI client system, to bypass mandatory authentication via credentials
+    on accessing protected endpoints
+    """
+    AUTH.session_token = token
+
+
 """
  > PRIVATE FUNCTIONS
 """
