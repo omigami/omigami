@@ -74,7 +74,7 @@ n_best_matches = 10
 include_metadata = ["Smiles", "Compound_name"]
 ion_mode = "positive"  # either positive or negative
 
-result = client.match_spectra_from_path(
+result = client.load_and_match_spectra(
     mgf_file_path, n_best_matches, include_metadata, ion_mode=ion_mode,
 )
 ```
@@ -103,7 +103,7 @@ n_best_matches = 10
 include_metadata = ["Smiles", "Compound_name"]
 ion_mode = "positive"  # either positive or negative
 
-result = client.match_spectra_from_path(
+result = client.load_and_match_spectra(
     mgf_file_path, n_best_matches, include_metadata, ion_mode=ion_mode,
 )
 ```

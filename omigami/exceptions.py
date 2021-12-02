@@ -12,3 +12,7 @@ class ServerAuthError(Exception):
 
 class InternalServerError(Exception):
     pass
+
+
+class InvalidUsageError(Exception):
+    pass

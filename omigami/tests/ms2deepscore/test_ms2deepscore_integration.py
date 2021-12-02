@@ -6,7 +6,7 @@ import pytest
 def test_match_spectra_from_path_with_2_spectra(
     mgf_path_of_2_spectra, ms2deepscore_client
 ):
-    result = ms2deepscore_client.match_spectra_from_path(
+    result = ms2deepscore_client.load_and_match_spectra(
         mgf_path_of_2_spectra, 3, ["compound_name"], "positive"
     )
     assert result
@@ -18,7 +18,7 @@ def test_match_spectra_from_path_with_2_spectra(
 @pytest.mark.internet_connection
 @pytest.mark.skip(reason="Requires valid credentials")
 def test_match_spectra_from_path_with_small(small_mgf_path, ms2deepscore_client):
-    result = ms2deepscore_client.match_spectra_from_path(
+    result = ms2deepscore_client.load_and_match_spectra(
         small_mgf_path, 3, ["compound_name"], "positive"
     )
     assert result

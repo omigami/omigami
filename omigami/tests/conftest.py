@@ -5,10 +5,9 @@ from pathlib import Path
 import pytest
 from matchms.importing import load_from_mgf
 
-from omigami import Spec2Vec
+from omigami import Spec2Vec, MS2DeepScore
 from omigami.authentication import encrypt_credentials, AUTH
 from omigami.omi_settings import config
-from omigami.ms2deepscore import MS2DeepScore
 
 ASSETS_DIR = Path(__file__).parent / "assets"
 
@@ -23,7 +22,7 @@ def _set_credentials_and_auth_for_tests():
     pwd = os.getenv("TEST_OMIGAMI_PWD") or config["login"]["dev"]["password"].get()
     AUTH.credentials = encrypt_credentials(username, pwd)
     AUTH.self_service_endpoint = (
-       "https://mlops.datarevenue.com/.ory/kratos/public/self-service/login/api"
+        "https://mlops.datarevenue.com/.ory/kratos/public/self-service/login/api"
     )
 
 
@@ -32,6 +31,14 @@ def spec2vec_client():
     _set_credentials_and_auth_for_tests()
     client = Spec2Vec()
     client._PREDICT_ENDPOINT_BASE = "https://mlops.datarevenue.com/seldon/seldon/spec2vec-{ion_mode}/api/v0.1/predictions"
+    return client
+
+
+@pytest.fixture(scope="module")
+def ms2deepscore_client():
+    _set_credentials_and_auth_for_tests()
+    client = MS2DeepScore()
+    client._PREDICT_ENDPOINT_BASE = "https://mlops.datarevenue.com/seldon/seldon/ms2deepscore-{ion_mode}/api/v0.1/predictions"
     return client
 
 
@@ -63,20 +70,16 @@ def sample_response():
     return response
 
 
-@pytest.fixture(scope="module")
-def ms2deepscore_client():
-    _set_credentials_and_auth_for_tests()
-    client = MS2DeepScore()
-    client._PREDICT_ENDPOINT_BASE = "https://mlops.datarevenue.com/seldon/seldon/ms2deepscore-{ion_mode}/api/v0.1/predictions"
-    return client
-
-
 @pytest.fixture()
 def ms2deepscore_prediction_endpoints():
     _client = Spec2Vec()
     return {
-        "positive": _client._PREDICT_ENDPOINT_BASE.format(ion_mode="positive"),
-        "negative": _client._PREDICT_ENDPOINT_BASE.format(ion_mode="negative"),
+        "positive": _client._PREDICT_ENDPOINT_BASE.format(
+            algorithm="ms2deepscore", ion_mode="positive"
+        ),
+        "negative": _client._PREDICT_ENDPOINT_BASE.format(
+            algorithm="ms2deepscore", ion_mode="negative"
+        ),
     }
 
 
@@ -89,8 +92,12 @@ def mgf_path_of_2_spectra():
 def spec2vec_prediction_endpoints():
     _client = Spec2Vec()
     return {
-        "positive": _client._PREDICT_ENDPOINT_BASE.format(ion_mode="positive"),
-        "negative": _client._PREDICT_ENDPOINT_BASE.format(ion_mode="negative"),
+        "positive": _client._PREDICT_ENDPOINT_BASE.format(
+            algorithm="spec2vec", ion_mode="positive"
+        ),
+        "negative": _client._PREDICT_ENDPOINT_BASE.format(
+            algorithm="spec2vec", ion_mode="negative"
+        ),
     }
 
 
