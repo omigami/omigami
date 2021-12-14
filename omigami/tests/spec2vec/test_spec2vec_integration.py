@@ -1,8 +1,6 @@
 import pytest
 from matchms.importing import load_from_mgf
 
-from omigami.tests.conftest import spec2vec_client
-
 
 @pytest.mark.internet_connection
 @pytest.mark.skip(reason="Requires valid credentials")

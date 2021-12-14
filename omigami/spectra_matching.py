@@ -32,8 +32,9 @@ VALID_KEYS = {
 
 log = getLogger(__file__)
 
-JSON = Union[List[dict], dict]
-Payload = Dict[str, Dict[str, Dict[str, Union[int, dict]]]]
+SpectraJson = List[Dict[str, str]]
+Parameters = Dict[str, Any]
+Payload = Dict["data", Dict["ndarray", Dict[str, Union[Parameters, SpectraJson]]]]
 
 
 class SpectraMatching:
@@ -51,9 +52,8 @@ class SpectraMatching:
         self,
         source: Union[str, list[Spectrum], StringIO],
         n_best: int,
-        include_metadata: List[str] = None,
         ion_mode: str = "positive",
-    ):
+    ) -> List[pd.DataFrame]:
         """
         From a spectra source, issues requests to either MS2DeepScore or Spec2Vec endpoints to find the N best library
         matches.
@@ -65,10 +65,7 @@ class SpectraMatching:
             from a loaded mgf file
         n_best: int
             Number of best matches to select
-        include_metadata: List[str]
-            Metadata keys to include in the response. Will make response slower. Please
-            check the documentation for a list of valid keys.
-        ion_mode: str
+        ion_mode:
             Selects which model will be used for the predictions: Either a model trained with
             positive or negative ion mode spectra data. Defaults to positive.
 
@@ -79,16 +76,7 @@ class SpectraMatching:
 
         """
 
-        spectra_generator: Generator[Spectrum]
-        if type(source) == str or type(source) == StringIO:
-            spectra_generator = load_from_mgf(source)
-        else:
-
-            def _spectra_generator(spectra_list: List[Spectrum]) -> Generator[Spectrum]:
-                for spectrum in spectra_list:
-                    yield spectrum
-
-            spectra_generator = _spectra_generator(source)
+        spectra_generator = self._create_spectra_generator(source)
 
         if self._ENDPOINT is None:
             raise InvalidUsageError(
@@ -114,16 +102,30 @@ class SpectraMatching:
         else:
             authenticate_client()
 
-        parameters = self._build_parameters(n_best, include_metadata)
+        parameters = self._build_parameters(n_best)
 
         # issue requests respecting the spectra limit per request
         return self._make_batch_requests(spectra_generator, parameters, endpoint)
 
+    @staticmethod
+    def _create_spectra_generator(source: Union[str, StringIO, List[Spectrum]]):
+        spectra_generator: Generator[Spectrum]
+        if type(source) == str or type(source) == StringIO:
+            spectra_generator = load_from_mgf(source)
+        else:
+
+            def _spectra_generator(spectra_list: List[Spectrum]) -> Generator[Spectrum]:
+                for spectrum in spectra_list:
+                    yield spectrum
+
+            spectra_generator = _spectra_generator(source)
+        return spectra_generator
+
     def _build_payload(
         self,
         batch: List[Spectrum],
-        parameters: Dict[str, Any],
-    ) -> JSON:
+        parameters: Parameters,
+    ) -> Payload:
         """Extract abundance pairs and Precursor_MZ data, then build the json payload
 
         Returns:
@@ -150,7 +152,7 @@ class SpectraMatching:
         log.info(f"{len(spectra)} spectra found on input file.")
         self._validate_input(spectra)
 
-        payload = {
+        payload = {  # Dict[str, Dict[str, Dict[str, Union[Dict[str, Any], SpectraJson]
             "data": {
                 "ndarray": {
                     "parameters": parameters,
@@ -160,7 +162,12 @@ class SpectraMatching:
         }
         return payload
 
-    def _make_batch_requests(self, spectra_generator, parameters, endpoint):
+    def _make_batch_requests(
+        self,
+        spectra_generator: Generator[Spectrum],
+        parameters: Parameters,
+        endpoint: str,
+    ) -> List[pd.DataFrame]:
         batch = []
         requests = []
 
@@ -197,7 +204,7 @@ class SpectraMatching:
         return api_request
 
     @staticmethod
-    def _build_parameters(n_best: int, include_metadata: List[str]) -> Dict[str, Any]:
+    def _build_parameters(n_best: int) -> Parameters:
         parameters = {}
         try:
             parameters["n_best_spectra"] = int(n_best)
@@ -205,16 +212,6 @@ class SpectraMatching:
             raise ValueError(
                 "The number of best features parameter must be an integer."
             )
-
-        if include_metadata:
-            for key in include_metadata:
-                if key.lower() not in VALID_KEYS:
-                    raise ValueError(
-                        f"The metadata {key} is not included in the valid keys list. "
-                        f"Please check documentation for the list of valid keys."
-                    )
-            include_metadata = [key.lower() for key in include_metadata]
-            parameters["include_metadata"] = include_metadata
 
         return parameters
 
