@@ -152,7 +152,7 @@ class SpectraMatching:
         log.info(f"{len(spectra)} spectra found on input file.")
         self._validate_input(spectra)
 
-        payload = {  # Dict[str, Dict[str, Dict[str, Union[Dict[str, Any], SpectraJson]
+        payload = {
             "data": {
                 "ndarray": {
                     "parameters": parameters,
