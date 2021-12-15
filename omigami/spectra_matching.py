@@ -135,6 +135,16 @@ class SpectraMatching:
         """
         spectra = []
         for spectrum in batch:
+            if "pepmass" in spectrum.metadata:
+                precursor_mz = str(spectrum.metadata["pepmass"][0])
+            elif "precursor_mz" in spectrum.metadata:
+                precursor_mz = str(spectrum.metadata["precursor_mz"][0])
+            else:
+                raise KeyError(
+                    "One of ['pepmass' or 'precursor_mz'] must be present in the"
+                    "spectrum metadata."
+                )
+
             spectra.append(
                 {
                     "peaks_json": str(
@@ -145,7 +155,7 @@ class SpectraMatching:
                             )
                         ]
                     ),
-                    "Precursor_MZ": str(spectrum.metadata["pepmass"][0]),
+                    "Precursor_MZ": precursor_mz,
                 }
             )
 
@@ -187,7 +197,8 @@ class SpectraMatching:
             predictions.extend(self._format_results(r))
         return predictions
 
-    def _send_request(self, payload: Payload, endpoint: str) -> requests.Response:
+    @staticmethod
+    def _send_request(payload: Payload, endpoint: str) -> requests.Response:
         auth = get_session()
         api_request = requests.post(
             endpoint,
