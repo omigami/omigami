@@ -123,7 +123,7 @@ def test_create_spectra_generator_spectrum_source(small_mgf_path):
     assert isinstance(spectra_generator.__next__(), Spectrum)
 
 
-def test_make_batch_requests(small_mgf_path, sample_response):
+def test_make_batch_requests(small_mgf_path):
     client = SpectraMatching()
     _46_spectra = list(load_from_mgf(small_mgf_path))
 
@@ -138,6 +138,7 @@ def test_make_batch_requests(small_mgf_path, sample_response):
     # Input has 260 spectra -> 3 batch requests of [100, 100, 60]
     input_spectra = _46_spectra * 5
     n_spectra = len(input_spectra)
+    n_expected_batches = n_spectra // SPECTRA_LIMIT_PER_REQUEST + 1
     spectra_generator = client._create_spectra_generator(input_spectra)
 
     predictions = client._make_batch_requests(
@@ -145,4 +146,4 @@ def test_make_batch_requests(small_mgf_path, sample_response):
     )
 
     assert len(predictions) == n_spectra
-    assert client._send_request.call_count == n_spectra // SPECTRA_LIMIT_PER_REQUEST + 1
+    assert client._send_request.call_count == n_expected_batches

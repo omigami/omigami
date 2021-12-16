@@ -33,8 +33,10 @@ VALID_KEYS = {
 log = getLogger(__file__)
 
 SpectraJson = List[Dict[str, str]]
-Parameters = Dict[str, Any]
-Payload = Dict["data", Dict["ndarray", Dict[str, Union[Parameters, SpectraJson]]]]
+SpectraMatchingParameters = Dict[str, Any]
+Payload = Dict[
+    "data", Dict["ndarray", Dict[str, Union[SpectraMatchingParameters, SpectraJson]]]
+]
 
 
 class SpectraMatching:
@@ -124,7 +126,7 @@ class SpectraMatching:
     def _build_payload(
         self,
         batch: List[Spectrum],
-        parameters: Parameters,
+        parameters: SpectraMatchingParameters,
     ) -> Payload:
         """Extract abundance pairs and Precursor_MZ data, then build the json payload
 
@@ -175,7 +177,7 @@ class SpectraMatching:
     def _make_batch_requests(
         self,
         spectra_generator: Generator[Spectrum],
-        parameters: Parameters,
+        parameters: SpectraMatchingParameters,
         endpoint: str,
     ) -> List[pd.DataFrame]:
         batch = []
@@ -215,7 +217,7 @@ class SpectraMatching:
         return api_request
 
     @staticmethod
-    def _build_parameters(n_best: int) -> Parameters:
+    def _build_parameters(n_best: int) -> SpectraMatchingParameters:
         parameters = {}
         try:
             parameters["n_best_spectra"] = int(n_best)
