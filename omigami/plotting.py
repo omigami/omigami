@@ -1,5 +1,5 @@
 from json import JSONDecodeError
-from typing import List, Literal, Tuple
+from typing import List, Tuple
 
 from PIL.PngImagePlugin import PngImageFile
 import pandas as pd
@@ -33,7 +33,7 @@ class MoleculePlotter:
     def plot_molecule_structure_grid(
         self,
         spectra_matches: pd.DataFrame,
-        representation: Literal["smiles", "inchi"] = "smiles",
+        representation: str = "smiles",
         draw_indices: bool = False,
         img_size: Tuple[int, int] = (200, 200),
         substructure_highlight: str = "",
