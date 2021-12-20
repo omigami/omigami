@@ -7,10 +7,10 @@ def test_match_spectra_from_path_with_2_spectra(
     mgf_path_of_2_spectra, ms2deepscore_client
 ):
     result = ms2deepscore_client.load_and_match_spectra(
-        mgf_path_of_2_spectra, 3, ["compound_name"], "positive"
+        source=mgf_path_of_2_spectra, n_best=3, ion_mode="positive"
     )
     assert result
-    assert set(result[0].columns) == {"score", "compound_name"}
+    assert "score" in result[0].columns
     assert result[0].index[0] == "CCMSLIB00000001547"
     assert result[1].index[0] == "CCMSLIB00000001548"
 
@@ -19,7 +19,7 @@ def test_match_spectra_from_path_with_2_spectra(
 @pytest.mark.skip(reason="Requires valid credentials")
 def test_match_spectra_from_path_with_small(small_mgf_path, ms2deepscore_client):
     result = ms2deepscore_client.load_and_match_spectra(
-        small_mgf_path, 3, ["compound_name"], "positive"
+        source=small_mgf_path, n_best=3, ion_mode="positive"
     )
     assert result
     assert len(result) == 46
