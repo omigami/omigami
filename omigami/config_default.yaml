@@ -4,5 +4,4 @@ client:
       NPclassifier: 'https://npclassifier.ucsd.edu/classify?smiles='
       classyfire: 'https://gnps-structure.ucsd.edu/classyfire?smiles='
 
-  host:
-    prod: "https://app.omigami.com/"
+  host: "https://app.omigami.com/"

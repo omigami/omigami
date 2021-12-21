@@ -21,5 +21,4 @@ class ConfigurationError(Exception):
     pass
 
 
-OMIGAMI_ENV = os.getenv("OMIGAMI_ENV", "prod")
-HOST_NAME = client_config["host"][OMIGAMI_ENV].get(str)
+HOST_NAME = os.getenv("OMIGAMI_HOST", client_config["host"].get(str))
