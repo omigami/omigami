@@ -78,8 +78,17 @@ result = client.match_spectra(
 )
 ```
 
+The supported metadata keys for omigami are (case insensitive):
+- "smiles",
+- "compound_name",
+- "instrument",
+- "parent_mass",
+- "inchikey_smiles",
+- "inchikey_inchi"
+
+
 #### Notebooks
-You can find a [tutorial](https://github.com/omigami/omigami/blob/master/notebooks/spec2vec/tutorial.ipynb) notebook in the `/notebooks/` folder.
+You can find a spec2vec tutorial [here](https://github.com/omigami/omigami/blob/master/notebooks/spec2vec/tutorial.ipynb) and ms2deepscore tutorial [here](https://github.com/omigami/omigami/blob/master/notebooks/ms2deepscore/tutorial.ipynb).
 
 ### MS2DeepScore
 #### Quickstart
