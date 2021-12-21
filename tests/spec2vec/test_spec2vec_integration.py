@@ -9,12 +9,10 @@ def test_match_spectra_from_path_small(small_mgf_path, spec2vec_client):
     Tests matching spectra against library with a very small ammount of spectra ( < 50 )
     """
 
-    result = spec2vec_client.match_spectra(
-        small_mgf_path, 10, ["smiles", "compound_name"], ion_mode="positive"
-    )
+    result = spec2vec_client.match_spectra(small_mgf_path, 10, ion_mode="positive")
 
     assert result
-    assert set(result[0].columns) == {"smiles", "score", "compound_name"}
+    assert len(result[0].columns) == 38  # 38 metadata fields from gnps
     assert len(result) == 46
 
 
