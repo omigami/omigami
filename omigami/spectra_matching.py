@@ -40,7 +40,9 @@ Payload = Dict[
 
 
 class SpectraMatching:
-    _PREDICT_ENDPOINT_BASE = "https://app.omigami.com/seldon/seldon/{algorithm}-{ion_mode}/api/v0.1/predictions"
+    _PREDICT_ENDPOINT_BASE = "https://dev.omigami.com/seldon/seldon/{algorithm}-{ion_mode}/api/v0.1/predictions"
+    # "https://app.omigami.com/seldon/seldon/{algorithm}-{ion_mode}/api/v0.1/predictions"
+    # "https://dev.omigami.com/seldon/seldon/{algorithm}-{ion_mode}/api/v0.1/predictions"
     _ENDPOINT = None
     _optional_token = None
 
