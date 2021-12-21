@@ -71,21 +71,12 @@ client = Spec2Vec()
 
 mgf_file_path = "path_to_file.mgf"
 n_best_matches = 10
-include_metadata = ["Smiles", "Compound_name"]
 ion_mode = "positive"  # either positive or negative
 
-result = client.load_and_match_spectra(
-    mgf_file_path, n_best_matches, include_metadata, ion_mode=ion_mode,
+result = client.match_spectra(
+    mgf_file_path, n_best_matches, ion_mode,
 )
 ```
-
-The supported metadata keys for omigami are (case insensitive):
-- "smiles",
-- "compound_name",
-- "instrument",
-- "parent_mass",
-- "inchikey_smiles",
-- "inchikey_inchi"
 
 #### Notebooks
 You can find a [tutorial](https://github.com/omigami/omigami/blob/master/notebooks/spec2vec/tutorial.ipynb) notebook in the `/notebooks/` folder.
@@ -100,11 +91,10 @@ client = MS2DeepScore()
 
 mgf_file_path = "path_to_file.mgf"
 n_best_matches = 10
-include_metadata = ["Smiles", "Compound_name"]
 ion_mode = "positive"  # either positive or negative
 
-result = client.load_and_match_spectra(
-    mgf_file_path, n_best_matches, include_metadata, ion_mode=ion_mode,
+result = client.match_spectra(
+    mgf_file_path, n_best_matches, ion_mode,
 )
 ```
 
@@ -147,7 +137,7 @@ plotter.plot_NPclassifier_result(best_matches, color='orange')
 ### Spec2Vec
 1. Save your spectra data in a MGF file locally
 2. Create an Spec2Vec with your user token
-3. Call `match_spectra_from_path` with the location of your mgf file.
+3. Call `match_spectra` with the location of your mgf file.
 4. The MGF spectra data will be processed and sent to the spec2vec model that will convert it into embeddings. 
 5. These embeddings will be compared against the reference embeddings around the Precursor MZ.
 6. The N best matches per spectrum are returned on the response as pandas dataframes.  
@@ -155,7 +145,7 @@ plotter.plot_NPclassifier_result(best_matches, color='orange')
 ### MS2DeepScore
 1. Save your pair of spectra data in a MGF file locally
 2. Create an MS2DeepScore object with your user token
-3. Call `match_spectra_from_path` with the location of your mgf file.
+3. Call `match_spectra` with the location of your mgf file.
 4. The MGF spectra data will be processed and sent to the trained neural network that will predict the molecular structural similarity. 
 5. The prediction is returned on the response as a pandas dataframe.  
 
