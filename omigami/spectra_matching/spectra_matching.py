@@ -275,8 +275,9 @@ class SpectraMatching:
     def _format_results(api_request: requests.Response) -> List[pd.DataFrame]:
         if api_request.status_code == 500:
             raise InternalServerError(
-                "Something went wrong, the requested service is probably unavailable at the moment. "
-                "Please try again later or contact DataRevenue for more information."
+                f"Error in generating the prediction: "
+                f"{api_request.json()['status']['info']}.\n"
+                f"Please try again later or contact DataRevenue for more information."
             )
 
         response = json.loads(api_request.text)
