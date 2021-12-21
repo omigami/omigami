@@ -1,5 +1,5 @@
 from json import JSONDecodeError
-from typing import List, Tuple
+from typing import List, Tuple, Dict
 
 from PIL.PngImagePlugin import PngImageFile
 import pandas as pd
@@ -37,7 +37,7 @@ class MoleculePlotter:
         draw_indices: bool = False,
         img_size: Tuple[int, int] = (200, 200),
         substructure_highlight: str = "",
-    ) -> (List[PngImageFile], List[str]):
+    ) -> (Dict[str, PngImageFile], List[str]):
         """
         Generate a grid image representation of the hits returned from Spec2Vec and MS2DeepScore outputs.
         All structures passed MUST have valid smiles or inchi representations.
@@ -64,9 +64,9 @@ class MoleculePlotter:
 
         try:
             substructure = Chem.MolFromSmarts(substructure_highlight)
-            images = []
+            images = {}
 
-            for structure in spectra_matches[representation]:
+            for i, structure in enumerate(spectra_matches[representation]):
 
                 molecule = None
                 if representation == "smiles":
@@ -79,12 +79,11 @@ class MoleculePlotter:
                 if draw_indices:
                     molecule = self._add_index_to_atoms(molecule)
 
-                images.append(
-                    Draw.MolToImage(
-                        molecule,
-                        size=img_size_list,
-                        highlightBonds=highlight_bonds,
-                    )
+                gnps_id = spectra_matches.index.values[i]
+                images[gnps_id] = Draw.MolToImage(
+                    molecule,
+                    size=img_size_list,
+                    highlightBonds=highlight_bonds,
                 )
 
             return images, spectra_matches.compound_name.tolist()
