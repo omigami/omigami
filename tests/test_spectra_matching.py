@@ -9,7 +9,11 @@ from matchms.importing import load_from_mgf
 
 from omigami.authentication import AUTH
 from omigami.exceptions import InvalidCredentials
-from omigami.spectra_matching import SpectraMatching, SPECTRA_LIMIT_PER_REQUEST, Payload
+from omigami.spectra_matching.spectra_matching import (
+    SpectraMatching,
+    SPECTRA_LIMIT_PER_REQUEST,
+    Payload,
+)
 
 
 def test_build_payload(mgf_generator):
