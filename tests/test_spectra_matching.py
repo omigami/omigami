@@ -57,7 +57,7 @@ def test_format_results(sample_response):
     assert isinstance(results[0], pd.DataFrame)
     assert results[0].index.name == "matches of spectrum-0"
     assert all(results[0]["score"] > 0)
-    assert all(results[0].columns == ["score", "compound_name", "smiles"])
+    assert "metadata" not in results[0].columns.values
 
 
 def test_validate_parameters():
