@@ -1,5 +1,5 @@
 from json import JSONDecodeError
-from typing import List
+from typing import List, Tuple
 
 from PIL.PngImagePlugin import PngImageFile
 import pandas as pd
@@ -35,9 +35,9 @@ class MoleculePlotter:
         spectra_matches: pd.DataFrame,
         representation: str = "smiles",
         draw_indices: bool = False,
-        molecule_image_size: List[int] = [200, 200],
+        img_size: Tuple[int, int] = (200, 200),
         substructure_highlight: str = "",
-    ) -> PngImageFile:
+    ) -> (List[PngImageFile], List[str]):
         """
         Generate a grid image representation of the hits returned from Spec2Vec and MS2DeepScore outputs.
         All structures passed MUST have valid smiles or inchi representations.
@@ -52,46 +52,43 @@ class MoleculePlotter:
             If true draws the indices of the atoms
         molecule_image_size: List[int, int] = [200, 200]
             The size of every individual image of a molecule. Need to be provided as a list with two ints
-        substructure_highlight: str = None
-            Needs to be a molecule substructure represented as a smiles.
 
         Returns:
         -------
             A Plot showing the structure of the passed smiles/inchis
         """
+
+        img_size_list = list(img_size)
+        self._validate_data(spectra_matches, representation)
+        spectra_matches = self._clean_matches(spectra_matches, representation)
+
         try:
-            self._validate_data(spectra_matches, representation)
-
-            spectra_matches = self._clean_matches(spectra_matches, representation)
-
             substructure = Chem.MolFromSmarts(substructure_highlight)
-            mol_render_list = []
-            highlight_bonds = []
+            images = []
 
             for structure in spectra_matches[representation]:
 
+                molecule = None
                 if representation == "smiles":
                     molecule = Chem.MolFromSmiles(structure)
                 elif representation == "inchi":
                     molecule = Chem.MolFromInchi(structure)
 
-                substructure_matches = self._get_bonds_to_highlight(
-                    molecule, substructure
-                )
-                highlight_bonds.append(substructure_matches)
+                highlight_bonds = self._get_bonds_to_highlight(molecule, substructure)
 
                 if draw_indices:
                     molecule = self._add_index_to_atoms(molecule)
 
-                mol_render_list.append(molecule)
+                images.append(
+                    Draw.MolToImage(
+                        molecule,
+                        size=img_size_list,
+                        highlightBonds=highlight_bonds,
+                    )
+                )
 
-            image = Draw.MolsToGridImage(
-                mol_render_list,
-                subImgSize=molecule_image_size,
-                legends=spectra_matches.compound_name.tolist(),
-                highlightBondLists=highlight_bonds,
-            )
-            return image
+            return images, spectra_matches.compound_name.tolist()
+
         except NameError:
             raise NameError(
                 "You are missing the rdkit module. "
