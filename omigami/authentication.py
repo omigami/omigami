@@ -6,7 +6,7 @@ import requests
 from cryptography.fernet import Fernet
 
 from omigami.exceptions import InvalidCredentials, NotFoundError, ServerAuthError
-from omigami.omi_settings import get_credentials_path, ConfigurationError
+from omigami.omi_settings import get_credentials_path, ConfigurationError, HOST_NAME
 
 """
  > AUTH CLASS
@@ -29,7 +29,7 @@ class Auth:
         self.session_token = ""
         self.session_expiration = datetime.now()
         self.self_service_endpoint = (
-            "https://app.omigami.com/.ory/kratos/public/self-service/login/api"
+            f"{HOST_NAME}.ory/kratos/public/self-service/login/api"
         )
 
 

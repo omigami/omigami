@@ -1,10 +1,12 @@
-import confuse
 import os
 
-config = confuse.Configuration("omigami", __name__)
+import confuse
 
-CLASSYFIRE_URL = config["plotting"]["urls"]["classyfire"]
-NPCLASSIFIER_URL = config["plotting"]["urls"]["NPclassifier"]
+config = confuse.Configuration("omigami", __name__)
+client_config = config["client"]
+
+CLASSYFIRE_URL = client_config["plotting"]["urls"]["classyfire"]
+NPCLASSIFIER_URL = client_config["plotting"]["urls"]["NPclassifier"]
 
 
 def get_credentials_path():
@@ -17,3 +19,7 @@ def get_credentials_folder_path():
 
 class ConfigurationError(Exception):
     pass
+
+
+OMIGAMI_ENV = os.getenv("OMIGAMI_ENV", "prod")
+HOST_NAME = client_config["host"][OMIGAMI_ENV].get(str)
