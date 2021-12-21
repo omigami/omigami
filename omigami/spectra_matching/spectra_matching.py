@@ -295,17 +295,3 @@ class SpectraMatching:
             predicted_spectra.append(library_spectra_dataframe)
 
         return predicted_spectra
-
-
-class MS2DeepScore(SpectraMatching):
-    _ENDPOINT = "ms2deepscore"
-
-    def __init__(self, optional_token: Optional[str] = None):
-        super(MS2DeepScore, self).__init__(optional_token)
-
-
-class Spec2Vec(SpectraMatching):
-    _ENDPOINT = "spec2vec"
-
-    def __init__(self, optional_token: Optional[str] = None):
-        super(Spec2Vec, self).__init__(optional_token)
