@@ -1,4 +1,5 @@
 import pickle
+from datetime import datetime
 from typing import Dict
 
 import requests
@@ -6,7 +7,6 @@ from cryptography.fernet import Fernet
 
 from omigami.exceptions import InvalidCredentials, NotFoundError, ServerAuthError
 from omigami.omi_settings import get_credentials_path, ConfigurationError
-from datetime import datetime
 
 """
  > AUTH CLASS
@@ -94,6 +94,10 @@ def set_token(token: str) -> None:
 """
 
 
+class UnsetCredentialsError(Exception):
+    pass
+
+
 def _get_configured_credentials() -> Dict[str, bytes]:
     """
     Get the encryupted credentials stored in disk
@@ -101,19 +105,24 @@ def _get_configured_credentials() -> Dict[str, bytes]:
     path = get_credentials_path()
 
     credentials: Dict[str, bytes]
-    with open(path, "rb") as file_handle:
-        credentials = pickle.load(file_handle)
-        if len(credentials) == 0:
-            raise ConfigurationError(
-                "You have not setup your credentials yet. "
-                "Please do so by using 'omigami credentials-helper' CLI functionality and try again."
-            )
-        if not all(key in ["k", "u", "p"] for key in credentials.keys()):
-            raise ConfigurationError(
-                "Something seems wrong with your credentials. "
-                "Please, run 'omigami credentials-helper --unset' to remove them and then set them again."
-            )
-
+    try:
+        with open(path, "rb") as file_handle:
+            credentials = pickle.load(file_handle)
+            if len(credentials) == 0:
+                raise ConfigurationError(
+                    "You have not setup your credentials yet. "
+                    "Please do so by using 'omigami credentials-helper' CLI functionality and try again."
+                )
+            if not all(key in ["k", "u", "p"] for key in credentials.keys()):
+                raise ConfigurationError(
+                    "Something seems wrong with your credentials. "
+                    "Please, run 'omigami credentials-helper --unset' to remove them and then set them again."
+                )
+    except FileNotFoundError:
+        raise UnsetCredentialsError(
+            "Please set your omigami credentials. You can use the following command: \n "
+            "omigami credentials-helper --username <your_username> --password <your_pw>"
+        )
     return credentials
 
 
