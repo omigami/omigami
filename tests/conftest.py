@@ -21,8 +21,6 @@ def _set_credentials_and_auth_for_tests():
     )
     pwd = os.getenv("TEST_OMIGAMI_PWD") or config["login"]["dev"]["password"].get()
     AUTH.credentials = encrypt_credentials(username, pwd)
-    # "https://app.omigami.com/.ory/kratos/public/self-service/login/api"
-    # f"https://{DEV_HOSTNAME}/.ory/kratos/public/self-service/login/api"
 
 
 

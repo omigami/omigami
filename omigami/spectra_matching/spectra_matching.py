@@ -44,7 +44,6 @@ class SpectraMatching:
     _PREDICT_ENDPOINT_BASE = (
         f"{HOST_NAME}seldon/seldon/" + "{algorithm}-{ion_mode}/api/v0.1/predictions"
     )
-    # "https://dev.omigami.com/seldon/seldon/{algorithm}-{ion_mode}/api/v0.1/predictions"
     _ENDPOINT = None
     _optional_token = None
 
