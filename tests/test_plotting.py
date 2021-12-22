@@ -3,7 +3,7 @@ import pandas as pd
 import pytest
 from PIL.PngImagePlugin import PngImageFile
 from rdkit import Chem
-from omigami import MoleculePlotter
+from omigami.plotting.comparison_plotter import MoleculePlotter
 
 
 def test_plot_molecule_structure_grid(spectra_match_data_path):
