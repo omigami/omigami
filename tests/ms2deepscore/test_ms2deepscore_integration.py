@@ -7,7 +7,7 @@ def test_match_spectra_from_path_with_2_spectra(
     mgf_path_of_2_spectra, ms2deepscore_client
 ):
     n_best = 3
-    result = ms2deepscore_client.load_and_match_spectra(
+    result = ms2deepscore_client.match_spectra(
         mgf_path_of_2_spectra, n_best, "positive"
     )
 
@@ -21,7 +21,7 @@ def test_match_spectra_from_path_with_2_spectra(
 def test_match_spectra_from_path_with_small(small_mgf_path, ms2deepscore_client):
     n_best = 3
 
-    result = ms2deepscore_client.load_and_match_spectra(
+    result = ms2deepscore_client.match_spectra(
         small_mgf_path, n_best, "positive"
     )
     assert len(result) > 0
