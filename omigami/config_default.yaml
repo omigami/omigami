@@ -1,4 +1,7 @@
-plotting:
-  urls:
-    NPclassifier: 'https://npclassifier.ucsd.edu/classify?smiles='
-    classyfire: 'https://gnps-structure.ucsd.edu/classyfire?smiles='
+client:
+  plotting:
+    urls:
+      NPclassifier: 'https://npclassifier.ucsd.edu/classify?smiles='
+      classyfire: 'https://gnps-structure.ucsd.edu/classyfire?smiles='
+
+  host: "https://app.omigami.com/"
