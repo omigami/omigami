@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import ast
-import json
 from io import StringIO
 from logging import getLogger
 from typing import List, Dict, Any, Union, Generator, Optional
@@ -15,7 +14,6 @@ from omigami.authentication import get_session, authenticate_client, set_token
 from omigami.exceptions import (
     InvalidCredentials,
     NotFoundError,
-    InternalServerError,
     InvalidUsageError,
 )
 from omigami.omi_settings import HOST_NAME
@@ -52,6 +50,12 @@ class SpectraMatching:
 
     def __init__(self, optional_token: Optional[str] = None):
         self._optional_token = optional_token
+        self._cached_results: Dict[int, pd.DataFrame] = {}
+        self._failed_spectra: List[Spectrum] = []
+
+    @property
+    def failed_spectra(self) -> List[Spectrum]:
+        return self._failed_spectra
 
     def match_spectra(
         self,
@@ -183,27 +187,42 @@ class SpectraMatching:
         parameters: SpectraMatchingParameters,
         endpoint: str,
     ) -> List[pd.DataFrame]:
+        self._failed_spectra = []
         batch = []
-        requests = []
+        predictions = []
 
         for spectrum in spectra_generator:
+            if self._get_cache_id(spectrum) in self._cached_results:
+                predictions.append(self._cached_results[self._get_cache_id(spectrum)])
+                continue
+
             batch.append(spectrum)
             if len(batch) == SPECTRA_LIMIT_PER_REQUEST:
-                payload = self._build_payload(batch, parameters)
-                requests.append(self._send_request(payload, endpoint))
+                response = self._send_request(batch, endpoint, parameters)
+                if response is not None:
+                    formatted_results = self._format_results(response)
+                    self._cache_results(formatted_results, batch)
+                    predictions.extend(formatted_results)
+
                 batch = []
 
         if batch:
-            payload = self._build_payload(batch, parameters)
-            requests.append(self._send_request(payload, endpoint))
+            response = self._send_request(batch, endpoint, parameters)
+            if response is not None:
+                formatted_results = self._format_results(response)
+                self._cache_results(formatted_results, batch)
+                predictions.extend(formatted_results)
 
-        predictions = []
-        for r in requests:
-            predictions.extend(self._format_results(r))
         return predictions
 
-    @staticmethod
-    def _send_request(payload: Payload, endpoint: str) -> requests.Response:
+    def _send_request(
+        self,
+        batch: List[Spectrum],
+        endpoint: str,
+        parameters: SpectraMatchingParameters,
+    ) -> Union[requests.Response, None]:
+        payload = self._build_payload(batch, parameters)
+
         auth = get_session()
         api_request = requests.post(
             endpoint,
@@ -281,16 +300,9 @@ class SpectraMatching:
                         )
 
     @staticmethod
-    def _format_results(api_request: requests.Response) -> List[pd.DataFrame]:
-        if api_request.status_code == 500:
-            raise InternalServerError(
-                f"Error in generating the prediction: "
-                f"{api_request.json()['status']['info']}.\n"
-                f"Please try again later or contact DataRevenue for more information."
-            )
-
-        response = json.loads(api_request.text)
-        library_spectra_raw = response["jsonData"]
+    def _format_results(response: requests.Response) -> List[pd.DataFrame]:
+        response_json = response.json()
+        library_spectra_raw = response_json["jsonData"]
 
         predicted_spectra = []
         for id_, matches in library_spectra_raw.items():
@@ -298,12 +310,25 @@ class SpectraMatching:
             metadata_df = pd.DataFrame(
                 pd.DataFrame(matches).loc["metadata"].to_dict()
             ).T
-            library_spectra_dataframe = scores_df.join(metadata_df)
-            library_spectra_dataframe.index.name = f"matches of {id_}"
-            library_spectra_dataframe = library_spectra_dataframe.sort_values(
+            results_dataframe = scores_df.join(metadata_df)
+            results_dataframe.index.name = f"matches of {id_}"
+            results_dataframe = results_dataframe.sort_values(
                 by=["score"], ascending=False
             )
 
-            predicted_spectra.append(library_spectra_dataframe)
+            predicted_spectra.append(results_dataframe)
 
         return predicted_spectra
+
+    def reset_cache(self):
+        """Clears cached results from the client."""
+        self._cached_results = {}
+        self._failed_spectra = []
+
+    def _cache_results(self, res: List[pd.DataFrame], batch: List[Spectrum]):
+        for r, spectrum in zip(res, batch):
+            self._cached_results[self._get_cache_id(spectrum)] = r
+
+    @staticmethod
+    def _get_cache_id(spectrum: Spectrum) -> int:
+        return hash(str(spectrum.metadata))

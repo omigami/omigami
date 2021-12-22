@@ -1,9 +1,12 @@
+import json
 import os
 import pickle
 from pathlib import Path
+from unittest.mock import Mock
 
 import pytest
 from matchms.importing import load_from_mgf
+from requests import Response
 
 from omigami.authentication import encrypt_credentials, AUTH
 from omigami.omi_settings import config
@@ -109,3 +112,30 @@ def spectra_match_data_path_missing_smiles():
 @pytest.fixture(scope="session")
 def spectra_match_data_path_web_api_error():
     return str(ASSETS_DIR / "spectrum_matches_error_on_classyfire.csv")
+
+
+@pytest.fixture
+def response_100_spectra():
+    with open(ASSETS_DIR / "response_100_spectra.json", "r") as f:
+        response_json = json.load(f)
+
+    return response_json
+
+
+@pytest.fixture
+def mock_send_request(response_100_spectra) -> Mock:
+    def send_request(batch, *args):
+        batch_size = len(batch)
+        spectrum_ids = list(response_100_spectra["jsonData"].keys())[:batch_size]
+        response_data = {
+            "jsonData": {
+                id_: response_100_spectra["jsonData"][id_] for id_ in spectrum_ids
+            }
+        }
+
+        response = Response()
+        response.json = lambda: response_data
+
+        return response
+
+    return Mock(side_effect=send_request)

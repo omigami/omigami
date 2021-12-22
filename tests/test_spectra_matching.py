@@ -12,7 +12,6 @@ from omigami.exceptions import InvalidCredentials
 from omigami.spectra_matching.spectra_matching import (
     SpectraMatching,
     SPECTRA_LIMIT_PER_REQUEST,
-    Payload,
 )
 
 
@@ -127,27 +126,67 @@ def test_create_spectra_generator_spectrum_source(small_mgf_path):
     assert isinstance(spectra_generator.__next__(), Spectrum)
 
 
-def test_make_batch_requests(small_mgf_path):
-    client = SpectraMatching()
+@pytest.fixture
+def spectra_matching_client(mock_send_request):
+    client = SpectraMatching(optional_token="token")
+    client._ENDPOINT = "endpoint"
+    client._send_request = mock_send_request
+
+    return client
+
+
+def test_make_batch_requests(small_mgf_path, spectra_matching_client):
+    spectra_matching_client._cache_results = Mock()
     _46_spectra = list(load_from_mgf(small_mgf_path))
-
-    def _send_request(payload: Payload, *args) -> list:
-        """Creates a dummy response of the same size of the payload"""
-        payload_size = len(payload["data"]["ndarray"]["data"])
-        return payload_size * ["result"]
-
-    client._send_request = Mock(side_effect=_send_request)
-    client._format_results = lambda r: r  # to not do any formatting and return as it is
 
     # Input has 260 spectra -> 3 batch requests of [100, 100, 60]
     input_spectra = _46_spectra * 5
     n_spectra = len(input_spectra)
     n_expected_batches = n_spectra // SPECTRA_LIMIT_PER_REQUEST + 1
-    spectra_generator = client._create_spectra_generator(input_spectra)
+    spectra_generator = spectra_matching_client._create_spectra_generator(input_spectra)
 
-    predictions = client._make_batch_requests(
+    predictions = spectra_matching_client._make_batch_requests(
         spectra_generator, {"n_best_spectra": 2}, "endpoint"
     )
 
     assert len(predictions) == n_spectra
-    assert client._send_request.call_count == n_expected_batches
+    assert spectra_matching_client._send_request.call_count == n_expected_batches
+    assert spectra_matching_client._cache_results.call_count == n_expected_batches
+
+
+def test_spectra_matching_caching(spectra_matching_client, small_mgf_path):
+    """Tests result caching by running the same function twice"""
+
+    input_spectra = list(load_from_mgf(small_mgf_path))
+
+    spectra = spectra_matching_client.match_spectra(input_spectra, n_best=2)
+
+    assert len(spectra) == 46
+    assert len(spectra_matching_client._cached_results) == len(spectra)
+    assert spectra_matching_client._send_request.call_count == 1
+
+    _ = spectra_matching_client.match_spectra(input_spectra, n_best=2)
+
+    assert spectra_matching_client._send_request.call_count == 1
+
+
+def test_reset_cache(spectra_matching_client, small_mgf_path):
+    """Resets caches after running the first time"""
+
+    input_spectra = list(load_from_mgf(small_mgf_path))
+
+    spectra = spectra_matching_client.match_spectra(input_spectra, n_best=2)
+
+    assert len(spectra) == 46
+    assert len(spectra_matching_client._cached_results) == len(spectra)
+    assert spectra_matching_client._send_request.call_count == 1
+
+    spectra_matching_client.reset_cache()
+    _ = spectra_matching_client.match_spectra(input_spectra, n_best=2)
+
+    assert spectra_matching_client._send_request.call_count == 2
+
+
+def test_failed_spectra_caching(spectra_matching_client, small_mgf_path):
+    #  TODO
+    pass
