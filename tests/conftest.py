@@ -1,17 +1,15 @@
-import pickle
 import os
+import pickle
 from pathlib import Path
 
 import pytest
 from matchms.importing import load_from_mgf
 
-from omigami import Spec2Vec, MS2DeepScore
 from omigami.authentication import encrypt_credentials, AUTH
 from omigami.omi_settings import config
+from omigami.spectra_matching import Spec2Vec, MS2DeepScore
 
 ASSETS_DIR = Path(__file__).parent / "assets"
-
-DEV_HOSTNAME = "dev.omigami.com"
 
 
 def _set_credentials_and_auth_for_tests():
@@ -23,20 +21,15 @@ def _set_credentials_and_auth_for_tests():
     )
     pwd = os.getenv("TEST_OMIGAMI_PWD") or config["login"]["dev"]["password"].get()
     AUTH.credentials = encrypt_credentials(username, pwd)
-    AUTH.self_service_endpoint = (
-        # "https://app.omigami.com/.ory/kratos/public/self-service/login/api"
-        f"https://{DEV_HOSTNAME}/.ory/kratos/public/self-service/login/api"
-    )
+    # "https://app.omigami.com/.ory/kratos/public/self-service/login/api"
+    # f"https://{DEV_HOSTNAME}/.ory/kratos/public/self-service/login/api"
+
 
 
 @pytest.fixture(scope="module")
 def spec2vec_client():
     _set_credentials_and_auth_for_tests()
     client = Spec2Vec()
-    client._PREDICT_ENDPOINT_BASE = (
-        f"https://{DEV_HOSTNAME}/seldon/seldon/spec2vec"
-        + "-{ion_mode}/api/v0.1/predictions"
-    )
     return client
 
 
@@ -44,10 +37,6 @@ def spec2vec_client():
 def ms2deepscore_client():
     _set_credentials_and_auth_for_tests()
     client = MS2DeepScore()
-    client._PREDICT_ENDPOINT_BASE = (
-        f"https://{DEV_HOSTNAME}/seldon/seldon/ms2deepscore"
-        + "-{ion_mode}/api/v0.1/predictions"
-    )
     return client
 
 
