@@ -65,7 +65,7 @@ you may use `omigami credentials-helper --unset`.
 #### Quickstart
 
 ```python
-from omigami import Spec2Vec
+from omigami.spectra_matching import Spec2Vec
 
 client = Spec2Vec()
 
@@ -94,7 +94,7 @@ You can find a spec2vec tutorial [here](https://github.com/omigami/omigami/blob/
 #### Quickstart
 
 ```python
-from omigami import MS2DeepScore
+from omigami.spectra_matching import MS2DeepScore
 
 client = MS2DeepScore()
 
