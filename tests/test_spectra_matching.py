@@ -6,7 +6,9 @@ import pytest
 import requests
 from matchms import Spectrum
 from matchms.importing import load_from_mgf
+from requests import Response
 
+import omigami.spectra_matching.spectra_matching
 from omigami.authentication import AUTH
 from omigami.exceptions import InvalidCredentials
 from omigami.spectra_matching.spectra_matching import (
@@ -208,6 +210,36 @@ def test_reset_cache(mocked_client, small_mgf_path):
     assert mocked_client._send_request.call_count == 2
 
 
-def test_failed_spectra_caching(mocked_client, small_mgf_path):
-    #  TODO
-    pass
+def test_failed_spectra_caching(small_mgf_path, response_10_spectra, monkeypatch):
+    """
+    For this test we mock the batching size to 10 to allow for multiple batches with the
+    input spectra of length 46.
+
+    Then we mock the requests.post method so that in the third call it will return a
+    response with status code of 500. The expected behavior is to have the first 2 requests
+    cached, and the third one listed on failed_spectra attribute.
+    """
+    monkeypatch.setattr(
+        omigami.spectra_matching.spectra_matching, "SPECTRA_LIMIT_PER_REQUEST", 10
+    )
+
+    bad_response = Response()
+    bad_response.status_code = 500
+    bad_response.json = lambda: {"status": {"info": "Big Bad Bug"}}
+    mocked_post = Mock(
+        side_effect=[response_10_spectra, response_10_spectra, bad_response]
+    )
+    monkeypatch.setattr(
+        omigami.spectra_matching.spectra_matching.requests, "post", mocked_post
+    )
+
+    client = SpectraMatching()
+    input_spectra = client._create_spectra_generator(
+        list(load_from_mgf(small_mgf_path))[:25]
+    )
+
+    results = client._make_batch_requests(input_spectra, {}, "endpoint")
+
+    assert len(results) == 20
+    assert len(client.failed_spectra) == 5
+    assert client.failed_spectra == list(load_from_mgf(small_mgf_path))[20:25]

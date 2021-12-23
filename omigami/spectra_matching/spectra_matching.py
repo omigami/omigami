@@ -217,6 +217,8 @@ class SpectraMatching:
             formatted_results = self._format_results(response)
             self._cache_results(formatted_results, batch)
             return formatted_results
+        else:
+            return []
 
     def _send_request(
         self,
@@ -227,28 +229,28 @@ class SpectraMatching:
         payload = self._build_payload(batch, parameters)
 
         auth = get_session()
-        api_request = requests.post(
+        response = requests.post(
             endpoint,
             json=payload,
             headers={"Authorization": f"Bearer {auth.session_token}"},
             timeout=600,
         )
 
-        if api_request.status_code == 401:
+        if response.status_code == 401:
             raise InvalidCredentials("Your credentials are invalid.")
-        elif api_request.status_code == 404:
+        elif response.status_code == 404:
             raise NotFoundError("The API endpoint couldn't be reached.")
-        elif api_request.status_code == 500:
+        elif response.status_code == 500:
             log.error(
                 f"ERROR: An error happened during spectra matching. "
                 f"Please try again or contact DataRevenue for more information. "
                 f"The list of spectra that failed can be accessed on the failed_spectra attribute."
-                f"\n\n{api_request.json()['status']['info']}.\n"
+                f"\n\n{response.json()['status']['info']}.\n"
             )
             self._failed_spectra.extend(batch)
             return
 
-        return api_request
+        return response
 
     @staticmethod
     def _build_parameters(n_best: int) -> SpectraMatchingParameters:
