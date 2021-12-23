@@ -171,6 +171,8 @@ def test_spectra_matching_caching(mocked_client, small_mgf_path):
 
 
 def test_spectra_matching_partial_caching(mocked_client, small_mgf_path):
+    """Caches the first 30 spectra from file. Then run the whole file and asserts the
+    cache was used, and the request was made using only the last 16 spectra."""
     all_46_spectra = list(load_from_mgf(small_mgf_path))
     first_30, last_16 = all_46_spectra[:30], all_46_spectra[30:]
 
