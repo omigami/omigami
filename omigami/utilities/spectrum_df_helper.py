@@ -39,7 +39,7 @@ class SpectrumDataFrameHelper:
         """
         constrained_df = spectrum_df.copy()
         mass_low_limit, mass_high_limit = display_limits
-        Spectrum_constrained = constrained_df[
+        constrained_df = constrained_df[
             constrained_df["m/z"].between(mass_low_limit, mass_high_limit)
         ]
         return constrained_df
