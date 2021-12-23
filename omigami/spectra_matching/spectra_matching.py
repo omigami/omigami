@@ -189,31 +189,34 @@ class SpectraMatching:
     ) -> List[pd.DataFrame]:
         self._failed_spectra = []
         batch = []
-        predictions = []
+        results = []
 
         for spectrum in spectra_generator:
             if self._get_cache_id(spectrum) in self._cached_results:
-                predictions.append(self._cached_results[self._get_cache_id(spectrum)])
+                results.append(self._cached_results[self._get_cache_id(spectrum)])
                 continue
 
             batch.append(spectrum)
             if len(batch) == SPECTRA_LIMIT_PER_REQUEST:
-                response = self._send_request(batch, endpoint, parameters)
-                if response is not None:
-                    formatted_results = self._format_results(response)
-                    self._cache_results(formatted_results, batch)
-                    predictions.extend(formatted_results)
-
+                results.extend(self._match_spectra(batch, endpoint, parameters))
                 batch = []
 
         if batch:
-            response = self._send_request(batch, endpoint, parameters)
-            if response is not None:
-                formatted_results = self._format_results(response)
-                self._cache_results(formatted_results, batch)
-                predictions.extend(formatted_results)
+            results.extend(self._match_spectra(batch, endpoint, parameters))
 
-        return predictions
+        return results
+
+    def _match_spectra(
+        self,
+        batch: List[Spectrum],
+        endpoint: str,
+        parameters: SpectraMatchingParameters,
+    ) -> List[pd.DataFrame]:
+        response = self._send_request(batch, endpoint, parameters)
+        if response is not None:
+            formatted_results = self._format_results(response)
+            self._cache_results(formatted_results, batch)
+            return formatted_results
 
     def _send_request(
         self,
