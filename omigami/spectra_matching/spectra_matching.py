@@ -42,7 +42,7 @@ class SpectraMatching:
     _PREDICT_ENDPOINT_BASE = (
         f"{HOST_NAME}seldon/seldon/" + "{algorithm}-{ion_mode}/api/v0.1/predictions"
     )
-    _ENDPOINT = None
+    _algorithm = None
     _optional_token = None
 
     mandatory_keys: List[str] = ["peaks_json", "Precursor_MZ"]
@@ -87,7 +87,7 @@ class SpectraMatching:
 
         spectra_generator = self._create_spectra_generator(source)
 
-        if self._ENDPOINT is None:
+        if self._algorithm is None:
             raise InvalidUsageError(
                 "You should only evoke match_spectra from either "
                 "a MS2DeepScore or a Spec2Vec class instance."
@@ -95,7 +95,7 @@ class SpectraMatching:
 
         # defines endpoint based on user choice of spectra ion mode
         endpoint = self._PREDICT_ENDPOINT_BASE.format(
-            algorithm=self._ENDPOINT, ion_mode=ion_mode
+            algorithm=self._algorithm, ion_mode=ion_mode
         )
 
         # validates input
@@ -201,7 +201,7 @@ class SpectraMatching:
                 results.extend(self._match_spectra(batch, endpoint, parameters))
                 batch = []
 
-        if batch:
+        if len(batch) > 0:
             results.extend(self._match_spectra(batch, endpoint, parameters))
 
         return results

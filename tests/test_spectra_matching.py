@@ -17,10 +17,12 @@ from omigami.spectra_matching.spectra_matching import (
 )
 
 
-def test_build_payload(mgf_generator):
+def test_build_payload(mgf_377_spectra_path):
     client = SpectraMatching()
 
-    payload = client._build_payload((mgf_generator), {"n_best_spectra": 10})
+    payload = client._build_payload(
+        list(load_from_mgf(mgf_377_spectra_path))[:20], {"n_best_spectra": 10}
+    )
 
     assert "data" in payload.keys()
     assert payload["data"]["ndarray"]["parameters"]["n_best_spectra"] == 10
@@ -104,48 +106,38 @@ def test_validate_input():
         client._validate_input([{"Precursor_MZ": "float", "peaks_json": [10]}])
 
 
-def test_create_spectra_generator_file_source(small_mgf_path):
+def test_create_spectra_generator_file_source(mgf_46_spectra_path):
     client = SpectraMatching()
 
-    spectra_generator = client._create_spectra_generator(small_mgf_path)
+    spectra_generator = client._create_spectra_generator(mgf_46_spectra_path)
 
     assert isinstance(spectra_generator.__next__(), Spectrum)
 
 
-def test_create_spectra_generator_stream_source(small_mgf_path):
+def test_create_spectra_generator_stream_source(mgf_46_spectra_path):
     client = SpectraMatching()
-    stream = StringIO(open(small_mgf_path, "r").read())
+    stream = StringIO(open(mgf_46_spectra_path, "r").read())
 
     spectra_generator = client._create_spectra_generator(stream)
 
     assert isinstance(spectra_generator.__next__(), Spectrum)
 
 
-def test_create_spectra_generator_spectrum_source(small_mgf_path):
+def test_create_spectra_generator_spectrum_source(mgf_46_spectra_path):
     client = SpectraMatching()
-    spectra = list(load_from_mgf(small_mgf_path))
+    spectra = list(load_from_mgf(mgf_46_spectra_path))
 
     spectra_generator = client._create_spectra_generator(spectra)
 
     assert isinstance(spectra_generator.__next__(), Spectrum)
 
 
-@pytest.fixture
-def mocked_client(mock_send_request):
-    client = SpectraMatching(optional_token="token")
-    client._ENDPOINT = "endpoint"
-    client._send_request = mock_send_request
-
-    return client
-
-
-def test_make_batch_requests(small_mgf_path):
+def test_make_batch_requests(mgf_377_spectra_path):
     client = SpectraMatching()
     client._match_spectra = Mock(side_effect=lambda b, *args: ["p"] * len(b))
-    _46_spectra = list(load_from_mgf(small_mgf_path))
 
-    # Input has 260 spectra -> 3 batch requests of [100, 100, 60]
-    input_spectra = _46_spectra * 5
+    # Input has 260 spectra -> 3 batch requests of [100, 100, 34]
+    input_spectra = list(load_from_mgf(mgf_377_spectra_path))[:234]
     n_spectra = len(input_spectra)
     n_expected_batches = n_spectra // SPECTRA_LIMIT_PER_REQUEST + 1
     spectra_generator = client._create_spectra_generator(input_spectra)
@@ -158,10 +150,24 @@ def test_make_batch_requests(small_mgf_path):
     assert client._match_spectra.call_count == n_expected_batches
 
 
-def test_spectra_matching_caching(mocked_client, small_mgf_path):
+@pytest.fixture
+def mocked_client(mock_send_request):
+    """A usable client with _send_request method mocked."""
+
+    class TestSpectraMatching(SpectraMatching):
+        _algorithm = "test"
+
+    # Token is set so that the class doesn't try to fetch a new token
+    client = TestSpectraMatching(optional_token="token")
+    client._send_request = mock_send_request
+
+    return client
+
+
+def test_spectra_matching_caching(mocked_client, mgf_46_spectra_path):
     """Sends a request twice. The second one should use cache instead of requesting."""
 
-    input_spectra = list(load_from_mgf(small_mgf_path))
+    input_spectra = list(load_from_mgf(mgf_46_spectra_path))
 
     spectra = mocked_client.match_spectra(input_spectra, n_best=2)
 
@@ -174,10 +180,10 @@ def test_spectra_matching_caching(mocked_client, small_mgf_path):
     assert mocked_client._send_request.call_count == 1
 
 
-def test_spectra_matching_partial_caching(mocked_client, small_mgf_path):
+def test_spectra_matching_partial_caching(mocked_client, mgf_46_spectra_path):
     """Caches the first 30 spectra from file. Then run the whole file and asserts the
     cache was used, and the request was made using only the last 16 spectra."""
-    all_46_spectra = list(load_from_mgf(small_mgf_path))
+    all_46_spectra = list(load_from_mgf(mgf_46_spectra_path))
     first_30, last_16 = all_46_spectra[:30], all_46_spectra[30:]
 
     matches = mocked_client.match_spectra(first_30, n_best=2)
@@ -193,10 +199,10 @@ def test_spectra_matching_partial_caching(mocked_client, small_mgf_path):
     assert last_16 in mocked_client._send_request.call_args_list[1].args
 
 
-def test_reset_cache(mocked_client, small_mgf_path):
+def test_reset_cache(mocked_client, mgf_46_spectra_path):
     """Sends a request, resets cache, then sends another request. 2 calls made."""
 
-    input_spectra = list(load_from_mgf(small_mgf_path))
+    input_spectra = list(load_from_mgf(mgf_46_spectra_path))
 
     matches = mocked_client.match_spectra(input_spectra, n_best=2)
 
@@ -210,7 +216,7 @@ def test_reset_cache(mocked_client, small_mgf_path):
     assert mocked_client._send_request.call_count == 2
 
 
-def test_failed_spectra_caching(small_mgf_path, response_10_spectra, monkeypatch):
+def test_failed_spectra_caching(mgf_46_spectra_path, response_10_spectra, monkeypatch):
     """
     For this test we mock the batching size to 10 to allow for multiple batches with the
     input spectra of length 46.
@@ -235,11 +241,11 @@ def test_failed_spectra_caching(small_mgf_path, response_10_spectra, monkeypatch
 
     client = SpectraMatching()
     input_spectra = client._create_spectra_generator(
-        list(load_from_mgf(small_mgf_path))[:25]
+        list(load_from_mgf(mgf_46_spectra_path))[:25]
     )
 
     results = client._make_batch_requests(input_spectra, {}, "endpoint")
 
     assert len(results) == 20
     assert len(client.failed_spectra) == 5
-    assert client.failed_spectra == list(load_from_mgf(small_mgf_path))[20:25]
+    assert client.failed_spectra == list(load_from_mgf(mgf_46_spectra_path))[20:25]

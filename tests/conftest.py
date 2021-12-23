@@ -6,7 +6,6 @@ from typing import Dict
 from unittest.mock import Mock
 
 import pytest
-from matchms.importing import load_from_mgf
 from requests import Response
 
 from omigami.authentication import encrypt_credentials, AUTH
@@ -42,23 +41,19 @@ def ms2deepscore_client():
 
 
 @pytest.fixture(scope="session")
-def small_mgf_path():
+def mgf_46_spectra_path():
+    """Mgf file containing 46 spectra"""
     return str(ASSETS_DIR / "gnps_small.mgf")
 
 
 @pytest.fixture(scope="session")
-def mgf_path():
+def mgf_377_spectra_path():
     return str(ASSETS_DIR / "GNPS-COLLECTIONS-MISC.mgf")
 
 
 @pytest.fixture(scope="session")
 def mgf_huge_path():
     return str(ASSETS_DIR / "GNPS-NIST14-MATCHES.mgf")
-
-
-@pytest.fixture(scope="session")
-def mgf_generator(mgf_path):
-    return list(load_from_mgf(mgf_path))[:20]
 
 
 @pytest.fixture(scope="session")
@@ -126,7 +121,7 @@ def response_100_spectra_json():
 @pytest.fixture
 def response_10_spectra(response_100_spectra_json):
     response = Response()
-    response.json = lambda: _get_sized_response(10)
+    response.json = lambda: _get_sized_response(10, response_100_spectra_json)
     return response
 
 
@@ -135,21 +130,22 @@ def mock_send_request(response_100_spectra_json) -> Mock:
     def send_request(batch, *args):
         """Returns a response in the correct format with the size of the input spectra"""
         response = Response()
-        response.json = lambda: _get_sized_response(len(batch))
+        response.json = lambda: _get_sized_response(
+            len(batch), response_100_spectra_json
+        )
 
         return response
 
     return Mock(side_effect=send_request)
 
 
-def _get_sized_response(size: int) -> Dict[str, dict]:
+def _get_sized_response(size: int, json_data: Dict[str, dict]) -> Dict[str, dict]:
     """
     We have a response fixture of 100 spectra in a json asset. For some tests we want
     to query with smaller payloads (e.g. 25 spectra) and the correct response should
     also be of this size. This function changes the size of the 100 spectra response
     to an integer number between 1 and 100.
     """
-    json_data = response_100_spectra_json()
     spectrum_ids = list(json_data["jsonData"].keys())[:size]
     response_data = {
         "jsonData": {id_: json_data["jsonData"][id_] for id_ in spectrum_ids}
