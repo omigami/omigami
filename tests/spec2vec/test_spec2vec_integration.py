@@ -25,12 +25,9 @@ def test_match_spectra_from_list(small_mgf_path, spec2vec_client):
 
     spectra = list(load_from_mgf(small_mgf_path))
 
-    result = spec2vec_client.match_spectra(
-        spectra, 10, ["smiles", "compound_name"], ion_mode="positive"
-    )
+    result = spec2vec_client.match_spectra(spectra, 10, ion_mode="positive")
 
     assert result
-    assert set(result[0].columns) == {"smiles", "score", "compound_name"}
     assert len(result) == 46
 
 
@@ -40,7 +37,7 @@ def test_match_spectra_from_path(mgf_path, spec2vec_client):
     """
     Tests matching spectra against library with a more substantial ammount of spectra ( > 350 )
     """
-    result = spec2vec_client.match_spectra(mgf_path, 10, ["smiles"])
+    result = spec2vec_client.match_spectra(mgf_path, 10, "positive")
 
     assert result
     assert len(result) == 377
@@ -49,7 +46,7 @@ def test_match_spectra_from_path(mgf_path, spec2vec_client):
 @pytest.mark.internet_connection
 @pytest.mark.skip(reason="Requires valid credentials")
 def test_match_spectra_from_path_negative_mode(mgf_path, spec2vec_client):
-    result = spec2vec_client.match_spectra(mgf_path, 10, ["smiles"], "negative")
+    result = spec2vec_client.match_spectra(mgf_path, 10, "negative")
 
     assert result
     assert len(result) == 377
