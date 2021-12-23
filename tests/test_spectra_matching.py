@@ -29,6 +29,7 @@ def test_build_payload(mgf_generator):
 def test_unauthorized_request(spec2vec_prediction_endpoints):
     AUTH.token = ""
     client = SpectraMatching()
+    client._build_payload = lambda *args: small_payload
     small_payload = {
         "data": {
             "ndarray": {
@@ -44,7 +45,9 @@ def test_unauthorized_request(spec2vec_prediction_endpoints):
     }
 
     with pytest.raises(InvalidCredentials):
-        client._send_request(small_payload, spec2vec_prediction_endpoints["positive"])
+        client._send_request(
+            ["Spectrum"], spec2vec_prediction_endpoints["positive"], {}
+        )
 
 
 def test_format_results(sample_response):
