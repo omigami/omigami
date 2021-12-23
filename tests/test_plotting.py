@@ -3,7 +3,7 @@ import pandas as pd
 import pytest
 from PIL.PngImagePlugin import PngImageFile
 from rdkit import Chem
-from omigami.plotting.comparison_plotter import MoleculePlotter
+from omigami.plotting import MoleculePlotter
 
 
 def test_plot_molecule_structure_grid(spectra_match_data_path):
@@ -51,3 +51,7 @@ def test_plot_NPclassifier_result(spectra_match_data_path_web_api_error):
     plot = MoleculePlotter.plot_NPclassifier_result(spectra_match_data_path)
 
     assert isinstance(plot, matplotlib.container.BarContainer)
+
+
+def test_mirror_plot():
+    pass
