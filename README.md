@@ -118,7 +118,7 @@ The following example will plot the structures of the molecules
 
 ```python
 
-from omigami.plotting.comparison_plotter import MoleculePlotter
+from omigami import MoleculePlotter
 
 plotter = MoleculePlotter()
 plotter.plot_molecule_structure_grid(best_matches,
@@ -131,7 +131,7 @@ The following code allows us to plot the results of the [Classyfire](https://jch
 
 ```python
 
-from omigami.plotting.comparison_plotter import MoleculePlotter
+from omigami import MoleculePlotter
 
 plotter = MoleculePlotter()
 plotter.plot_classyfire_result(best_matches)

@@ -8,11 +8,11 @@ from pandas.tests.groupby.test_value_counts import df
 
 class SpectrumDataFrameHelper:
     @staticmethod
-    def scale(spectra_df: pd.DataFrame, min=0, max=1, num_peaks=5000) -> pd.DataFrame:
+    def scale(spectrum_df: pd.DataFrame, min=0, max=1) -> pd.DataFrame:
         """
         Scale the Intensity column according to min and max values. By default, normalizes to 0 and 1.
         """
-        df = spectra_df.copy()
+        df = spectrum_df.copy()
 
         min_intensity, max_intensity = df.Intensity.min(), df.Intensity.max()
         df["Intensity"] = (df.Intensity - min_intensity) / (
