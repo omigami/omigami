@@ -53,6 +53,12 @@ class SpectraMatching:
         self._cached_results: Dict[int, pd.DataFrame] = {}
         self._failed_spectra: List[Spectrum] = []
 
+        if self._algorithm is None:
+            raise InvalidUsageError(
+                "You should only evoke match_spectra from either "
+                "a MS2DeepScore or a Spec2Vec class instance."
+            )
+
     @property
     def failed_spectra(self) -> List[Spectrum]:
         return self._failed_spectra
@@ -84,14 +90,8 @@ class SpectraMatching:
         for these matches.
 
         """
-
+        self._validate_token()
         spectra_generator = self._create_spectra_generator(source)
-
-        if self._algorithm is None:
-            raise InvalidUsageError(
-                "You should only evoke match_spectra from either "
-                "a MS2DeepScore or a Spec2Vec class instance."
-            )
 
         # defines endpoint based on user choice of spectra ion mode
         endpoint = self._PREDICT_ENDPOINT_BASE.format(
@@ -105,16 +105,17 @@ class SpectraMatching:
                 "Defaults to 'positive'. "
             )
 
-        # gets token from user credentials
-        if self._optional_token is not None:
-            set_token(self._optional_token)
-        else:
-            authenticate_client()
-
         parameters = self._build_parameters(n_best)
 
         # issue requests respecting the spectra limit per request
         return self._make_batch_requests(spectra_generator, parameters, endpoint)
+
+    def _validate_token(self):
+        """Gets token from user credentials or uses existing token."""
+        if self._optional_token is not None:
+            set_token(self._optional_token)
+        else:
+            authenticate_client()
 
     @staticmethod
     def _create_spectra_generator(source: Union[str, StringIO, List[Spectrum]]):

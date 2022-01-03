@@ -17,8 +17,12 @@ from omigami.spectra_matching.spectra_matching import (
 )
 
 
+class TestSpectraMatching(SpectraMatching):
+    _algorithm = "test"
+
+
 def test_build_payload(mgf_377_spectra_path):
-    client = SpectraMatching()
+    client = TestSpectraMatching()
 
     payload = client._build_payload(
         list(load_from_mgf(mgf_377_spectra_path))[:20], {"n_best_spectra": 10}
@@ -32,7 +36,7 @@ def test_build_payload(mgf_377_spectra_path):
 @pytest.mark.internet_connection
 def test_unauthorized_request(spec2vec_prediction_endpoints):
     AUTH.token = ""
-    client = SpectraMatching()
+    client = TestSpectraMatching()
     client._build_payload = lambda *args: small_payload
     small_payload = {
         "data": {
@@ -55,7 +59,7 @@ def test_unauthorized_request(spec2vec_prediction_endpoints):
 
 
 def test_format_results(sample_response):
-    client = SpectraMatching()
+    client = TestSpectraMatching()
     requests.Response()
 
     results = client._format_results(sample_response)
@@ -66,11 +70,11 @@ def test_format_results(sample_response):
 
 
 def test_validate_parameters():
-    parameters = SpectraMatching._build_parameters(2)
+    parameters = TestSpectraMatching._build_parameters(2)
     assert {"n_best_spectra"} == set(parameters.keys())
 
     with pytest.raises(ValueError, match="must be an integer"):
-        _ = SpectraMatching._build_parameters("robin")
+        _ = TestSpectraMatching._build_parameters("robin")
 
 
 def test_validate_input():
@@ -78,7 +82,7 @@ def test_validate_input():
         "peaks_json": "[[80.060677, 157.0], [337.508301, 230.0]]",
         "Precursor_MZ": "153.233",
     }
-    client = SpectraMatching()
+    client = TestSpectraMatching()
     # first validates if the input is correct then we test for errors
     client._validate_input([model_input])
 
@@ -107,7 +111,7 @@ def test_validate_input():
 
 
 def test_create_spectra_generator_file_source(mgf_46_spectra_path):
-    client = SpectraMatching()
+    client = TestSpectraMatching()
 
     spectra_generator = client._create_spectra_generator(mgf_46_spectra_path)
 
@@ -115,7 +119,7 @@ def test_create_spectra_generator_file_source(mgf_46_spectra_path):
 
 
 def test_create_spectra_generator_stream_source(mgf_46_spectra_path):
-    client = SpectraMatching()
+    client = TestSpectraMatching()
     stream = StringIO(open(mgf_46_spectra_path, "r").read())
 
     spectra_generator = client._create_spectra_generator(stream)
@@ -124,7 +128,7 @@ def test_create_spectra_generator_stream_source(mgf_46_spectra_path):
 
 
 def test_create_spectra_generator_spectrum_source(mgf_46_spectra_path):
-    client = SpectraMatching()
+    client = TestSpectraMatching()
     spectra = list(load_from_mgf(mgf_46_spectra_path))
 
     spectra_generator = client._create_spectra_generator(spectra)
@@ -133,10 +137,10 @@ def test_create_spectra_generator_spectrum_source(mgf_46_spectra_path):
 
 
 def test_make_batch_requests(mgf_377_spectra_path):
-    client = SpectraMatching()
+    client = TestSpectraMatching()
     client._match_spectra = Mock(side_effect=lambda b, *args: ["p"] * len(b))
 
-    # Input has 260 spectra -> 3 batch requests of [100, 100, 34]
+    # Input has 234 spectra -> 3 batch requests of [100, 100, 34]
     input_spectra = list(load_from_mgf(mgf_377_spectra_path))[:234]
     n_spectra = len(input_spectra)
     n_expected_batches = n_spectra // SPECTRA_LIMIT_PER_REQUEST + 1
@@ -154,12 +158,9 @@ def test_make_batch_requests(mgf_377_spectra_path):
 def mocked_client(mock_send_request):
     """A usable client with _send_request method mocked."""
 
-    class TestSpectraMatching(SpectraMatching):
-        _algorithm = "test"
-
-    # Token is set so that the class doesn't try to fetch a new token
-    client = TestSpectraMatching(optional_token="token")
+    client = TestSpectraMatching()
     client._send_request = mock_send_request
+    client._validate_token = Mock()
 
     return client
 
@@ -239,7 +240,7 @@ def test_failed_spectra_caching(mgf_46_spectra_path, response_10_spectra, monkey
         omigami.spectra_matching.spectra_matching.requests, "post", mocked_post
     )
 
-    client = SpectraMatching()
+    client = TestSpectraMatching()
     input_spectra = client._create_spectra_generator(
         list(load_from_mgf(mgf_46_spectra_path))[:25]
     )
