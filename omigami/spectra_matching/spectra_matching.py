@@ -193,8 +193,9 @@ class SpectraMatching:
         results = []
 
         for spectrum in spectra_generator:
-            if self._get_cache_id(spectrum) in self._cached_results:
-                results.append(self._cached_results[self._get_cache_id(spectrum)])
+            cache_id = self._get_cache_id(spectrum)
+            if cache_id in self._cached_results:
+                results.append(self._cached_results[cache_id])
                 continue
 
             batch.append(spectrum)
