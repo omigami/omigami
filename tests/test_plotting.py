@@ -2,8 +2,10 @@ import matplotlib
 import pandas as pd
 import pytest
 from PIL.PngImagePlugin import PngImageFile
+from matchms.importing import load_from_mgf
 from rdkit import Chem
-from omigami.plotting import MoleculePlotter
+from omigami.plotting import MoleculePlotter, SpectraComparisonPlotter
+from omigami.utilities import SpectrumDataFrameHelper
 
 
 def test_plot_molecule_structure_grid(spectra_match_data_path):
@@ -53,5 +55,11 @@ def test_plot_NPclassifier_result(spectra_match_data_path_web_api_error):
     assert isinstance(plot, matplotlib.container.BarContainer)
 
 
-def test_mirror_plot():
-    pass
+def test_mirror_plot(small_mgf_path):
+    spectra = list(load_from_mgf(small_mgf_path))
+    spectra_df = SpectrumDataFrameHelper.from_spectra_list(spectra)
+
+    plotter = SpectraComparisonPlotter()
+    fig = plotter.mirror_plot(spectra_df[0], spectra_df[1])
+
+    assert fig
