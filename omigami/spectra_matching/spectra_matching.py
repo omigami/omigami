@@ -193,7 +193,7 @@ class SpectraMatching:
         results = []
 
         for spectrum in spectra_generator:
-            cache_id = self._get_cache_id(spectrum)
+            cache_id = self._get_cache_id(spectrum, parameters)
             if cache_id in self._cached_results:
                 results.append(self._cached_results[cache_id])
                 continue
@@ -217,7 +217,7 @@ class SpectraMatching:
         response = self._send_request(batch, endpoint, parameters)
         if response is not None:
             formatted_results = self._format_results(response)
-            self._cache_results(formatted_results, batch)
+            self._cache_results(formatted_results, batch, parameters)
             return formatted_results
         else:
             return []
@@ -332,10 +332,15 @@ class SpectraMatching:
         self._cached_results = {}
         self._failed_spectra = []
 
-    def _cache_results(self, res: List[pd.DataFrame], batch: List[Spectrum]):
+    def _cache_results(
+        self,
+        res: List[pd.DataFrame],
+        batch: List[Spectrum],
+        parameters: SpectraMatchingParameters,
+    ):
         for r, spectrum in zip(res, batch):
-            self._cached_results[self._get_cache_id(spectrum)] = r
+            self._cached_results[self._get_cache_id(spectrum, parameters)] = r
 
     @staticmethod
-    def _get_cache_id(spectrum: Spectrum) -> int:
-        return hash(str(spectrum.metadata))
+    def _get_cache_id(spectrum: Spectrum, parameters: SpectraMatchingParameters) -> int:
+        return hash(str(spectrum.metadata) + str(parameters))
