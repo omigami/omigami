@@ -261,6 +261,7 @@ def test_failed_spectra_caching(mgf_46_spectra_path, response_10_spectra, monkey
         ({"param1": 10}, 0, True),
         ({"param1": 10}, 1, False),
         ('{"param1": 10}', 0, False),
+        ("{'param1': 10}", 0, True),
     ],
 )
 def test_get_cache_id(mgf_46_spectra_path, params, spectrum_ix, expected):
