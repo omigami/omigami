@@ -9,10 +9,11 @@ from omigami import MoleculePlotter
 def test_plot_molecule_structure_grid(spectra_match_data_path):
     dataset = pd.read_csv(spectra_match_data_path)
     plotter = MoleculePlotter()
-    image = plotter.plot_molecule_structure_grid(dataset)
+    images, legends = plotter.plot_molecule_structure_grid(dataset, img_size=(200, 200))
 
-    assert image.size == (600, 400)
-    assert isinstance(image, PngImageFile)
+    assert images[0].size == (200, 200)
+    assert isinstance(images[0], PngImageFile)
+    assert isinstance(legends[0], str)
 
 
 def test_plot_molecule_highlighting(spectra_match_data_path):

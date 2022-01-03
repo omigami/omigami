@@ -5,11 +5,11 @@ import json
 from io import StringIO
 from logging import getLogger
 from typing import List, Dict, Any, Union, Generator, Optional
-import requests
+
 import pandas as pd
+import requests
 from matchms import Spectrum
 from matchms.importing import load_from_mgf
-
 
 from omigami.authentication import get_session, authenticate_client, set_token
 from omigami.exceptions import (
@@ -18,6 +18,7 @@ from omigami.exceptions import (
     InternalServerError,
     InvalidUsageError,
 )
+from omigami.omi_settings import HOST_NAME
 
 SPECTRA_LIMIT_PER_REQUEST = 100
 VALID_KEYS = {
@@ -40,7 +41,9 @@ Payload = Dict[
 
 
 class SpectraMatching:
-    _PREDICT_ENDPOINT_BASE = "https://app.omigami.com/seldon/seldon/{algorithm}-{ion_mode}/api/v0.1/predictions"
+    _PREDICT_ENDPOINT_BASE = (
+        f"{HOST_NAME}seldon/seldon/" + "{algorithm}-{ion_mode}/api/v0.1/predictions"
+    )
     _ENDPOINT = None
     _optional_token = None
 
@@ -270,14 +273,11 @@ class SpectraMatching:
 
     @staticmethod
     def _format_results(api_request: requests.Response) -> List[pd.DataFrame]:
-        def _sort_columns(df: pd.DataFrame):
-            sorted_columns = ["score"] + sorted(list(VALID_KEYS))
-            return df.reindex(columns=sorted_columns).dropna(axis=1, how="all")
-
         if api_request.status_code == 500:
             raise InternalServerError(
-                "Something went wrong, the requested service is probably unavailable at the moment. "
-                "Please try again later or contact DataRevenue for more information."
+                f"Error in generating the prediction: "
+                f"{api_request.json()['status']['info']}.\n"
+                f"Please try again later or contact DataRevenue for more information."
             )
 
         response = json.loads(api_request.text)
@@ -285,9 +285,12 @@ class SpectraMatching:
 
         predicted_spectra = []
         for id_, matches in library_spectra_raw.items():
-            library_spectra_dataframe = pd.DataFrame(matches).T
+            scores_df = pd.DataFrame(matches).T.drop(columns="metadata")
+            metadata_df = pd.DataFrame(
+                pd.DataFrame(matches).loc["metadata"].to_dict()
+            ).T
+            library_spectra_dataframe = scores_df.join(metadata_df)
             library_spectra_dataframe.index.name = f"matches of {id_}"
-            library_spectra_dataframe = _sort_columns(library_spectra_dataframe)
             library_spectra_dataframe = library_spectra_dataframe.sort_values(
                 by=["score"], ascending=False
             )
@@ -295,17 +298,3 @@ class SpectraMatching:
             predicted_spectra.append(library_spectra_dataframe)
 
         return predicted_spectra
-
-
-class MS2DeepScore(SpectraMatching):
-    _ENDPOINT = "ms2deepscore"
-
-    def __init__(self, optional_token: Optional[str] = None):
-        super(MS2DeepScore, self).__init__(optional_token)
-
-
-class Spec2Vec(SpectraMatching):
-    _ENDPOINT = "spec2vec"
-
-    def __init__(self, optional_token: Optional[str] = None):
-        super(Spec2Vec, self).__init__(optional_token)
