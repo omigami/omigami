@@ -12,7 +12,7 @@ def test_match_spectra_from_path_small(mgf_46_spectra_path, spec2vec_client):
     result = spec2vec_client.match_spectra(mgf_46_spectra_path, 10, ion_mode="positive")
 
     assert result
-    assert len(result[0].columns) == 38  # 38 metadata fields from gnps
+    assert "score" in result[0].columns
     assert len(result) == 46
 
 
@@ -28,6 +28,7 @@ def test_match_spectra_from_list(mgf_46_spectra_path, spec2vec_client):
     result = spec2vec_client.match_spectra(spectra, 10, ion_mode="positive")
 
     assert result
+    assert "score" in result[0].columns
     assert len(result) == 46
 
 
