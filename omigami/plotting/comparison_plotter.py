@@ -1,9 +1,8 @@
-from typing import List, Optional, Any, Tuple, Union
+from typing import List, Optional, Any, Tuple
 
 import pandas as pd
 
 import matplotlib.pyplot as plt
-from omigami.utilities.gnps_helper import GnpsHelper
 from omigami.utilities.spectrum_df_helper import SpectrumDataFrameHelper
 
 
@@ -12,8 +11,9 @@ class SpectraComparisonPlotter:
         pass
 
     def mirror_plot(
-        spectrum_1: Union[pd.DataFrame, str],
-        spectrum_2: Union[pd.DataFrame, str],
+        self,
+        spectrum_1: pd.DataFrame,
+        spectrum_2: pd.DataFrame,
         labels: Optional[List[str]] = None,
         display_limits: Optional[Tuple[int, int]] = (0, 5000),
     ) -> Any:
@@ -35,26 +35,23 @@ class SpectraComparisonPlotter:
 
         if not labels:
             labels = ["Spectrum 1", "Spectrum 2"]
+        elif len(labels) != 2:
+            raise ValueError("'labels' arg must be a list of strings with len == 2")
 
-        gnps_helper = GnpsHelper()
         sdf_helper = SpectrumDataFrameHelper()
 
         spectra = [spectrum_1, spectrum_2]
         spectra_df_list = []
         for spectrum in spectra:
-            if type(spectrum) == str:
-                spectrum_df = gnps_helper.fetch_metadata(spectrum)
-            elif type(spectrum) == pd.DataFrame:
-                if ["m/z", "Intensities"] not in spectrum.columns.values:
-                    raise ValueError(
-                        "Spectra arguments of type DataFrame must contain 'Intensity' and 'm/z' columns."
-                    )
-                spectrum_df = spectrum
-            else:
+            if (
+                type(spectrum) != pd.DataFrame
+                or ["m/z", "Intensity"] not in spectrum.columns.values
+            ):
                 raise ValueError(
-                    "Spectra arguments must be either 'str' (gnps ID) or 'pd.DataFrame' type."
+                    "Spectra arguments must be of type DataFrame and must contain 'Intensity' and 'm/z' columns."
                 )
 
+            spectrum_df = spectrum
             spectrum = sdf_helper.crop(spectrum_df, display_limits)
             spectra_df_list.append(spectrum)
 
