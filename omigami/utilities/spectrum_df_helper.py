@@ -1,3 +1,4 @@
+import requests
 from typing import List, Optional, Tuple
 
 import pandas as pd
@@ -6,9 +7,6 @@ from pandas.tests.groupby.test_value_counts import df
 
 
 class SpectrumDataFrameHelper:
-    def __init__(self):
-        pass
-
     @staticmethod
     def scale(spectra_df: pd.DataFrame, min=0, max=1, num_peaks=5000) -> pd.DataFrame:
         """
@@ -48,6 +46,9 @@ class SpectrumDataFrameHelper:
     def from_spectra_list(
         spectra_list: List[Spectrum], scale_spectra=False, num_peaks=500
     ) -> List[pd.DataFrame]:
+        """
+        Creates dataframes from a list of Spectrum objects
+        """
         dfs = []
         for spectrum in spectra_list:
             df = SpectrumDataFrameHelper.from_spectrum(
@@ -60,8 +61,39 @@ class SpectrumDataFrameHelper:
     def from_spectrum(
         spectrum: Spectrum, scale_spectrum=False, num_peaks=500
     ) -> pd.DataFrame:
+        """
+        Creates a dataframe from a Spectrum object
+        """
         merged = list(zip(spectrum.peaks[0].tolist(), spectrum.peaks[1].tolist()))
         df = pd.DataFrame(merged, columns=["m/z", "Intensity"])
         if scale_spectrum:
             df = SpectrumDataFrameHelper.scale(df, num_peaks)
         return df
+
+    @staticmethod
+    def from_gnps_id(spectrum_id: str) -> pd.DataFrame:
+        """
+        Creates a dataframe using a GNPS spectrum ID by fetching GNPS metadata
+        """
+
+        gnps_metadata = requests.get(
+            "https://gnps.ucsd.edu/ProteoSAFe/SpectrumCommentServlet?SpectrumID="
+            + str(spectrum_id)
+        ).json()
+        gnps_metadata_df = pd.DataFrame(
+            eval(gnps_metadata["spectruminfo"]["peaks_json"]),
+            columns=["m/z", "Intensity"],
+        )
+
+        return gnps_metadata_df
+
+    @staticmethod
+    def from_gnps_id_list(spectrum_id_list: List[str]) -> List[pd.DataFrame]:
+        """
+        Creates dataframes using a list of GNPS spectrum ID by fetching GNPS metadata
+        """
+        dfs = []
+        for gnps_id in spectrum_id_list:
+            df = SpectrumDataFrameHelper.from_gnps_id(gnps_id)
+            dfs.append(df)
+        return dfs
