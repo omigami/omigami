@@ -191,7 +191,6 @@ def test_spectra_matching_partial_caching(mocked_client, mgf_46_spectra_path):
 
     assert len(matches) == len(first_30)
     assert len(mocked_client._cached_results) == len(first_30)
-    assert first_30 in mocked_client._send_request.call_args_list[0].args
 
     matches = mocked_client.match_spectra(all_46_spectra, n_best=2)
 
