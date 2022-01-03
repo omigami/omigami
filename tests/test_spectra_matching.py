@@ -196,7 +196,11 @@ def test_spectra_matching_partial_caching(mocked_client, mgf_46_spectra_path):
 
     assert len(matches) == len(all_46_spectra)
     assert len(mocked_client._cached_results) == len(all_46_spectra)
-    assert last_16 in mocked_client._send_request.call_args.args
+    mocked_client._send_request.assert_called_with(
+        last_16,
+        "https://app.omigami.com/seldon/seldon/test-positive/api/v0.1/predictions",
+        {"n_best_spectra": 2},
+    )
 
 
 def test_reset_cache(mocked_client, mgf_46_spectra_path):
