@@ -253,3 +253,21 @@ def test_failed_spectra_caching(mgf_46_spectra_path, response_10_spectra, monkey
     assert len(results) == 20
     assert len(client.failed_spectra) == 5
     assert client.failed_spectra == list(load_from_mgf(mgf_46_spectra_path))[20:25]
+
+
+@pytest.mark.parametrize(
+    "params, spectrum_ix, expected",
+    [
+        ({"param1": 10}, 0, True),
+        ({"param1": 10}, 1, False),
+        ('{"param1": 10}', 0, False),
+    ],
+)
+def test_get_cache_id(mgf_46_spectra_path, params, spectrum_ix, expected):
+    input_spectra = list(load_from_mgf(mgf_46_spectra_path))
+    client = TestSpectraMatching()
+
+    cache_id_1 = client._get_cache_id(input_spectra[0], {"param1": 10})
+    cache_id_2 = client._get_cache_id(input_spectra[spectrum_ix], params)
+
+    assert (cache_id_1 == cache_id_2) is expected
