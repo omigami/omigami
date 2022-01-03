@@ -64,19 +64,19 @@ class SpectraMatching:
         ion_mode: str = "positive",
     ) -> List[pd.DataFrame]:
         """
-        From a spectra source, issues requests to either MS2DeepScore or Spec2Vec endpoints to find the N best library
-        matches.
+        From a spectra source, issues requests to either MS2DeepScore or Spec2Vec
+        endpoints to find the N best library matches.
 
         Parameters
         ----------
         source: str or list[Spectrum] or StringIO
-            either a local path to mgf file (str), or a list of preloaded Spectrum objects, or a StringIO obj
-            from a loaded mgf file
+            either a local path to mgf file (str), or a list of preloaded Spectrum objects,
+            or a StringIO object from a loaded mgf file
         n_best: int
             Number of best matches to select
         ion_mode:
-            Selects which model will be used for the predictions: Either a model trained with
-            positive or negative ion mode spectra data. Defaults to positive.
+            Selects which model will be used for the predictions: Either a model trained
+            with positive or negative ion mode spectra data. Defaults to positive.
 
         Returns
         -------
