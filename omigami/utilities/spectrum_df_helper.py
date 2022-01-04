@@ -22,10 +22,12 @@ class SpectrumDataFrameHelper:
         return df
 
     @staticmethod
-    def filter(spectra_df: pd.DataFrame, num_peaks=5000) -> pd.DataFrame:
+    def filter(spectrum_df: pd.DataFrame, num_peaks=5000) -> pd.DataFrame:
         """
         Returns a dataframe containing the largest n peaks according to num_peaks parameter
         """
+        df = spectrum_df.copy()
+
         return df.nlargest(num_peaks, "Intensity").sort_values("m/z")
 
     @staticmethod
@@ -33,7 +35,7 @@ class SpectrumDataFrameHelper:
         spectrum_df: pd.DataFrame, display_limits: Optional[Tuple[int, int]] = (0, 5000)
     ) -> pd.DataFrame:
         """
-        Constrains the spectrum DF to fit within the display limits.
+        Constrains the spectrum DF by m/z values to fit within the display limits.
         """
         constrained_df = spectrum_df.copy()
         mass_low_limit, mass_high_limit = display_limits

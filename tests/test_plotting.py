@@ -62,4 +62,4 @@ def test_mirror_plot(small_mgf_path):
     plotter = SpectraComparisonPlotter()
     fig = plotter.mirror_plot(spectra_df[0], spectra_df[1])
 
-    assert fig
+    assert isinstance(fig, matplotlib.figure.Figure)
