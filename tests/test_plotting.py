@@ -55,11 +55,11 @@ def test_plot_NPclassifier_result(spectra_match_data_path_web_api_error):
     assert isinstance(plot, matplotlib.container.BarContainer)
 
 
-def test_mirror_plot(small_mgf_path):
-    spectra = list(load_from_mgf(small_mgf_path))
+def test_mirror_plot(mgf_46_spectra_path):
+    spectra = list(load_from_mgf(mgf_46_spectra_path))
     spectra_df = SpectrumDataFrameHelper.from_spectra_list(spectra)
 
     plotter = SpectraComparisonPlotter()
     fig = plotter.mirror_plot(spectra_df[0], spectra_df[1])
 
-    assert isinstance(fig, matplotlib.figure.Figure)
+    assert isinstance(fig, matplotlib.pyplot.Figure)

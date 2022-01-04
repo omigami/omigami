@@ -1,1 +1,1 @@
-from .spectrum_df_helper import SpectrumDataFrameHelper
+from .spectrum_dataframe_helper import SpectrumDataFrameHelper

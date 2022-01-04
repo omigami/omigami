@@ -1,9 +1,9 @@
-from typing import List, Optional, Any, Tuple
+from typing import List, Optional, Tuple
 
 import pandas as pd
 
 import matplotlib.pyplot as plt
-from omigami.utilities.spectrum_df_helper import SpectrumDataFrameHelper
+from omigami.utilities.spectrum_dataframe_helper import SpectrumDataFrameHelper
 
 
 class SpectraComparisonPlotter:
@@ -13,7 +13,7 @@ class SpectraComparisonPlotter:
         spectrum_2: pd.DataFrame,
         labels: Optional[List[str]] = None,
         display_limits: Optional[Tuple[int, int]] = (0, 5000),
-    ) -> Any:
+    ) -> plt.Figure:
         """
         Creates a mirror plot with spectrum 1 on top (blue), and spectrum 2 on the bottom (red).
 
@@ -30,7 +30,7 @@ class SpectraComparisonPlotter:
 
         Returns
         -------
-        fig: matplotlib.figure.Figure
+        fig: matplotlib.pyplot.Figure
             The mirror plot.
         """
 
@@ -53,7 +53,7 @@ class SpectraComparisonPlotter:
                 )
 
             spectrum_df = spectrum
-            spectrum = sdf_helper.crop(spectrum_df, display_limits)
+            spectrum = sdf_helper.filter_mz(spectrum_df, display_limits)
             spectra_df_list.append(spectrum)
 
         fig, axes = plt.subplots(figsize=(20, 10), nrows=2, sharex=True)
