@@ -17,9 +17,11 @@ def test_match_spectra_from_path_with_2_spectra(
 
 @pytest.mark.internet_connection
 @pytest.mark.skip(reason="Requires valid credentials")
-def test_match_spectra_from_path_with_small(small_mgf_path, ms2deepscore_client):
-    result = ms2deepscore_client.load_and_match_spectra(
-        source=small_mgf_path, n_best=3, ion_mode="positive"
+def test_match_spectra_from_path_with_small(mgf_46_spectra_path, ms2deepscore_client):
+    n_best = 3
+
+    result = ms2deepscore_client.match_spectra(
+        source=mgf_46_spectra_path, n_best=n_best, ion_mode="positive"
     )
-    assert result
     assert len(result) == 46
+    assert len(result[0]) == n_best

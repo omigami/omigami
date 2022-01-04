@@ -69,13 +69,21 @@ from omigami.spectra_matching import Spec2Vec
 
 client = Spec2Vec()
 
-mgf_file_path = "path_to_file.mgf"
+mgf_file_path = "path_to_file.mgf" # or a list of matchms.Spectrum objects
 n_best_matches = 10
 ion_mode = "positive"  # either positive or negative
 
 result = client.match_spectra(
     mgf_file_path, n_best_matches, ion_mode,
 )
+
+# Spectra is sent in batches to the predictor. 
+# If any of the batches fail, the following command will return the list of spectra in the failed batch. 
+# The problem may have been caused by just one or more spectrum inside the failed batch.
+failed_spectra = client.failed_spectra()
+
+# successful spectrum predictions will be saved to cache, to reset the cache use:
+client.reset_cache()
 ```
 
 The supported metadata keys for omigami are (case insensitive):
@@ -85,6 +93,7 @@ The supported metadata keys for omigami are (case insensitive):
 - "parent_mass",
 - "inchikey_smiles",
 - "inchikey_inchi"
+- "precursor_mz" or "pepmass"
 
 
 #### Notebooks
@@ -98,13 +107,21 @@ from omigami.spectra_matching import MS2DeepScore
 
 client = MS2DeepScore()
 
-mgf_file_path = "path_to_file.mgf"
+mgf_file_path = "path_to_file.mgf" # or a list of matchms.Spectrum objects
 n_best_matches = 10
 ion_mode = "positive"  # either positive or negative
 
 result = client.match_spectra(
     mgf_file_path, n_best_matches, ion_mode,
 )
+
+# Spectra is sent in batches to the predictor. 
+# If any of the batches fail, the following command will return the list of spectra in the failed batch. 
+# The problem may have been caused by just one or more spectrum inside the failed batch.
+failed_spectra = client.failed_spectra()
+
+# successful spectrum predictions will be saved to cache, to reset the cache use:
+client.reset_cache()
 ```
 
 #### Notebooks
@@ -115,37 +132,35 @@ Plotting graphs works the same way for both Spec2Vec and MS2DeepScore.
 
 
 The following example will plot the structures of the molecules
-
 ```python
-
-from omigami import MoleculePlotter
-
+from omigami.plotting import MoleculePlotter
 plotter = MoleculePlotter()
-plotter.plot_molecule_structure_grid(best_matches,
-                                     draw_indices=True,
-                                     molecule_image_size=[600, 600],
-                                     substructure_highlight="C(=O)")
+result = plotter.plot_molecule_structure_grid(
+    spectra_matches=best_matches,
+    representation="smiles",
+    draw_indices=True,
+    img_size=(600, 600),
+    substructure_highlight="C(=O)"
+)
+# result is a tuple of 
+# a plot identified by spectrum_id and 
+# a list of compound names of the best matches
 ```
 
 The following code allows us to plot the results of the [Classyfire](https://jcheminf.biomedcentral.com/articles/10.1186/s13321-016-0174-y) model API.
-
 ```python
-
-from omigami import MoleculePlotter
-
+from omigami.plotting import MoleculePlotter
 plotter = MoleculePlotter()
-plotter.plot_classyfire_result(best_matches)
+plotter.plot_classyfire_result(best_matches, color="green")
 ```
 <img src="docs/images/classyfire_plot.png" width="500">
 
 Furthermore, Omigami provides the possibility to use the [NPClassifier](https://www.researchgate.net/publication/344008670_NPClassifier_A_Deep_Neural_Network-Based_Structural_Classification_Tool_for_Natural_Products) API.
 
 ```python
-
-from omigami.plotting.comparison_plotter import MoleculePlotter
-
+from omigami.plotting import MoleculePlotter
 plotter = MoleculePlotter()
-plotter.plot_NPclassifier_result(best_matches, color='orange')
+plotter.plot_NPclassifier_result(best_matches, color="orange")
 ```
 <img src="docs/images/NP_classifier_plot.png" width="500">
 

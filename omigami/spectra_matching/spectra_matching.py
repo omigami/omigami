@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import ast
-import json
 from io import StringIO
 from logging import getLogger
 from typing import List, Dict, Any, Union, Generator, Optional
@@ -15,21 +14,11 @@ from omigami.authentication import get_session, authenticate_client, set_token
 from omigami.exceptions import (
     InvalidCredentials,
     NotFoundError,
-    InternalServerError,
     InvalidUsageError,
 )
 from omigami.omi_settings import HOST_NAME
 
 SPECTRA_LIMIT_PER_REQUEST = 100
-VALID_KEYS = {
-    "compound_name",
-    "inchikey_inchi",
-    "inchikey_smiles",
-    "instrument",
-    "parent_mass",
-    "smiles",
-    "precursor_mz",
-}
 
 log = getLogger(__file__)
 
@@ -44,7 +33,7 @@ class SpectraMatching:
     _PREDICT_ENDPOINT_BASE = (
         f"{HOST_NAME}seldon/seldon/" + "{algorithm}-{ion_mode}/api/v0.1/predictions"
     )
-    _ENDPOINT = None
+    _algorithm = None
     _optional_token = None
 
     mandatory_keys: List[str] = ["peaks_json", "Precursor_MZ"]
@@ -52,6 +41,18 @@ class SpectraMatching:
 
     def __init__(self, optional_token: Optional[str] = None):
         self._optional_token = optional_token
+        self._cached_results: Dict[int, pd.DataFrame] = {}
+        self._failed_spectra: List[Spectrum] = []
+
+        if self._algorithm is None:
+            raise InvalidUsageError(
+                "You should only evoke match_spectra from either "
+                "a MS2DeepScore or a Spec2Vec class instance."
+            )
+
+    @property
+    def failed_spectra(self) -> List[Spectrum]:
+        return self._failed_spectra
 
     def match_spectra(
         self,
@@ -60,19 +61,19 @@ class SpectraMatching:
         ion_mode: str = "positive",
     ) -> List[pd.DataFrame]:
         """
-        From a spectra source, issues requests to either MS2DeepScore or Spec2Vec endpoints to find the N best library
-        matches.
+        From a spectra source, issues requests to either MS2DeepScore or Spec2Vec
+        endpoints to find the N best library matches.
 
         Parameters
         ----------
         source: str or list[Spectrum] or StringIO
-            either a local path to mgf file (str), or a list of preloaded Spectrum objects, or a StringIO obj
-            from a loaded mgf file
+            either a local path to mgf file (str), or a list of preloaded Spectrum objects,
+            or a StringIO object from a loaded mgf file
         n_best: int
             Number of best matches to select
         ion_mode:
-            Selects which model will be used for the predictions: Either a model trained with
-            positive or negative ion mode spectra data. Defaults to positive.
+            Selects which model will be used for the predictions: Either a model trained
+            with positive or negative ion mode spectra data. Defaults to positive.
 
         Returns
         -------
@@ -80,18 +81,12 @@ class SpectraMatching:
         for these matches.
 
         """
-
+        self._validate_token()
         spectra_generator = self._create_spectra_generator(source)
-
-        if self._ENDPOINT is None:
-            raise InvalidUsageError(
-                "You should only evoke match_spectra from either "
-                "a MS2DeepScore or a Spec2Vec class instance."
-            )
 
         # defines endpoint based on user choice of spectra ion mode
         endpoint = self._PREDICT_ENDPOINT_BASE.format(
-            algorithm=self._ENDPOINT, ion_mode=ion_mode
+            algorithm=self._algorithm, ion_mode=ion_mode
         )
 
         # validates input
@@ -101,16 +96,17 @@ class SpectraMatching:
                 "Defaults to 'positive'. "
             )
 
-        # gets token from user credentials
-        if self._optional_token is not None:
-            set_token(self._optional_token)
-        else:
-            authenticate_client()
-
         parameters = self._build_parameters(n_best)
 
         # issue requests respecting the spectra limit per request
         return self._make_batch_requests(spectra_generator, parameters, endpoint)
+
+    def _validate_token(self):
+        """Gets token from user credentials or uses existing token."""
+        if self._optional_token is not None:
+            set_token(self._optional_token)
+        else:
+            authenticate_client()
 
     @staticmethod
     def _create_spectra_generator(source: Union[str, StringIO, List[Spectrum]]):
@@ -183,41 +179,71 @@ class SpectraMatching:
         parameters: SpectraMatchingParameters,
         endpoint: str,
     ) -> List[pd.DataFrame]:
+        self._failed_spectra = []
         batch = []
-        requests = []
+        results = []
 
         for spectrum in spectra_generator:
+            cache_id = self._get_cache_id(spectrum, parameters)
+            if cache_id in self._cached_results:
+                results.append(self._cached_results[cache_id])
+                continue
+
             batch.append(spectrum)
             if len(batch) == SPECTRA_LIMIT_PER_REQUEST:
-                payload = self._build_payload(batch, parameters)
-                requests.append(self._send_request(payload, endpoint))
+                results.extend(self._match_spectra(batch, endpoint, parameters))
                 batch = []
 
-        if batch:
-            payload = self._build_payload(batch, parameters)
-            requests.append(self._send_request(payload, endpoint))
+        if len(batch) > 0:
+            results.extend(self._match_spectra(batch, endpoint, parameters))
 
-        predictions = []
-        for r in requests:
-            predictions.extend(self._format_results(r))
-        return predictions
+        return results
 
-    @staticmethod
-    def _send_request(payload: Payload, endpoint: str) -> requests.Response:
+    def _match_spectra(
+        self,
+        batch: List[Spectrum],
+        endpoint: str,
+        parameters: SpectraMatchingParameters,
+    ) -> List[pd.DataFrame]:
+        response = self._send_request(batch, endpoint, parameters)
+        if response is not None:
+            formatted_results = self._format_results(response)
+            self._cache_results(formatted_results, batch, parameters)
+            return formatted_results
+        else:
+            return []
+
+    def _send_request(
+        self,
+        batch: List[Spectrum],
+        endpoint: str,
+        parameters: SpectraMatchingParameters,
+    ) -> Union[requests.Response, None]:
+        payload = self._build_payload(batch, parameters)
+
         auth = get_session()
-        api_request = requests.post(
+        response = requests.post(
             endpoint,
             json=payload,
             headers={"Authorization": f"Bearer {auth.session_token}"},
             timeout=600,
         )
 
-        if api_request.status_code == 401:
+        if response.status_code == 401:
             raise InvalidCredentials("Your credentials are invalid.")
-        if api_request.status_code == 404:
+        elif response.status_code == 404:
             raise NotFoundError("The API endpoint couldn't be reached.")
+        elif response.status_code == 500:
+            log.error(
+                f"ERROR: An error happened during spectra matching. "
+                f"Please try again or contact DataRevenue for more information. "
+                f"The list of spectra that failed can be accessed on the failed_spectra attribute."
+                f"\n\n{response.json()['status']['info']}.\n"
+            )
+            self._failed_spectra.extend(batch)
+            return
 
-        return api_request
+        return response
 
     @staticmethod
     def _build_parameters(n_best: int) -> SpectraMatchingParameters:
@@ -272,16 +298,9 @@ class SpectraMatching:
                         )
 
     @staticmethod
-    def _format_results(api_request: requests.Response) -> List[pd.DataFrame]:
-        if api_request.status_code == 500:
-            raise InternalServerError(
-                f"Error in generating the prediction: "
-                f"{api_request.json()['status']['info']}.\n"
-                f"Please try again later or contact DataRevenue for more information."
-            )
-
-        response = json.loads(api_request.text)
-        library_spectra_raw = response["jsonData"]
+    def _format_results(response: requests.Response) -> List[pd.DataFrame]:
+        response_json = response.json()
+        library_spectra_raw = response_json["jsonData"]
 
         predicted_spectra = []
         for id_, matches in library_spectra_raw.items():
@@ -289,12 +308,30 @@ class SpectraMatching:
             metadata_df = pd.DataFrame(
                 pd.DataFrame(matches).loc["metadata"].to_dict()
             ).T
-            library_spectra_dataframe = scores_df.join(metadata_df)
-            library_spectra_dataframe.index.name = f"matches of {id_}"
-            library_spectra_dataframe = library_spectra_dataframe.sort_values(
+            results_dataframe = scores_df.join(metadata_df)
+            results_dataframe.index.name = f"matches of {id_}"
+            results_dataframe = results_dataframe.sort_values(
                 by=["score"], ascending=False
             )
 
-            predicted_spectra.append(library_spectra_dataframe)
+            predicted_spectra.append(results_dataframe)
 
         return predicted_spectra
+
+    def reset_cache(self):
+        """Clears cached results from the client."""
+        self._cached_results = {}
+        self._failed_spectra = []
+
+    def _cache_results(
+        self,
+        res: List[pd.DataFrame],
+        batch: List[Spectrum],
+        parameters: SpectraMatchingParameters,
+    ):
+        for r, spectrum in zip(res, batch):
+            self._cached_results[self._get_cache_id(spectrum, parameters)] = r
+
+    @staticmethod
+    def _get_cache_id(spectrum: Spectrum, parameters: SpectraMatchingParameters) -> int:
+        return hash(str(spectrum.metadata) + str(parameters))
