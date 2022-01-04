@@ -19,15 +19,6 @@ from omigami.exceptions import (
 from omigami.omi_settings import HOST_NAME
 
 SPECTRA_LIMIT_PER_REQUEST = 100
-VALID_KEYS = {
-    "compound_name",
-    "inchikey_inchi",
-    "inchikey_smiles",
-    "instrument",
-    "parent_mass",
-    "smiles",
-    "precursor_mz",
-}
 
 log = getLogger(__file__)
 
