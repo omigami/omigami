@@ -1,32 +1,17 @@
-from json import JSONDecodeError
-from typing import List, Tuple, Dict
-
-from PIL.PngImagePlugin import PngImageFile
-import pandas as pd
-
-try:
-    from rdkit import Chem
-    from rdkit.Chem import Draw
-    from rdkit.Chem.rdchem import Mol
-except ModuleNotFoundError:
-    import warnings
-
-    warnings.warn(
-        "You are missing the rdkit module. "
-        "Please go to Omigami's README for instructions on how to install it."
-    )
-
+from json.decoder import JSONDecodeError
 
 import itertools
-import matplotlib.pyplot as plt
-from matplotlib.container import BarContainer
 import requests
+from PIL.PngImagePlugin import PngImageFile
+from matplotlib import pyplot as plt
+from matplotlib.container import BarContainer
+from rdkit import Chem
+from rdkit.Chem import Draw
+from typing import Tuple, Dict, List
+
+import pandas as pd
 
 from omigami.omi_settings import CLASSYFIRE_URL, NPCLASSIFIER_URL
-
-
-class MandatoryColumnMissingError(Exception):
-    pass
 
 
 class MoleculePlotter:
@@ -199,3 +184,7 @@ class MoleculePlotter:
             del class_stats["Cannot_Assign"]
 
         return plt.barh(list(class_stats.keys()), class_stats.values(), color=color)
+
+
+class MandatoryColumnMissingError(Exception):
+    pass
