@@ -76,6 +76,12 @@ ion_mode = "positive"  # either positive or negative
 result = client.match_spectra(
     mgf_file_path, n_best_matches, ion_mode,
 )
+
+# if any of the predictions fail for some spectra, following will return them
+failed_spectra = client.failed_spectra()
+
+# successful spectrum predictions will be saved to cache, to reset the cache
+client.reset_cache()
 ```
 
 The supported metadata keys for omigami are (case insensitive):
@@ -106,6 +112,12 @@ ion_mode = "positive"  # either positive or negative
 result = client.match_spectra(
     mgf_file_path, n_best_matches, ion_mode,
 )
+
+# if any of the predictions fail for some spectra, following will return them
+failed_spectra = client.failed_spectra()
+
+# successful spectrum predictions will be saved to cache, to reset the cache
+client.reset_cache()
 ```
 
 #### Notebooks
