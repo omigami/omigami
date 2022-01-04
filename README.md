@@ -69,7 +69,7 @@ from omigami.spectra_matching import Spec2Vec
 
 client = Spec2Vec()
 
-mgf_file_path = "path_to_file.mgf" # or a list of Spectrum objects
+mgf_file_path = "path_to_file.mgf" # or a list of matchms.Spectrum objects
 n_best_matches = 10
 ion_mode = "positive"  # either positive or negative
 
@@ -77,10 +77,10 @@ result = client.match_spectra(
     mgf_file_path, n_best_matches, ion_mode,
 )
 
-# if any of the predictions fail for some spectra, following will return them
+# if any of the predictions fail for some spectra, the following command will return them
 failed_spectra = client.failed_spectra()
 
-# successful spectrum predictions will be saved to cache, to reset the cache
+# successful spectrum predictions will be saved to cache, to reset the cache use:
 client.reset_cache()
 ```
 
@@ -105,7 +105,7 @@ from omigami.spectra_matching import MS2DeepScore
 
 client = MS2DeepScore()
 
-mgf_file_path = "path_to_file.mgf" # or a list of Spectrum objects
+mgf_file_path = "path_to_file.mgf" # or a list of matchms.Spectrum objects
 n_best_matches = 10
 ion_mode = "positive"  # either positive or negative
 
@@ -113,10 +113,10 @@ result = client.match_spectra(
     mgf_file_path, n_best_matches, ion_mode,
 )
 
-# if any of the predictions fail for some spectra, following will return them
+# if any of the predictions fail for some spectra, the following command will return them
 failed_spectra = client.failed_spectra()
 
-# successful spectrum predictions will be saved to cache, to reset the cache
+# successful spectrum predictions will be saved to cache, to reset the cache use:
 client.reset_cache()
 ```
 
