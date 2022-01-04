@@ -131,13 +131,16 @@ The following example will plot the structures of the molecules
 ```python
 from omigami.plotting import MoleculePlotter
 plotter = MoleculePlotter()
-plotter.plot_molecule_structure_grid(
+result = plotter.plot_molecule_structure_grid(
     spectra_matches=best_matches,
     representation="smiles",
     draw_indices=True,
     img_size=(600, 600),
     substructure_highlight="C(=O)"
 )
+# result is a tuple of 
+# a plot identified by spectrum_id and 
+# a list of compound names of the best matches
 ```
 
 The following code allows us to plot the results of the [Classyfire](https://jcheminf.biomedcentral.com/articles/10.1186/s13321-016-0174-y) model API.
