@@ -12,7 +12,7 @@ def test_match_spectra_from_path_small(small_mgf_path, spec2vec_client):
     result = spec2vec_client.match_spectra(small_mgf_path, 10, ion_mode="positive")
 
     assert result
-    assert len(result[0].columns) == 38  # 38 metadata fields from gnps
+    assert "score" in result[0].columns
     assert len(result) == 46
 
 
@@ -28,6 +28,7 @@ def test_match_spectra_from_list(small_mgf_path, spec2vec_client):
     result = spec2vec_client.match_spectra(spectra, 10, ion_mode="positive")
 
     assert result
+    assert "score" in result[0].columns
     assert len(result) == 46
 
 
@@ -37,7 +38,7 @@ def test_match_spectra_from_path(mgf_path, spec2vec_client):
     """
     Tests matching spectra against library with a more substantial ammount of spectra ( > 350 )
     """
-    result = spec2vec_client.match_spectra(mgf_path, 10, "positive")
+    result = spec2vec_client.match_spectra(mgf_path, 10)
 
     assert result
     assert len(result) == 377
