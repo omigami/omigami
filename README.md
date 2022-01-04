@@ -77,7 +77,9 @@ result = client.match_spectra(
     mgf_file_path, n_best_matches, ion_mode,
 )
 
-# if any of the predictions fail for some spectra, the following command will return them
+# Spectra is sent in batches to the predictor. 
+# If any of the batches fail, the following command will return the list of spectra in the failed batch. 
+# The problem may have been caused by just one or more spectrum inside the failed batch.
 failed_spectra = client.failed_spectra()
 
 # successful spectrum predictions will be saved to cache, to reset the cache use:
@@ -113,7 +115,9 @@ result = client.match_spectra(
     mgf_file_path, n_best_matches, ion_mode,
 )
 
-# if any of the predictions fail for some spectra, the following command will return them
+# Spectra is sent in batches to the predictor. 
+# If any of the batches fail, the following command will return the list of spectra in the failed batch. 
+# The problem may have been caused by just one or more spectrum inside the failed batch.
 failed_spectra = client.failed_spectra()
 
 # successful spectrum predictions will be saved to cache, to reset the cache use:
