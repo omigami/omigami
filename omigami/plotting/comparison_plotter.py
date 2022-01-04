@@ -7,9 +7,6 @@ from omigami.utilities.spectrum_df_helper import SpectrumDataFrameHelper
 
 
 class SpectraComparisonPlotter:
-    def __init__(self):
-        pass
-
     def mirror_plot(
         self,
         spectrum_1: pd.DataFrame,
@@ -20,17 +17,21 @@ class SpectraComparisonPlotter:
         """
         Creates a mirror plot with spectrum 1 on top (blue), and spectrum 2 on the bottom (red).
 
-        Requires:
-        spectrum1 : A dataframe version of the spectrum information for top spectrum
-        spectrum2 : A dataframe version of the spectrum information for bottom spectrum
+        Parameters
+        ----------
+        spectrum_1 : DataFrame
+            A dataframe version of the spectrum information for top spectrum
+        spectrum_2 : DataFrame
+            A dataframe version of the spectrum information for bottom spectrum
+        labels : Optional[List[str]]
+            A list containing the names of the spectra to display in the plot.
+        display_limits: Optional[Tuple[int, int]]
+            Left and right boundaries (in m/z) for displaying the spectrum. Defaults to (0, 5000)
 
-        Optional:
-        match_id (int): If the dataframes are a
-        labels (list): A list containing the names of the spectra.
-        Display_Limits (list): left and right boundaries for displaying the spectrum.
-
-        Returns:
-        fig (plot): The mirror plot.
+        Returns
+        -------
+        fig: matplotlib.figure.Figure
+            The mirror plot.
         """
 
         if not labels:
