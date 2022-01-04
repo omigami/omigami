@@ -50,7 +50,7 @@ class MoleculePlotter:
             The representation of the molecules found in the provided dataframe
         draw_indices: bool = False
             If true draws the indices of the atoms
-        molecule_image_size: List[int, int] = [200, 200]
+        molecule_image_size: Tuple[int, int] = [200, 200]
             The size of every individual image of a molecule. Need to be provided as a list with two ints
 
         Returns:
