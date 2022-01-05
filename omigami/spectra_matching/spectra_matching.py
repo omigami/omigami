@@ -1,5 +1,9 @@
 from __future__ import annotations
 
+from json import JSONDecodeError
+
+from requests import Response
+
 import ast
 from io import StringIO
 from logging import getLogger
@@ -15,6 +19,8 @@ from omigami.exceptions import (
     InvalidCredentials,
     NotFoundError,
     InvalidUsageError,
+    InternalServerError,
+    ServiceUnavailableError,
 )
 from omigami.omi_settings import HOST_NAME
 
@@ -205,13 +211,26 @@ class SpectraMatching:
         endpoint: str,
         parameters: SpectraMatchingParameters,
     ) -> List[pd.DataFrame]:
+
         response = self._send_request(batch, endpoint, parameters)
-        if response is not None:
-            formatted_results = self._format_results(response)
-            self._cache_results(formatted_results, batch, parameters)
-            return formatted_results
-        else:
-            return []
+        success = self._validate_response(response)
+        if not success:
+            self._failed_spectra.extend(batch)
+
+        try:
+            if response is not None:
+                response_json = response.json()
+                formatted_results = self._format_results(response_json)
+                self._cache_results(formatted_results, batch, parameters)
+                return formatted_results
+            else:
+                return []
+
+        except JSONDecodeError:
+            raise InternalServerError(
+                "Something unexpected happened, please contact DataRevenue. Error message:"
+                f"\n\nstatus code: {response.status_code}."
+            )
 
     def _send_request(
         self,
@@ -229,6 +248,12 @@ class SpectraMatching:
             timeout=600,
         )
 
+        return response
+
+    def _validate_response(self, response: Response) -> bool:
+        """
+        Raises errors if fatal, returns False if spectra failed or returns True if all good
+        """
         if response.status_code == 401:
             raise InvalidCredentials("Your credentials are invalid.")
         elif response.status_code == 404:
@@ -240,10 +265,15 @@ class SpectraMatching:
                 f"The list of spectra that failed can be accessed on the failed_spectra attribute."
                 f"\n\n{response.json()['status']['info']}.\n"
             )
-            self._failed_spectra.extend(batch)
-            return
+            return False
+        elif response.status_code == 503:
+            raise ServiceUnavailableError(
+                f"The {self._algorithm} predictor server for the selected ion mode is currently "
+                "down for maintenance. Please, try another predictor or contact DataRevenue for more information on "
+                "the current status of this predictor. Status code: 503"
+            )
 
-        return response
+        return True
 
     @staticmethod
     def _build_parameters(n_best: int) -> SpectraMatchingParameters:
@@ -298,8 +328,7 @@ class SpectraMatching:
                         )
 
     @staticmethod
-    def _format_results(response: requests.Response) -> List[pd.DataFrame]:
-        response_json = response.json()
+    def _format_results(response_json: Dict) -> List[pd.DataFrame]:
         library_spectra_raw = response_json["jsonData"]
 
         predicted_spectra = []
