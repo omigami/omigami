@@ -15,7 +15,7 @@ from omigami.omi_settings import CLASSYFIRE_URL, NPCLASSIFIER_URL
 
 
 class MoleculePlotter:
-    def plot_molecule_structure_grid(
+    def plot_molecule_structure(
         self,
         spectra_matches: pd.DataFrame,
         representation: str = "smiles",
@@ -24,23 +24,25 @@ class MoleculePlotter:
         substructure_highlight: str = "",
     ) -> (Dict[str, PngImageFile], List[str]):
         """
-        Generate a grid image representation of the hits returned from Spec2Vec and MS2DeepScore outputs.
+        Generate image representations of the hits returned from the spectra matching predictors outputs.
         All structures passed MUST have valid smiles or inchi representations.
 
         Parameters:
         ----------
         spectra_matches: DataFrame
-            DataFrame resulting from either Spec2Vec or MS2DeepScore. Need to feature smiles or inchi, score and compound_name as columns.
+            DataFrame resulting from spectra matching (e.g. Spec2Vec, MS2DeepScore).
+            Needs to feature smiles or inchi, score and compound_name as columns.
         representation: str = 'smiles' or 'inchi'
-            The representation of the molecules found in the provided dataframe
+            The representation of the molecules found in the provided dataframe.
         draw_indices: bool = False
-            If true draws the indices of the atoms
+            If true draws the indices of the atoms.
         molecule_image_size: Tuple[int, int] = [200, 200]
-            The size of every individual image of a molecule. Need to be provided as a list with two ints
+            The size of every individual image of a molecule. Need to be provided as a tuple with two ints (x and y).
 
         Returns:
         -------
-            A Plot showing the structure of the passed smiles/inchis
+            A tuple containing a dict with keys equal to the spectrum GNPS id and value equals to the molecule plot and
+            a list of strings containing the legends for each plot.
         """
 
         img_size_list = list(img_size)
