@@ -1,4 +1,4 @@
-<img src="./omigami-gradient.png" width="50%">
+![image](https://raw.githubusercontent.com/omigami/omigami/master/omigami-gradient.png)
 
 # Omigami
 
