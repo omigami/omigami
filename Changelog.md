@@ -15,6 +15,8 @@ successful predictions, also there are 2 new methods:
   - if predictions for spectra fails, they can be called by `faied_spectra()`.
   - cache contains successful predictions of spectra, implemented `reset_cache()`
     to reset it.
+- **Implemented SpectrumDataFrameHelper:** Acessible from `omigami.utilities`, this class serves as a helper to create and manipulate Pandas
+DataFrame versions of Spectrum objects, useful for some plotting functions (such as `mirror_plot`).
 
 ### Bugfixes
 - **More detailed error messages**: Omigami was unable to catch errors from 
@@ -44,5 +46,6 @@ arguments are:
 - **Move plotting objects to `plotting` module**: `MoleculePlotter` is available
 in `omigami.plotting` instead of `omigami`. To import it please do 
 `from omigami.plotting import MoleculePlotter`
-- **Update `plot_molecule_structure_grid()` arguments**: Rename `molecule_image_size` 
-argument to `img_size`.
+- **Renamed** `plot_molecule_structure_grid()` to `plot_molecule_structure()`
+- **Update `plot_molecule_structure()` arguments**: Rename `molecule_image_size` 
+argument to `img_size`, changed `img_size` type from list to tuple.
