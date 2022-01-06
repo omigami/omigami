@@ -1,4 +1,4 @@
-![image](https://raw.githubusercontent.com/omigami/omigami/master/omigami-gradient.png)
+![](https://raw.githubusercontent.com/omigami/omigami/master/omigami-gradient.png)
 
 # Omigami
 
