@@ -6,7 +6,7 @@ The following example will plot the structures of the molecules
 ```python
 from omigami.plotting import MoleculePlotter
 plotter = MoleculePlotter()
-result = plotter.plot_molecule_structure_grid(
+result = plotter.plot_molecule_structure(
     spectra_matches=best_matches,
     representation="smiles",
     draw_indices=True,
