@@ -8,10 +8,10 @@ from omigami.plotting import MoleculePlotter, SpectraComparisonPlotter
 from omigami.utilities import SpectrumDataFrameHelper
 
 
-def test_plot_molecule_structure_grid(spectra_match_data_path):
+def test_plot_molecule_structure(spectra_match_data_path):
     dataset = pd.read_csv(spectra_match_data_path)
     plotter = MoleculePlotter()
-    images, legends = plotter.plot_molecule_structure_grid(dataset, img_size=(200, 200))
+    images, legends = plotter.plot_molecule_structure(dataset, img_size=(200, 200))
 
     assert images[0].size == (200, 200)
     assert isinstance(images[0], PngImageFile)
