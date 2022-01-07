@@ -1,12 +1,12 @@
 # Changelog
 
 ## Releases
-****
-v0.3.0
-****
+
+### v0.3.0
+
 Release Date: 2022-01-10
 
-### New Features
+#### New Features
 - **Mirror plot**: Add `SpectraComparisonPlotter().mirror_plot()` to 
 `omigami.plotting` module. It takes two spectra and  creates a mirror plot with 
 spectrum 1 on top (blue), and spectrum 2 on the bottom (red).
@@ -24,7 +24,7 @@ metadata from GNPS by default.
 structure, instead of grid of images. Single plot image size is adjustable through
 `ìmg_size` argument. 
 
-### Bugfixes
+#### Bugfixes
 - **More detailed error messages**: Omigami was unable to catch errors from 
 backend during `match_spectra_from_path()` call. Omigami properly handles errors 
 and displays them now. E.g.
@@ -38,7 +38,7 @@ later or contact DataRevenue for more information.
 explicitly looking for pepmass field when building the payload. Omigami builds 
 the payload from precursor_mz, when pepmass is not present.
 
-### Breaking Changes
+#### Breaking Changes
 - **Rename`match_spectra_from_path()`**: available as `match_spectra()`
 - **Update `match_spectra()` arguments**: Support passing a list of 
 `matchms.Spectrum` objects, in addition to the path to the mgf file. Current 
