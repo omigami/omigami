@@ -17,20 +17,11 @@ result = client.match_spectra(
 # Spectra is sent in batches to the predictor. 
 # If any of the batches fail, the following command will return the list of spectra in the failed batch. 
 # The problem may have been caused by just one or more spectrum inside the failed batch.
-failed_spectra = client.failed_spectra()
+failed_spectra = client.failed_spectra
 
 # successful spectrum predictions will be saved to cache, to reset the cache use:
 client.reset_cache()
 ```
-
-The supported metadata keys for omigami are (case insensitive):
-- "smiles",
-- "compound_name",
-- "instrument",
-- "parent_mass",
-- "inchikey_smiles",
-- "inchikey_inchi"
-- "precursor_mz" or "pepmass"
 
 
 ## Notebook
