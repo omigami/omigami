@@ -155,7 +155,7 @@ from omigami.plotting import MoleculePlotter
 plotter = MoleculePlotter()
 plotter.plot_classyfire_result(best_matches, color="green")
 ```
-<img src="docs/images/classyfire_plot.png" width="500">
+<img src="documentation/images/classyfire_plot.png" width="500">
 
 Furthermore, Omigami provides the possibility to use the [NPClassifier](https://www.researchgate.net/publication/344008670_NPClassifier_A_Deep_Neural_Network-Based_Structural_Classification_Tool_for_Natural_Products) API.
 
@@ -164,7 +164,7 @@ from omigami.plotting import MoleculePlotter
 plotter = MoleculePlotter()
 plotter.plot_NPclassifier_result(best_matches, color="orange")
 ```
-<img src="docs/images/NP_classifier_plot.png" width="500">
+<img src="documentation/images/NP_classifier_plot.png" width="500">
 
 ## How it works
 
