@@ -6,7 +6,7 @@ import pytest
 def test_match_spectra_from_path_with_2_spectra(
     mgf_path_of_2_spectra, ms2deepscore_client
 ):
-    result = ms2deepscore_client.load_and_match_spectra(
+    result = ms2deepscore_client.match_spectra(
         source=mgf_path_of_2_spectra, n_best=3, ion_mode="positive"
     )
     assert result
