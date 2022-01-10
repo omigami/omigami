@@ -6,9 +6,6 @@ from setuptools import setup, find_packages
 
 import versioneer
 
-with open("docs/readme.rst") as readme_file:
-    readme = readme_file.read()
-
 with open("HISTORY.rst") as history_file:
     history = history_file.read()
 
@@ -44,11 +41,11 @@ setup(
     },
     install_requires=requirements,
     license="MIT license",
-    long_description=readme + "\n\n" + history,
+    long_description=history,
     include_package_data=True,
     keywords="omigami",
     name="omigami-client",
-    packages=find_packages(include=["omigami"]),
+    packages=find_packages(),
     setup_requires=setup_requirements,
     test_suite="tests",
     tests_require=test_requirements,

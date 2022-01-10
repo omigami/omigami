@@ -1,0 +1,337 @@
+from __future__ import annotations
+
+import ast
+from io import StringIO
+from logging import getLogger
+from typing import List, Dict, Any, Union, Generator, Optional
+
+import pandas as pd
+import requests
+from matchms import Spectrum
+from matchms.importing import load_from_mgf
+
+from omigami.authentication import get_session, authenticate_client, set_token
+from omigami.exceptions import (
+    InvalidCredentials,
+    NotFoundError,
+    InvalidUsageError,
+)
+from omigami.omi_settings import HOST_NAME
+
+SPECTRA_LIMIT_PER_REQUEST = 100
+
+log = getLogger(__file__)
+
+SpectraJson = List[Dict[str, str]]
+SpectraMatchingParameters = Dict[str, Any]
+Payload = Dict[
+    "data", Dict["ndarray", Dict[str, Union[SpectraMatchingParameters, SpectraJson]]]
+]
+
+
+class SpectraMatching:
+    _PREDICT_ENDPOINT_BASE = (
+        f"{HOST_NAME}seldon/seldon/" + "{algorithm}-{ion_mode}/api/v0.1/predictions"
+    )
+    _algorithm = None
+    _optional_token = None
+
+    mandatory_keys: List[str] = ["peaks_json", "Precursor_MZ"]
+    float_keys: List[str] = ["Precursor_MZ"]
+
+    def __init__(self, optional_token: Optional[str] = None):
+        self._optional_token = optional_token
+        self._cached_results: Dict[int, pd.DataFrame] = {}
+        self._failed_spectra: List[Spectrum] = []
+
+        if self._algorithm is None:
+            raise InvalidUsageError(
+                "You should only evoke match_spectra from either "
+                "a MS2DeepScore or a Spec2Vec class instance."
+            )
+
+    @property
+    def failed_spectra(self) -> List[Spectrum]:
+        return self._failed_spectra
+
+    def match_spectra(
+        self,
+        source: Union[str, list[Spectrum], StringIO],
+        n_best: int,
+        ion_mode: str = "positive",
+    ) -> List[pd.DataFrame]:
+        """
+        From a spectra source, issues requests to either MS2DeepScore or Spec2Vec
+        endpoints to find the N best library matches.
+
+        Parameters
+        ----------
+        source: str or list[Spectrum] or StringIO
+            either a local path to mgf file (str), or a list of preloaded Spectrum objects,
+            or a StringIO object from a loaded mgf file
+        n_best: int
+            Number of best matches to select
+        ion_mode:
+            Selects which model will be used for the predictions: Either a model trained
+            with positive or negative ion mode spectra data. Defaults to positive.
+
+        Returns
+        -------
+        A list of pandas dataframes containing the best matches and optionally metadata
+        for these matches.
+
+        """
+        self._validate_token()
+        spectra_generator = self._create_spectra_generator(source)
+
+        # defines endpoint based on user choice of spectra ion mode
+        endpoint = self._PREDICT_ENDPOINT_BASE.format(
+            algorithm=self._algorithm, ion_mode=ion_mode
+        )
+
+        # validates input
+        if ion_mode not in ["positive", "negative"]:
+            raise ValueError(
+                "Parameter ion_mode should be either set to 'positive' or 'negative'. "
+                "Defaults to 'positive'. "
+            )
+
+        parameters = self._build_parameters(n_best)
+
+        # issue requests respecting the spectra limit per request
+        return self._make_batch_requests(spectra_generator, parameters, endpoint)
+
+    def _validate_token(self):
+        """Gets token from user credentials or uses existing token."""
+        if self._optional_token is not None:
+            set_token(self._optional_token)
+        else:
+            authenticate_client()
+
+    @staticmethod
+    def _create_spectra_generator(source: Union[str, StringIO, List[Spectrum]]):
+        spectra_generator: Generator[Spectrum]
+        if type(source) == str or type(source) == StringIO:
+            spectra_generator = load_from_mgf(source)
+        else:
+
+            def _spectra_generator(spectra_list: List[Spectrum]) -> Generator[Spectrum]:
+                for spectrum in spectra_list:
+                    yield spectrum
+
+            spectra_generator = _spectra_generator(source)
+        return spectra_generator
+
+    def _build_payload(
+        self,
+        batch: List[Spectrum],
+        parameters: SpectraMatchingParameters,
+    ) -> Payload:
+        """Extract abundance pairs and Precursor_MZ data, then build the json payload
+
+        Returns:
+        --------
+        - payload: JSON
+            the full request payload with input data
+        """
+        spectra = []
+        for spectrum in batch:
+            if "pepmass" in spectrum.metadata:
+                precursor_mz = str(spectrum.metadata["pepmass"][0])
+            elif "precursor_mz" in spectrum.metadata:
+                precursor_mz = str(spectrum.metadata["precursor_mz"][0])
+            else:
+                raise KeyError(
+                    "One of ['pepmass' or 'precursor_mz'] must be present in the"
+                    "spectrum metadata."
+                )
+
+            spectra.append(
+                {
+                    "peaks_json": str(
+                        [
+                            [mz, intensity]
+                            for mz, intensity in zip(
+                                spectrum.peaks.mz, spectrum.peaks.intensities
+                            )
+                        ]
+                    ),
+                    "Precursor_MZ": precursor_mz,
+                }
+            )
+
+        log.info(f"{len(spectra)} spectra found on input file.")
+        self._validate_input(spectra)
+
+        payload = {
+            "data": {
+                "ndarray": {
+                    "parameters": parameters,
+                    "data": spectra,
+                }
+            }
+        }
+        return payload
+
+    def _make_batch_requests(
+        self,
+        spectra_generator: Generator[Spectrum],
+        parameters: SpectraMatchingParameters,
+        endpoint: str,
+    ) -> List[pd.DataFrame]:
+        self._failed_spectra = []
+        batch = []
+        results = []
+
+        for spectrum in spectra_generator:
+            cache_id = self._get_cache_id(spectrum, parameters)
+            if cache_id in self._cached_results:
+                results.append(self._cached_results[cache_id])
+                continue
+
+            batch.append(spectrum)
+            if len(batch) == SPECTRA_LIMIT_PER_REQUEST:
+                results.extend(self._match_spectra(batch, endpoint, parameters))
+                batch = []
+
+        if len(batch) > 0:
+            results.extend(self._match_spectra(batch, endpoint, parameters))
+
+        return results
+
+    def _match_spectra(
+        self,
+        batch: List[Spectrum],
+        endpoint: str,
+        parameters: SpectraMatchingParameters,
+    ) -> List[pd.DataFrame]:
+        response = self._send_request(batch, endpoint, parameters)
+        if response is not None:
+            formatted_results = self._format_results(response)
+            self._cache_results(formatted_results, batch, parameters)
+            return formatted_results
+        else:
+            return []
+
+    def _send_request(
+        self,
+        batch: List[Spectrum],
+        endpoint: str,
+        parameters: SpectraMatchingParameters,
+    ) -> Union[requests.Response, None]:
+        payload = self._build_payload(batch, parameters)
+
+        auth = get_session()
+        response = requests.post(
+            endpoint,
+            json=payload,
+            headers={"Authorization": f"Bearer {auth.session_token}"},
+            timeout=600,
+        )
+
+        if response.status_code == 401:
+            raise InvalidCredentials("Your credentials are invalid.")
+        elif response.status_code == 404:
+            raise NotFoundError("The API endpoint couldn't be reached.")
+        elif response.status_code == 500:
+            log.error(
+                f"ERROR: An error happened during spectra matching. "
+                f"Please try again or contact DataRevenue for more information. "
+                f"The list of spectra that failed can be accessed on the failed_spectra attribute."
+                f"\n\n{response.json()['status']['info']}.\n"
+            )
+            self._failed_spectra.extend(batch)
+            return
+
+        return response
+
+    @staticmethod
+    def _build_parameters(n_best: int) -> SpectraMatchingParameters:
+        parameters = {}
+        try:
+            parameters["n_best_spectra"] = int(n_best)
+        except ValueError:
+            raise ValueError(
+                "The number of best features parameter must be an integer."
+            )
+
+        return parameters
+
+    def _validate_input(self, model_input: List[Dict]):
+        for i, spectrum in enumerate(model_input):
+            if not isinstance(spectrum, Dict):
+                raise TypeError(
+                    f"Spectrum data must be a dictionary. Passed type: {type(spectrum)}"
+                )
+
+            if any(key not in spectrum.keys() for key in self.mandatory_keys):
+                raise KeyError(
+                    f"Please include all the mandatory keys in your input data. "
+                    f"The mandatory keys are {self.mandatory_keys}",
+                )
+
+            if isinstance(spectrum["peaks_json"], str):
+                try:
+                    ast.literal_eval(spectrum["peaks_json"])
+                except SyntaxError:
+                    raise ValueError(
+                        f"peaks_json needs to be a valid python string representation "
+                        f"of a list or a list. Passed value: {spectrum['peaks_json']}",
+                        400,
+                    )
+            elif not isinstance(spectrum["peaks_json"], list):
+                raise ValueError(
+                    "peaks_json needs to be a valid python string representation of a "
+                    f"list or a list. Passed value: {spectrum['peaks_json']}",
+                    400,
+                )
+
+            for key in self.float_keys:
+                if spectrum.get(key):
+                    try:
+                        float(spectrum[key])
+                    except ValueError:
+                        raise ValueError(
+                            f"{key} needs to be a string representation of a float. "
+                            f"Passed value: {spectrum[key]}",
+                            400,
+                        )
+
+    @staticmethod
+    def _format_results(response: requests.Response) -> List[pd.DataFrame]:
+        response_json = response.json()
+        library_spectra_raw = response_json["jsonData"]
+
+        predicted_spectra = []
+        for id_, matches in library_spectra_raw.items():
+            scores_df = pd.DataFrame(matches).T.drop(columns="metadata")
+            metadata_df = pd.DataFrame(
+                pd.DataFrame(matches).loc["metadata"].to_dict()
+            ).T
+            results_dataframe = scores_df.join(metadata_df)
+            results_dataframe.index.name = f"matches of {id_}"
+            results_dataframe = results_dataframe.sort_values(
+                by=["score"], ascending=False
+            )
+
+            predicted_spectra.append(results_dataframe)
+
+        return predicted_spectra
+
+    def reset_cache(self):
+        """Clears cached results from the client."""
+        self._cached_results = {}
+        self._failed_spectra = []
+
+    def _cache_results(
+        self,
+        res: List[pd.DataFrame],
+        batch: List[Spectrum],
+        parameters: SpectraMatchingParameters,
+    ):
+        for r, spectrum in zip(res, batch):
+            self._cached_results[self._get_cache_id(spectrum, parameters)] = r
+
+    @staticmethod
+    def _get_cache_id(spectrum: Spectrum, parameters: SpectraMatchingParameters) -> int:
+        return hash(str(spectrum.metadata) + str(parameters))

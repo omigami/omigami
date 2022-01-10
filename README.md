@@ -2,7 +2,7 @@
 
 # Omigami
 
-[![PyPI version shields.io](https://img.shields.io/pypi/v/omigami.svg)](https://pypi.python.org/pypi/omigami) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![PyPI version shields.io](https://img.shields.io/pypi/v/omigami-client.svg)](https://pypi.python.org/pypi/omigami-client) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 <!-- image:: https://img.shields.io/travis/datarevenue-berlin/omigami.svg :target: https://travis-ci.org/datarevenue-berlin/omigami -->
 
@@ -65,47 +65,54 @@ you may use `omigami credentials-helper --unset`.
 #### Quickstart
 
 ```python
-from omigami import Spec2Vec
+from omigami.spectra_matching import Spec2Vec
 
 client = Spec2Vec()
 
-mgf_file_path = "path_to_file.mgf"
+mgf_file_path = "path_to_file.mgf" # or a list of matchms.Spectrum objects
 n_best_matches = 10
-include_metadata = ["Smiles", "Compound_name"]
 ion_mode = "positive"  # either positive or negative
 
-result = client.match_spectra_from_path(
-    mgf_file_path, n_best_matches, include_metadata, ion_mode=ion_mode,
+result = client.match_spectra(
+    mgf_file_path, n_best_matches, ion_mode,
 )
+
+# Spectra is sent in batches to the predictor. 
+# If any of the batches fail, the following command will return the list of spectra in the failed batch. 
+# The problem may have been caused by just one or more spectrum inside the failed batch.
+failed_spectra = client.failed_spectra
+
+# successful spectrum predictions will be saved to cache, to reset the cache use:
+client.reset_cache()
 ```
 
-The supported metadata keys for omigami are (case insensitive):
-- "smiles",
-- "compound_name",
-- "instrument",
-- "parent_mass",
-- "inchikey_smiles",
-- "inchikey_inchi"
 
 #### Notebooks
-You can find a [tutorial](https://github.com/omigami/omigami/blob/master/notebooks/spec2vec/tutorial.ipynb) notebook in the `/notebooks/` folder.
+You can find a spec2vec tutorial [here](https://github.com/omigami/omigami/blob/master/notebooks/spec2vec/tutorial.ipynb) and ms2deepscore tutorial [here](https://github.com/omigami/omigami/blob/master/notebooks/ms2deepscore/tutorial.ipynb).
 
 ### MS2DeepScore
 #### Quickstart
 
 ```python
-from omigami import MS2DeepScore
+from omigami.spectra_matching import MS2DeepScore
 
 client = MS2DeepScore()
 
-mgf_file_path = "path_to_file.mgf"
+mgf_file_path = "path_to_file.mgf" # or a list of matchms.Spectrum objects
 n_best_matches = 10
-include_metadata = ["Smiles", "Compound_name"]
 ion_mode = "positive"  # either positive or negative
 
-result = client.match_spectra_from_path(
-    mgf_file_path, n_best_matches, include_metadata, ion_mode=ion_mode,
+result = client.match_spectra(
+    mgf_file_path, n_best_matches, ion_mode,
 )
+
+# Spectra is sent in batches to the predictor. 
+# If any of the batches fail, the following command will return the list of spectra in the failed batch. 
+# The problem may have been caused by just one or more spectrum inside the failed batch.
+failed_spectra = client.failed_spectra
+
+# successful spectrum predictions will be saved to cache, to reset the cache use:
+client.reset_cache()
 ```
 
 #### Notebooks
@@ -116,38 +123,46 @@ Plotting graphs works the same way for both Spec2Vec and MS2DeepScore.
 
 
 The following example will plot the structures of the molecules
+
 ```python
-from omigami import MoleculePlotter
+from omigami.plotting import MoleculePlotter
+
 plotter = MoleculePlotter()
-plotter.plot_molecule_structure_grid(best_matches, 
-                                     draw_indices=True, 
-                                     molecule_image_size=[600, 600], 
-                                     substructure_highlight="C(=O)")
+plots, legends = plotter.plot_molecule_structure(
+    spectra_matches=best_matches[1],
+    representation="smiles",
+    draw_indices=True,
+    img_size=(600, 600),
+    substructure_highlight="C(=O)"
+)
+first_match = list(plots.values())[0]
+first_match
+print(legends[0])
 ```
 
 The following code allows us to plot the results of the [Classyfire](https://jcheminf.biomedcentral.com/articles/10.1186/s13321-016-0174-y) model API.
 ```python
-from omigami import MoleculePlotter
+from omigami.plotting import MoleculePlotter
 plotter = MoleculePlotter()
-plotter.plot_classyfire_result(best_matches)
+plotter.plot_classyfire_result(best_matches[1], color="green")
 ```
-<img src="docs/images/classyfire_plot.png" width="500">
+<img src="documentation/images/classyfire_plot.png" width="500">
 
 Furthermore, Omigami provides the possibility to use the [NPClassifier](https://www.researchgate.net/publication/344008670_NPClassifier_A_Deep_Neural_Network-Based_Structural_Classification_Tool_for_Natural_Products) API.
 
 ```python
-from omigami import MoleculePlotter
+from omigami.plotting import MoleculePlotter
 plotter = MoleculePlotter()
-plotter.plot_NPclassifier_result(best_matches, color='orange')
+plotter.plot_NPclassifier_result(best_matches, color="orange")
 ```
-<img src="docs/images/NP_classifier_plot.png" width="500">
+<img src="documentation/images/NP_classifier_plot.png" width="500">
 
 ## How it works
 
 ### Spec2Vec
 1. Save your spectra data in a MGF file locally
 2. Create an Spec2Vec with your user token
-3. Call `match_spectra_from_path` with the location of your mgf file.
+3. Call `match_spectra` with the location of your mgf file.
 4. The MGF spectra data will be processed and sent to the spec2vec model that will convert it into embeddings. 
 5. These embeddings will be compared against the reference embeddings around the Precursor MZ.
 6. The N best matches per spectrum are returned on the response as pandas dataframes.  
@@ -155,7 +170,7 @@ plotter.plot_NPclassifier_result(best_matches, color='orange')
 ### MS2DeepScore
 1. Save your pair of spectra data in a MGF file locally
 2. Create an MS2DeepScore object with your user token
-3. Call `match_spectra_from_path` with the location of your mgf file.
+3. Call `match_spectra` with the location of your mgf file.
 4. The MGF spectra data will be processed and sent to the trained neural network that will predict the molecular structural similarity. 
 5. The prediction is returned on the response as a pandas dataframe.  
 

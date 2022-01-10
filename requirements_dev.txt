@@ -1,4 +1,4 @@
-pip==19.2
+pip
 cmake==3.21.1
 wheel==0.32.1
 watchdog==0.9.0
@@ -18,3 +18,4 @@ pillow~=8.3.1
 confuse~=1.4.0
 rdkit-pypi~=2021.3.4
 setuptools~=49.6.0
+cryptography==3.4.7

@@ -10,9 +10,9 @@ pool:
   vmImage: ubuntu-latest
 strategy:
   matrix:
-    Python36:
-      python.version: '3.7'
     Python37:
+      python.version: '3.7'
+    Python38:
       python.version: '3.8'
 
 steps:
@@ -30,9 +30,5 @@ steps:
 
 - script: |
     pip install pytest pytest-azurepipelines==1.0.0rc5
-    pytest --cov=omigami omigami/tests/ --cov-report html --nunitxml test-output.xml -m 'not slow'
+    pytest --cov=omigami tests/ --cov-report html --nunitxml test-output.xml -m 'not slow'
   displayName: 'Run fast tests'
-
-- script: |
-    make docs
-  displayName: 'Build documentation'
