@@ -1,9 +1,8 @@
 import requests
-from typing import List, Optional, Tuple
+from typing import List, Tuple
 
 import pandas as pd
 from matchms import Spectrum
-from pandas.tests.groupby.test_value_counts import df
 
 
 class SpectrumDataFrameHelper:
