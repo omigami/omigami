@@ -16,3 +16,7 @@ class InternalServerError(Exception):
 
 class InvalidUsageError(Exception):
     pass
+
+
+class ServiceUnavailableError(Exception):
+    pass
